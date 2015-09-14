@@ -1,6 +1,6 @@
 //main
 
-int main()
+nt main()
 }
 
 ola
