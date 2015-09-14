@@ -9,7 +9,7 @@
 #include <errno.h>
 
 extern int errno;
-
+//main
 int main(){
   struct hostent *h;
   struct in_addr *a;
