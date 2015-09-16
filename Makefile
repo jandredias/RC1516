@@ -1,8 +1,7 @@
-all:	client server
+all:	server client
 
-server:	udpServer.c
-	gcc udpServer.c -o server
-client:	clientUDP.c
-	gcc clientUDP.c -o client
-clean:
-	rm client server
+server:	AppServer.cpp
+	g++ AppServer.cpp -o AppServer
+
+client:	App.cpp
+	g++ App.cpp -o App

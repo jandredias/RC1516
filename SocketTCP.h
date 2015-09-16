@@ -25,7 +25,7 @@ class SocketTCP{
 
 public:
   SocketTCP() : _server(true), _connected(true){}
-  SocketTCP(const char[] addr, int port) : _server(false), _connected(false){
+  SocketTCP(const char addr[], int port) : _server(false), _connected(false){
     _fd = socket(AF_INET, SOCK_STREAM, 0);
     if(_fd < 0) throw std::string("couldn't create socket");
     _hostptr = gethostbyname(addr);
@@ -38,13 +38,14 @@ public:
   }
   SocketTCP(int port) : _server(true), _connected(false){
     _fd = socket(AF_INET, SOCK_STREAM, 0);
-    _hostptr = gethostbyname(addr);
 
     memset((void *) &_serverAddr, (int) '\0', sizeof(_serverAddr));
 
     _serverAddr.sin_family = AF_INET;
     _serverAddr.sin_port = htons((u_short) port);
     _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr));
   }
   void fd(int fd){ _fd = fd; }
   /**
@@ -56,8 +57,10 @@ public:
    */
   void connect(){
     if(_server) throw std::string("error! you can't connect from a server side socket");
-    if(::connect(_fd,(struct sockaddr *) &_serverAddr, sizeof(_serverAddr)) < 0)
+    if(::connect(_fd,(struct sockaddr *) &_serverAddr, sizeof(_serverAddr)) < 0){
+      perror("error connectiong internet socket");
       throw std::string("error connecting internet socket");
+    }
     _connected = true;
   }
   void disconnect(){
@@ -69,7 +72,19 @@ public:
     if(!_connected) throw std::string("Socket is not connected");
     ::write(_fd, text.data(), text.size() + 1);
   }
-
+  std::string read(){
+    if(!_connected) throw std::string("Socket is not connected");
+    std::string text = "";
+    int n;
+    char b;
+    while(1){
+      n = ::read(_fd, &b, 1);
+      if(n == 1) text += b;
+      else if(n == 0) break;
+      else if(n == -1) perror("error reading from socket server");
+    }
+    return text;
+  }
   void listen(int max = 5){ ::listen(_fd, max); }
 
   /**
@@ -78,9 +93,9 @@ public:
   SocketTCP accept(){
     int newSocket = -1;
 
-    socklen_t sizeofClient;
+    socklen_t sizeofClient = sizeof(_clientAddr);
 
-    newSocket = ::accept(_sockfd, (struct sockaddr*) &_clientAddr, &sizeofClient);
+    newSocket = ::accept(_fd, (struct sockaddr*) &_clientAddr, &sizeofClient);
     if(newSocket < 0) throw std::string("error creating dedicate connection");
 
     SocketTCP s = SocketTCP();
