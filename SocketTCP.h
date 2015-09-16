@@ -62,11 +62,18 @@ public:
    */
   void connect(){
     if(_server) throw std::string("error! you can't connect from a server side socket");
-    if(::connect(_fd,(struct sockaddr *) &_serverAddr, sizeof(_serverAddr)) < 0){
-      perror("error connectiong internet socket");
-      throw std::string("error connecting internet socket");
-    }
-    _connected = true;
+    int i = 100;
+    while(i)
+      if(::connect(_fd,(struct sockaddr *) &_serverAddr, sizeof(_serverAddr)) < 0){
+        i--;
+      }
+      else{
+        _connected = true;
+        return;
+      }
+    perror("error connectiong internet socket");
+    throw std::string("error connecting internet socket");
+
   }
   void disconnect(){
     if(::close(_fd))
@@ -74,19 +81,31 @@ public:
     _connected = false;
   }
   void write(std::string text){
+    char buffer[text.size()];
+    char *ptr = buffer;
+    strcpy(buffer, text.data());
     if(!_connected) throw std::string("Socket is not connected");
-    ::write(_fd, text.data(), text.size() + 1);
+    int left = text.size();
+    while(left > 0){
+      int written = ::write(_fd, ptr, left);
+      left -= written;
+      ptr += written;
+    }
+    int written = 0;
+    while(written != 1) written = ::write(_fd, "\0", 1);
+
   }
   std::string read(){
     if(!_connected) throw std::string("Socket is not connected");
     std::string text = "";
+
     int n;
     char b;
     while(1){
       n = ::read(_fd, &b, 1);
-      if(n == 1) text += b;
-      else if(n == 0) break;
-      else if(n == -1) perror("error reading from socket server");
+      if(n == 1 && b != '\0') text += b;
+      else if( n == 1 && b == '\0' ) break;
+      else if( n == -1) perror("error reading from socket server");
     }
     return text;
   }

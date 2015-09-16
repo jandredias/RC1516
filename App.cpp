@@ -11,15 +11,10 @@ int main(){
     std::cin.getline(msg, 1024);
 
     message = msg;
-    std::cout << "Sending message" << std::endl;
     socket.write(message);
-    std::cout << "Message sent" << std::endl;
-    std::cout << "Reading message" << std::endl;
-
-    //std::cout << "Message Received" << std::endl;
-    //std::cout << message << std::endl;
 
     message = socket.read();
+    std::cout << message << std::endl;
     socket.disconnect();
   }catch(std::string s){
     std::cout << s << std::endl;
