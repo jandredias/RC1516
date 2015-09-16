@@ -7,10 +7,14 @@ int main(){
   socket.listen(10);
   while(1){
     SocketTCP newSocket = socket.accept();
+
     std::string message = newSocket.read();
     std::cout << message << std::endl;
-    newSocket.write(std::string("your input has ") + std::to_string(message.size()) \
-    + std::string(" characters"));
+    std::string output = std::string("your input has ") + std::to_string(message.size()) \
+    + std::string(" characters");
+    std::cout << output << std::endl;
+    newSocket.write(output);
+    newSocket.disconnect();
   }
   return 0;
 }
