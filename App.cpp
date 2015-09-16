@@ -3,7 +3,7 @@
 #include <string>
 
 int main(){
-  SocketTCP socket("jdiastk.com", 59000);
+  SocketTCP socket("localhost", 59000);
   std::string message;
   try{
     char msg[1024];
@@ -19,10 +19,10 @@ int main(){
     //std::cout << "Message Received" << std::endl;
     //std::cout << message << std::endl;
 
+    message = socket.read();
+    socket.disconnect();
   }catch(std::string s){
     std::cout << s << std::endl;
   }
-  message = socket.read();
-  socket.disconnect();
   return 0;
 }

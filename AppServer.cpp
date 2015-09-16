@@ -14,13 +14,14 @@ int main(){
       socket.disconnect();
       std::cout << "reading message" << std::endl;
       std::string message = newSocket.read();
-        std::cout << "message received" << std::endl;
+      std::cout << "message received" << std::endl;
       std::cout << message << std::endl;
       std::string output = std::string("your input has ") + std::to_string(message.size()) \
       + std::string(" characters");
 
       std::cout << output << std::endl;
       std::cout << "sending message" << std::endl;
+
       newSocket.write(output);
       std::cout << "message sent" << std::endl;
       return 0;
