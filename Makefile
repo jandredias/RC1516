@@ -1,7 +1,7 @@
 all:	server client
 
 server:	AppServer.cpp
-	g++ AppServer.cpp -o AppServer
+	g++ -std=c++11 AppServer.cpp -o AppServer
 
 client:	App.cpp
-	g++ App.cpp -o App
+	g++ -std=c++11 App.cpp -o App
