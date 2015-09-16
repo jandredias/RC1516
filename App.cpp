@@ -4,11 +4,16 @@
 
 int main(){
   try{
+    char msg[1024];
     SocketTCP socket("jdiastk.com", 59000);
     socket.connect();
-    socket.write("olaadeus");
-    //std::string message = socket.read();
-    //std::cout << message << std::endl;
+    std::cin.getline(msg, 1024);
+
+    std::string message(msg);
+    std::cout << "Message sent" << std::endl;
+    socket.write(message);
+    message = socket.read();
+    std::cout << message << std::endl;
   }catch(std::string s){
     std::cout << s << std::endl;
   }
