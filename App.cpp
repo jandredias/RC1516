@@ -3,7 +3,7 @@
 #include <string>
 
 int main(){
-  SocketTCP socket("localhost", 59000);
+  SocketTCP socket("lab10p7", 59000);
   std::string message;
   try{
     char msg[1024];
