@@ -85,15 +85,23 @@ public:
     char *ptr = buffer;
     strcpy(buffer, text.data());
     if(!_connected) throw std::string("Socket is not connected");
+      
     int left = text.size();
+    
     while(left > 0){
       int written = ::write(_fd, ptr, left);
       left -= written;
       ptr += written;
     }
     int written = 0;
-    while(written != 1) written = ::write(_fd, "\0", 1);
-
+    std::cout << text[text.size() - 1] << std::endl;
+    if(text[text.size() - 1] != '\n'){
+       std::cout << "i'm sending a n" << std::endl;
+        while(written != 1) written = ::write(_fd, "\0", 1);
+       std::cout << "i'm sending a n" << std::endl;
+    }
+      std::cout << "finish" << std::endl;
+       
   }
   std::string read(){
     if(!_connected) throw std::string("Socket is not connected");
@@ -103,8 +111,8 @@ public:
     char b;
     while(1){
       n = ::read(_fd, &b, 1);
-      if(n == 1 && b != '\0') text += b;
-      else if( n == 1 && b == '\0' ) break;
+      if(n == 1 && b != '\n') text += b;
+      else if( n == 1 && b == '\n' ) break;
       else if( n == -1) perror("error reading from socket server");
     }
     return text;
