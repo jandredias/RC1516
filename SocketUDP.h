@@ -36,11 +36,15 @@ public:
   SocketUDP();
 
   /**
-   * //FIXME
+   * @description             SocketUDP for clientside
+   * @param const char[]      Server hostname or ip dot notation
+   * @param int               port where the socket will read and send data to
    */
   SocketUDP(const char[], int );
+
   /**
-   * //FIXME
+   * @description             SocketUDP for serverside
+   * @param int               port where the socket will read and send data to
    */
   SocketUDP(int);
   /**
@@ -59,4 +63,14 @@ public:
    *                on failure it will throw a std::string exception
    */
   void close();
+
+  /**
+   * @return std::string    returns an ip on dot notation from the client
+   */
+  std::string ip();
+
+  /**
+   * @return std::string    returns client's hostname
+   */
+   std::string hostname();
 };

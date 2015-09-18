@@ -13,11 +13,11 @@ SocketUDP::SocketUDP(const char addr[], int port) : _server(false){
   if(__DEBUG__) std::cout << "official name: " << _hostptr->h_name << std::endl;
   if(__DEBUG__) std::cout << "internet address: "
                           << inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0]) << " "
-                          <<  ntohl(((struct in_addr*) _hostptr->h_addr_list[0])->s_addr) << std::endl;
+                          << ntohl(((struct in_addr *) _hostptr->h_addr_list[0])->s_addr) << std::endl;
 
   memset((void*) &_serverAddr,(int) '\0', sizeof(_serverAddr));
   _serverAddr.sin_family      = AF_INET;
-  _serverAddr.sin_addr.s_addr = ((struct in_addr *) (_hostptr->h_addr_list[0]))->s_addr;
+  _serverAddr.sin_addr.s_addr = ((struct in_addr *) _hostptr->h_addr_list[0])->s_addr;
   _serverAddr.sin_port        = htons((u_short) port);
 
   _clientLen = sizeof(_clientAddr);
@@ -45,6 +45,8 @@ void SocketUDP::send(std::string text){
 std::string SocketUDP::receive(){
   char buffer[BUFFER_SIZE];
   int n = recvfrom(_fd, buffer, BUFFER_SIZE, 0, (struct sockaddr*) &_serverAddr, &_serverLen);
+  char* ipString = inet_ntoa(_serverAddr.sin_addr);
+  std::cout << ipString << std::endl;
   if(n == -1) throw std::string("error reading content from the socket");
   std::string msg(buffer);
   int pos = msg.find('\n');
@@ -53,4 +55,14 @@ std::string SocketUDP::receive(){
 
 void SocketUDP::close(){
   if(::close(_fd) == -1) throw std::string();
+}
+
+std::string SocketUDP::ip(){
+  struct sockaddr_in *addr_in = (struct sockaddr_in *) &_serverAddr;
+  char *s = inet_ntoa(addr_in->sin_addr);
+  return std::string(s);
+}
+
+std::string SocketUDP::hostname(){
+  return std::string();
 }

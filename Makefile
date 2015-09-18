@@ -12,8 +12,8 @@ all:	ecp tes user
 ecp:	ecp.cpp
 	g++ -std=c++11 ecp.cpp -o ecp
 
-tes:	tes.cpp
-	g++ -std=c++11 tes.cpp -o tes
+tes:	tes.cpp SocketTCP.o SocketUDP.o Dialog.o
+	g++ -std=c++11 tes.cpp SocketTCP.o SocketUDP.o Dialog.o -o tes
 
 user:	user.cpp MenuBuilder.o List.o Submit.o Request.o UserManager.o SocketTCP.o SocketUDP.o Dialog.o
 	$(CC) $(FLAGS) user.cpp MenuBuilder.o List.o Submit.o Dialog.o Request.o UserManager.o SocketTCP.o SocketUDP.o -o user
