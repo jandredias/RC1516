@@ -43,7 +43,7 @@ Request.o:	Request.cpp Request.h
 	$(COMP) Request.cpp -o Request.o
 
 clean:
-	rm ecp tes user *.o
+	rm -rf ecp tes user *.o
 
 app:	App.cpp AppServer.cpp
 	g++ -std=c++11 App.cpp -o App
