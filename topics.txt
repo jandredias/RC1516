@@ -1,0 +1,6 @@
+Camada de aplicação
+Camada de transporte
+Camada de rede
+Camada da ligação de dados
+Aplicações multimedia
+Segurança em redes

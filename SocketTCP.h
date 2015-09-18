@@ -14,6 +14,8 @@
 #include <iostream>   // std::cout
 #include <string>     // std::string, std::to_string
 
+#define __DEBUG__ 0
+
 class SocketTCP{
   int _fd;
   struct hostent *_hostptr;

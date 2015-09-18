@@ -13,6 +13,6 @@ void RC_User::MenuBuilder::menuFor(UserManager *manager){
     new Request(manager),
     new Submit(manager)
   };
-  UI::Menu<UserManager> *menu = new UI::Menu<UserManager>("RC1516", command, 3);
+  UI::Menu<UserManager> *menu = new UI::Menu<UserManager>("Online Questionnaire", command, 3);
   menu->open();
 }

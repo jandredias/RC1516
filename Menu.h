@@ -1,5 +1,6 @@
-#ifndef __INESC_UI_MENU_H__
-#define __INESC_UI_MENU_H__
+#pragma once
+
+#include <boost/algorithm/string.hpp>
 
 #include "Command.h"
 #include "Dialog.h"
@@ -34,7 +35,7 @@ namespace UI{
      * the appropriate commands
      */
     void open(){
-      auto option = 0;
+      auto option = -1;
       while(true){
         UI::Dialog::IO->println();  //Just to be cute :P
         UI::Dialog::IO->println(_title);
@@ -46,7 +47,26 @@ namespace UI{
 
         }
         UI::Dialog::IO->println("0 - Exit");
-        option = UI::Dialog::IO->readInteger(SELECT_OPTION);
+
+        std::string option_str = UI::Dialog::IO->readString(SELECT_OPTION);
+
+
+        bool is_number = true;
+        for(int index = 0; index < option_str.size(); index++)
+          if(option_str[index] < '0' || option_str[index] > '9') is_number = false;
+        if(is_number) option = atoi(option_str.data());
+        if(!is_number){
+         boost::to_upper(option_str);
+         if(option_str == boost::to_upper_copy<std::string>(std::string("Exit"))){
+           option = 0;
+         }
+         else
+           for(auto i = 0; i < _commands.size(); i++)
+              if(option_str == boost::to_upper_copy<std::string>(std::string(_commands[i]->title()))){
+                option = i + 1;
+                break;
+              }
+        }
         //IO.readInteger(SELECT_OPTION);
         if(option == 0) return;
         if(option < 0 ||
@@ -73,5 +93,3 @@ namespace UI{
   template <class T>
   const std::string Menu<T>::INVALID_OPTION = "Invalid option!";
 }
-
-#endif /* end of include guard: __INESC_UI_MENU_H__ */

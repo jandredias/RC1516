@@ -1,0 +1,64 @@
+
+
+Introdução:
+  redes de computadores e a Internet;
+  tecnologias de comutação;
+  arquitectura em camadas;
+  protocolos;
+  serviços;
+  medidas de desempenho.
+
+Camada de aplicação:
+a Web e HTTP;
+FTP;
+SMTP;
+DNS;
+a interface de sockets.
+
+Camada de transporte:
+  multiplexagem e desmultiplexagem;
+  UDP;
+  transferência fiável de dados;
+  stop-and-wait, go-back-N e selective Repeat;
+  TCP;
+  controlo de congestão.
+
+Camada de rede:
+  encaminhamento por estado-da-ligação;
+  encaminhamento por vector-distãncia;
+  IP;
+  CIDR;
+  RIP;
+  OSPF;
+  BGP;
+  IPv6;
+  VPNs;
+  NAT.
+
+Camada da ligação de dados:
+  detecção e correcção de erros;
+  acesso múltiplo;
+  ALOHA;
+  CSMA;
+  token-ring;
+  WLANs e IEEE 802.11;
+  ARP;
+  hubs e comutadores;
+  PPP;
+  ATM.
+
+Aplicações multimedia:
+  streaming áudio e vídeo;
+  telefonia pela Internet;
+  qualidade de serviço;
+  escalonamento de tráfego.
+
+Segurança em redes:
+  criptografia de chave simétrica, DES e AES;
+  criptografia de chave pública, Diffie-Hellman e RSA;
+  confidencialidade;
+  autenticação;
+  integralidade;
+  PGP;
+  SSL;
+  IPSec.

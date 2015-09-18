@@ -1,5 +1,6 @@
-#ifndef __UI_DIALOG_H__
-#define __UI_DIALOG_H__
+#pragma once
+#ifndef abc__
+#define abc__
 
 #include <string>
 
@@ -52,9 +53,9 @@ namespace UI{
      */
     int readInteger(std::string = "");
 
-    void print(std::string, bool = false);
+    void print(std::string);
 
-    void println(std::string = "", bool = false);
+    void println(std::string = "");
 
     void XMLTag(std::ofstream &, std::string, std::string);
     void XMLTag(std::ofstream &, std::string, const char[]);
@@ -68,4 +69,4 @@ namespace UI{
   };
 }
 
-#endif /* end of include guard: __UI_DIALOG_H__ */
+#endif

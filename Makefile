@@ -15,8 +15,8 @@ ecp:	ecp.cpp
 tes:	tes.cpp
 	g++ -std=c++11 tes.cpp -o tes
 
-user:	user.cpp MenuBuilder.o List.o Submit.o Request.o Dialog.o UserManager.o SocketTCP.o SocketUDP.o
-	$(CC) $(FLAGS) user.cpp MenuBuilder.o List.o Submit.o Request.o Dialog.o UserManager.o SocketTCP.o SocketUDP.o -o user
+user:	user.cpp MenuBuilder.o List.o Submit.o Request.o UserManager.o SocketTCP.o SocketUDP.o Dialog.o
+	$(CC) $(FLAGS) user.cpp MenuBuilder.o List.o Submit.o Dialog.o Request.o UserManager.o SocketTCP.o SocketUDP.o -o user
 
 SocketTCP.o:	SocketTCP.h SocketTCP.cpp
 	$(COMP) SocketTCP.cpp -o SocketTCP.o

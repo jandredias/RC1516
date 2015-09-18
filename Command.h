@@ -1,5 +1,4 @@
-#ifndef __INESC_UI_COMMAND_H__
-#define __INESC_UI_COMMAND_H__
+#pragma once
 
 #include <string>
 namespace UI{
@@ -37,6 +36,3 @@ namespace UI{
   };
 
 }
-
-
-#endif /* end of include guard: __INESC_UI_COMMAND_H__ */

@@ -14,9 +14,9 @@
 #include <iostream>   // std::cout
 #include <string>     // std::string, std::to_string
 
-#define __DEBUG__ 1
-
 #define BUFFER_SIZE 2048
+
+#define __DEBUG__ 0
 
 class SocketUDP {
   int _fd;

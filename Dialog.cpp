@@ -9,8 +9,6 @@
 #include <utility>
 
 namespace UI{
-
-
   const std::string Dialog::REGULAR = "\x1B[0m";
   const std::string Dialog::GREEN = "\x1B[32m";
   const std::string Dialog::YELLOW = "\x1B[33m";
@@ -24,6 +22,7 @@ namespace UI{
   Dialog* Dialog::IO = new Dialog();
   Dialog::Dialog(){}
   void Dialog::closeDown(){}
+  
   bool Dialog::readBoolean(std::string prompt){
     while(true){
       std::string res = readString(prompt);
@@ -75,14 +74,12 @@ namespace UI{
     boost::replace_all(s, "[WHITE]", Dialog::WHITE);
     return s;
   }
-  void Dialog::print(std::string text, bool res){
-    if(res) std::cerr << filterString(text);
-    else std::cout << filterString(text);
+  void Dialog::print(std::string text){
+    std::cout << filterString(text);
   }
-  void Dialog::println(std::string text, bool res){
-    if(text != "") print(text, res);
-    if(res) std::cerr << std::endl;
-    else std::cout << std::endl;
+  void Dialog::println(std::string text){
+    if(text != "") print(text);
+    std::cout << std::endl;
   }
 
   void Dialog::XMLTag(std::ofstream &file, std::string tag, std::string value){
