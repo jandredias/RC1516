@@ -23,118 +23,70 @@ class SocketTCP{
   bool _server;
   bool _connected;
 
-public:
+  /**
+   * @description           constructor used to accept new clients while
+                            listening on server side
+   */
   SocketTCP() : _server(true), _connected(true){}
-  SocketTCP(const char addr[], int port) : _server(false), _connected(false){
-    _fd = socket(AF_INET, SOCK_STREAM, 0);
-    if(_fd < 0) throw std::string("couldn't create socket");
-    _hostptr = gethostbyname(addr);
 
-    std::cout << "official name: " << _hostptr->h_name << std::endl;
-    std::cout << "internet address: " 
-              << inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0]) << " " 
-              << ntohl(((struct in_addr*) _hostptr->h_addr_list[0])->s_addr) << std::endl;
-
-
-    memset((void *) &_serverAddr, (int) '\0', sizeof(_serverAddr));
-
-    _serverAddr.sin_family = AF_INET;
-    _serverAddr.sin_port = htons((u_short) port);
-    _serverAddr.sin_addr.s_addr = ((struct in_addr *) (_hostptr->h_addr_list[0]))->s_addr;
-  }
-  SocketTCP(int port) : _server(true), _connected(false){
-    _fd = socket(AF_INET, SOCK_STREAM, 0);
-
-    memset((void *) &_serverAddr, (int) '\0', sizeof(_serverAddr));
-
-    _serverAddr.sin_family = AF_INET;
-    _serverAddr.sin_port = htons((u_short) port);
-    _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr));
-  }
-  void fd(int fd){ _fd = fd; }
+public:
   /**
-   * @return int file descriptor
+   * @description           this constructor will be used by clients to connect
+   *                        to a server socket
+   * @param const char[]    server's hostname
+   * @param int             server's port
    */
-  int fd(){ return _fd; }
+  SocketTCP(const char[], int);
+
   /**
-   * @description connects to socket
+   * @description           this constructor will be used by servers to create
+   *                        a socket and wait for clients to connect
+   * @param int             server's port that will be listening
    */
-  void connect(){
-    if(_server) throw std::string("error! you can't connect from a server side socket");
-    int i = 100;
-    while(i)
-      if(::connect(_fd,(struct sockaddr *) &_serverAddr, sizeof(_serverAddr)) < 0){
-        i--;
-      }
-      else{
-        _connected = true;
-        return;
-      }
-    perror("error connectiong internet socket");
-    throw std::string("error connecting internet socket");
+  SocketTCP(int);
 
-  }
-  void disconnect(){
-    if(::close(_fd))
-      throw std::string("Error closing socket");
-    _connected = false;
-  }
-  void write(std::string text){
-    char buffer[text.size()];
-    char *ptr = buffer;
-    strcpy(buffer, text.data());
-    if(!_connected) throw std::string("Socket is not connected");
-      
-    int left = text.size();
-    
-    while(left > 0){
-      int written = ::write(_fd, ptr, left);
-      left -= written;
-      ptr += written;
-    }
-    int written = 0;
-    std::cout << text[text.size() - 1] << std::endl;
-    if(text[text.size() - 1] != '\n'){
-       std::cout << "i'm sending a n" << std::endl;
-        while(written != 1) written = ::write(_fd, "\0", 1);
-       std::cout << "i'm sending a n" << std::endl;
-    }
-      std::cout << "finish" << std::endl;
-       
-  }
-  std::string read(){
-    if(!_connected) throw std::string("Socket is not connected");
-    std::string text = "";
-
-    int n;
-    char b;
-    while(1){
-      n = ::read(_fd, &b, 1);
-      if(n == 1 && b != '\n') text += b;
-      else if( n == 1 && b == '\n' ) break;
-      else if( n == -1) perror("error reading from socket server");
-    }
-    return text;
-  }
-  void listen(int max = 5){ ::listen(_fd, max); }
+  /**
+   * @description           set socket's file descriptor
+   *                        this will be used when a client's connection
+   *                        accepted
+   * @param int             client's socket fd
+   */
+  void fd(int fd);
 
   /**
    * @return int file descriptor
    */
-  SocketTCP accept(){
-    int newSocket = -1;
+  int fd();
 
-    socklen_t sizeofClient = sizeof(_clientAddr);
+  /**
+   * @description           connects to socket
+   *                        if a server side socket tries to connect to some
+   *                        other socket it will throw an exception
+   *                        only client side should connect!
+   * @throws std::string
+   */
+  void connect();
 
-    newSocket = ::accept(_fd, (struct sockaddr*) &_clientAddr, &sizeofClient);
-    if(newSocket < 0) throw std::string("error creating dedicate connection");
+  /**
+   * @description           closes the socket
+   *                        on success returns void
+   *                        on failure throws an exception
+   * @throws std::string
+   */
+  void disconnect();
 
-    SocketTCP s = SocketTCP();
+  /**
+   * @param std::string
+   */
+  void write(std::string);
 
-    s.fd(newSocket);
-    return s;
-  }
+  std::string read();
+
+  void listen(int = 5);
+
+  /**
+   * @return int file descriptor
+   */
+  SocketTCP accept();
 
 };
