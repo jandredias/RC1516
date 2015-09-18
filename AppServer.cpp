@@ -1,26 +1,26 @@
 #include "SocketTCP.h"
+#include "SocketUDP.h"
 #include <iostream>
 #include <string>
 
+#define __PORT__ 59023
+
 int main(){
+
   std::cout << "creating socket" << std::endl;
-  SocketTCP socket(59000);
-    std::cout << "listening on port 59000" << std::endl;
-  socket.listen(10);
+
+  SocketUDP socket(__PORT__);
+
+  std::cout << "listening on port " << __PORT__ << std::endl;
+
   while(1){
-    SocketTCP newSocket = socket.accept();
-    if(fork() == 0){
-      socket.disconnect();
-      std::string message = newSocket.read();
-      std::cout << message << std::endl;
-      std::string output = std::string("your input has ") + std::to_string(message.size()) \
-      + std::string(" characters") + "\0";
+    std::string message = socket.receive();
+    std::cout << message << std::endl;
+    std::string output = std::string("your input has ") + std::to_string(message.size()) \
+    + std::string(" characters") + "\0";
 
 
-      newSocket.write(output);
-      return 0;
-    }
-    newSocket.disconnect();
+    socket.send(output);
   }
   return 0;
 }

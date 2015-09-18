@@ -9,5 +9,9 @@ tes:	tes.cpp
 user:	user.cpp
 	g++ -std=c++11 user.cpp -o user
 
+app:	App.cpp AppServer.cpp
+	g++ -std=c++11 App.cpp -o App
+	g++ -std=c++11 AppServer.cpp -o AppServer
+
 clean:
 	rm ecp tes user

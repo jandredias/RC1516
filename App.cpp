@@ -1,21 +1,24 @@
 #include "SocketTCP.h"
+#include "SocketUDP.h"
 #include <iostream>
 #include <string>
 
+#define __PORT__ 59023
+
 int main(){
-  SocketTCP socket("lab10p7", 59000);
-  std::string message;
-  try{
+   try{
+    SocketUDP socket("simpson", __PORT__);
+    std::string message;
+ 
     char msg[1024];
-    socket.connect();
     std::cin.getline(msg, 1024);
 
     message = msg;
-    socket.write(message);
+    socket.send(message);
 
-    message = socket.read();
+    message = socket.receive();
     std::cout << message << std::endl;
-    socket.disconnect();
+    socket.close();
   }catch(std::string s){
     std::cout << s << std::endl;
   }

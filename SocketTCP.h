@@ -31,8 +31,9 @@ public:
     _hostptr = gethostbyname(addr);
 
     std::cout << "official name: " << _hostptr->h_name << std::endl;
-    std::cout << "internet address: " << inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0]) << " " <<
-              ntohl(((struct in_addr*) _hostptr->h_addr_list[0])->s_addr) << std::endl;
+    std::cout << "internet address: " 
+              << inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0]) << " " 
+              << ntohl(((struct in_addr*) _hostptr->h_addr_list[0])->s_addr) << std::endl;
 
 
     memset((void *) &_serverAddr, (int) '\0', sizeof(_serverAddr));
