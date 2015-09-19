@@ -22,11 +22,16 @@ int main(int argc, char* argv[]){
       port = atoi(argv[i+1]);
     }
   }
+  try{
+    TesManager *manager = new TesManager(port);
 
-  TesManager manager(port);
-  std::thread acceptingClients(&TesManager::acceptRequests, manager);
-  std::thread processingRequests(&TesManager::processRequests, manager);
-  acceptingClients.join();
-  processingRequests.join();
+    std::thread processingRequests(&TesManager::processRequests, manager);
+    std::thread acceptingClients(&TesManager::acceptRequests, manager);
+
+    acceptingClients.join();
+    processingRequests.join();
+  }catch(std::string s){
+    std::cout << s << std::endl;
+  }
   return 0;
 }

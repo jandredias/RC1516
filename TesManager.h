@@ -3,14 +3,19 @@
 #include "RequestQuiz.h"
 #include "SocketUDP.h"
 #include "SocketTCP.h"
-#include <vector>
+#include <queue>
+#include <semaphore.h>
+
 
 class TesManager{
 
   int _qid;
   int _port;
   bool _exit;
-  std::vector<RequestQuiz> _requests;
+  std::queue<RequestQuiz> _requests;
+
+  sem_t *_requestsSem;
+
 public:
   /**
    * @description           TesManager will manage the TES server
@@ -30,6 +35,7 @@ public:
    *                        threads working at the same time
    */
   TesManager(int);
+  ~TesManager();
 
   /**
    * @return                current unix timestamp
