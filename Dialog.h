@@ -57,6 +57,8 @@ namespace UI{
 
     void println(std::string = "");
 
+    void flush();
+
     void XMLTag(std::ofstream &, std::string, std::string);
     void XMLTag(std::ofstream &, std::string, const char[]);
     void XMLTag(std::ofstream &, std::string, int);

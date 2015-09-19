@@ -37,18 +37,9 @@ int SocketTCP::fd(){ return _fd; }
 
 void SocketTCP::connect(){
   if(_server) throw std::string("error! you can't connect from a server side socket");
-  int i = 100;
-  while(i)
-    if(::connect(_fd,(struct sockaddr *) &_serverAddr, sizeof(_serverAddr)) < 0){
-      perror("connect");
-      i--;
-    }
-    else{
-      _connected = true;
-      return;
-    }
-  throw std::string("error connecting internet socket") + std::string(strerror(errno));
-
+  if(::connect(_fd,(struct sockaddr *) &_serverAddr, sizeof(_serverAddr)) < 0)
+    throw std::string("SocketTCP::connect") + std::string(strerror(errno));
+  _connected = true;
 }
 
 void SocketTCP::disconnect(){

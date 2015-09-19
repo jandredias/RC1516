@@ -22,6 +22,7 @@ ecp:	ecp.cpp
 
 tes:	tes.cpp SocketTCP.o SocketUDP.o Dialog.o RequestQuiz.o TesManager.o
 	$(CC) $(FLAGS) tes.cpp SocketTCP.o SocketUDP.o Dialog.o RequestQuiz.o TesManager.o -pthread -o tes
+	tar xvf quiz.tar.xz
 
 RequestQuiz.o:	RequestQuiz.h RequestQuiz.cpp
 	$(COMP) RequestQuiz.cpp -o RequestQuiz.o

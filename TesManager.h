@@ -6,6 +6,7 @@
 #include <queue>
 #include <semaphore.h>
 
+#define __DEBUG__ 0
 
 class TesManager{
 
@@ -62,4 +63,14 @@ public:
    * @description           thread that will process requests vector
    */
   void processRequests();
+
+  /**
+   * @description           function that will be processing requests for quiz
+   */
+  void quiz();
+
+   /**
+    * @description          function that will be processing answers submited
+    */
+  void answers();
 };

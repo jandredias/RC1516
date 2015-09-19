@@ -22,7 +22,7 @@ namespace UI{
   Dialog* Dialog::IO = new Dialog();
   Dialog::Dialog(){}
   void Dialog::closeDown(){}
-  
+
   bool Dialog::readBoolean(std::string prompt){
     while(true){
       std::string res = readString(prompt);
@@ -73,6 +73,10 @@ namespace UI{
     boost::replace_all(s, "[CYAN]", Dialog::CYAN);
     boost::replace_all(s, "[WHITE]", Dialog::WHITE);
     return s;
+  }
+
+  void Dialog::flush(){
+    std::cout << std::flush;
   }
   void Dialog::print(std::string text){
     std::cout << filterString(text);

@@ -7,6 +7,8 @@
 
 #define __PORT__ 59000
 
+#define __DEBUG__ 0
+
 #include "TesManager.h"
 
 

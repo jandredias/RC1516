@@ -5,7 +5,9 @@
 
 #define __PORT__ 58023
 #define __HOST__ "localhost"
+
 #define __DEBUG__ 0
+
 int main(int argc, char* argv[]){
   int sid = 0;
   int port = __PORT__;

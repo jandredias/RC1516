@@ -22,7 +22,7 @@ public:
   /**
    * @description          requests
    */
-  void request();
+  void request(int);
 
   /**
    * @description          submits answers

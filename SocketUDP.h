@@ -14,6 +14,7 @@
 #include <iostream>   // std::cout
 #include <string>     // std::string, std::to_string
 
+
 #define BUFFER_SIZE 2048
 
 #define __DEBUG__ 0
@@ -40,7 +41,7 @@ public:
    * @param const char[]      Server hostname or ip dot notation
    * @param int               port where the socket will read and send data to
    */
-  SocketUDP(const char[], int );
+  SocketUDP(const char[], int);
 
   /**
    * @description             SocketUDP for serverside
@@ -55,7 +56,7 @@ public:
   /**
    * @return std::string  string read from the socket
    */
-  std::string receive();
+  std::string receive(int = 0);
 
   /**
    * @description   closes the socket
@@ -73,4 +74,9 @@ public:
    * @return std::string    returns client's hostname
    */
    std::string hostname();
+
+   /**
+    * @description          set timeout while reading messages
+    */
+    void timeout(int);
 };

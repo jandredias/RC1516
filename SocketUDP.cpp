@@ -42,11 +42,10 @@ void SocketUDP::send(std::string text){
   sendto(_fd, text.data(), text.size(), 0, (struct sockaddr*) &_serverAddr, _serverLen);
 }
 
-std::string SocketUDP::receive(){
+std::string SocketUDP::receive(int flags){
   char buffer[BUFFER_SIZE];
-  int n = recvfrom(_fd, buffer, BUFFER_SIZE, 0, (struct sockaddr*) &_serverAddr, &_serverLen);
-  char* ipString = inet_ntoa(_serverAddr.sin_addr);
-  std::cout << ipString << std::endl;
+  int n = recvfrom(_fd, buffer, BUFFER_SIZE, flags, (struct sockaddr*) &_serverAddr, &_serverLen);
+
   if(n == -1) throw std::string("error reading content from the socket");
   std::string msg(buffer);
   int pos = msg.find('\n');
@@ -61,8 +60,21 @@ std::string SocketUDP::ip(){
   struct sockaddr_in *addr_in = (struct sockaddr_in *) &_serverAddr;
   char *s = inet_ntoa(addr_in->sin_addr);
   return std::string(s);
+
+  char* ipString = inet_ntoa(_serverAddr.sin_addr);
+  std::cout << ipString << std::endl;
+  std::cout << errno << std::endl;
 }
 
 std::string SocketUDP::hostname(){
   return std::string();
+}
+
+void SocketUDP::timeout(int ms){
+  struct timeval tv;
+  tv.tv_usec = ms % 1000;
+  tv.tv_sec = (ms - (ms % 1000)) / 1000;
+
+  if(setsockopt(_fd, SOL_SOCKET, SO_RCVTIMEO, &tv,sizeof(tv)) < 0)
+    throw std::string("SocketUDP::setTimeOut ") + std::string(strerror(errno));
 }
