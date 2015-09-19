@@ -3,25 +3,11 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <thread>         // std::thread
 
 #define __PORT__ 59000
 
-class TesManager{
-  int _port;
-  SocketUDP _socket;
-public:
-  TesManager(int port) : _port(port), _socket(SocketUDP(port)){}
-  /**
-   * just for testing
-   */
-  void execute(){
-    while(1){
-    std::cout << _socket.receive() << std::endl;
-    _socket.send("AQT 15\n");
-    std::cout << _socket.ip() << std::endl;
-    std::cout << "port:    " << _port << std::endl;
-  }}
-};
+#include "TesManager.h"
 
 
 int main(int argc, char* argv[]){
@@ -38,6 +24,9 @@ int main(int argc, char* argv[]){
   }
 
   TesManager manager(port);
-  manager.execute();
+  std::thread acceptingClients(&TesManager::acceptRequests, manager);
+  std::thread processingRequests(&TesManager::processRequests, manager);
+  acceptingClients.join();
+  processingRequests.join();
   return 0;
 }

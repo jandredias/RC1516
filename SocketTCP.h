@@ -78,6 +78,10 @@ public:
   void disconnect();
 
   /**
+   * @return                boolean that states if socket is connected
+   */
+  bool connected();
+  /**
    * @param std::string
    */
   void write(std::string);

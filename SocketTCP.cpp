@@ -99,3 +99,5 @@ SocketTCP SocketTCP::accept(){
   s.fd(newSocket);
   return s;
 }
+
+bool SocketTCP::connected(){ return _connected; }
