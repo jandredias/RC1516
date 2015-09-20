@@ -18,11 +18,12 @@
 #define BUFFER_SIZE 2048
 
 #ifndef __DEBUG__
-#define __DEBUG__ 1
+#define __DEBUG__ 0
 #endif
 
 class SocketUDP {
   int _fd;
+  int _port;
   struct hostent *_hostptr;
   struct sockaddr_in _serverAddr;
   struct sockaddr_in _clientAddr;
@@ -78,6 +79,10 @@ public:
    */
   std::string hostname();
 
+  /**
+   * @reteurn std::string port where the socket is configured
+   */
+  std::string port();
   /**
    * @description          set timeout while reading messages
    */

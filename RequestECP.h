@@ -28,6 +28,10 @@ public:
   RequestECP(std::string, struct sockaddr_in);
 
   /**
+   * @return std::string message
+   */
+  std::string message();
+  /**
    * @param std::string message that will be sent to the client as an answer
    */
   void answer(std::string);

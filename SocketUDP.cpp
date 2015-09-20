@@ -2,7 +2,7 @@
 
 SocketUDP::SocketUDP() : _server(true){}
 
-SocketUDP::SocketUDP(const char addr[], int port) : _server(false){
+SocketUDP::SocketUDP(const char addr[], int port) : _port(port), _server(false){
 
   _fd = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -24,7 +24,7 @@ SocketUDP::SocketUDP(const char addr[], int port) : _server(false){
   _serverLen = sizeof(_serverAddr);
 }
 
-SocketUDP::SocketUDP(int port) : _server(true){
+SocketUDP::SocketUDP(int port) : _port(port),  _server(true){
   _fd = socket(AF_INET, SOCK_DGRAM, 0);
 
   memset((void*) &_serverAddr,(int)'\0', sizeof(_serverAddr));
@@ -40,12 +40,14 @@ void SocketUDP::send(std::string text){
   if(text[text.size() - 1] != '\n') text += '\n';
   sendto(_fd, text.data(), text.size(), 0, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr));
 }
-
+std::string SocketUDP::port(){
+  return std::to_string(_port);
+}
 std::string SocketUDP::receive(int flags){
   char buffer[BUFFER_SIZE];
   _serverLen = sizeof(_serverAddr);
   int n = recvfrom(_fd, buffer, BUFFER_SIZE, flags, (struct sockaddr*) &_serverAddr, &_serverLen);
-  if(n == -1) throw std::string("SocketUDP::receive ") + std::string(strerror(errno));
+  if(n == -1) throw std::string("SocketUDP::receive ").append(strerror(errno));
   std::string msg(buffer);
   int pos = msg.find('\n');
   return msg.substr(0, pos);
@@ -75,7 +77,7 @@ void SocketUDP::timeout(int ms){
   tv.tv_sec = (ms - (ms % 1000)) / 1000;
 
   if(setsockopt(_fd, SOL_SOCKET, SO_RCVTIMEO, &tv,sizeof(tv)) < 0)
-    throw std::string("SocketUDP::setTimeOut ") + std::string(strerror(errno));
+    throw std::string("SocketUDP::setTimeOut ").append(strerror(errno));
 }
 
 

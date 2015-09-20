@@ -10,7 +10,7 @@
 #include <utility>      // std::pair, std::make_pair
 
 #ifndef __DEBUG__
-#define __DEBUG__ 1
+#define __DEBUG__ 0
 #endif
 
 class ECPManager{
@@ -33,8 +33,10 @@ class ECPManager{
   std::mutex _answerMutex;
 
   std::mutex _UDPMutex;
+  std::mutex _UDPSenderMutex;
 
-  SocketUDP socketUDP;
+  SocketUDP _socketUDP;
+  SocketUDP _senderSocketUDP;
 
   int _port;
   bool _exit;
@@ -81,5 +83,9 @@ public:
    */
   std::pair <std::string,int> topics();
 
-
+  /**
+   * @param int index topic number
+   * @reeturn std::pair <std::String, int> will return hostname and port of index topic
+   */
+   std::pair <std::string, int> topicData(int);
 };

@@ -84,7 +84,8 @@ namespace UI{
     _mutex.unlock();
   }
   void Dialog::println(std::string text){
-    if(text != "") print(text + std::string("\n"));
+    if(text != "") print(text.append("\n"));
+    else print(std::string("\n"));
   }
 
   void Dialog::XMLTag(std::ofstream &file, std::string tag, std::string value){

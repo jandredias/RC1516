@@ -7,7 +7,7 @@
 #include "Dialog.h"
 #include <math.h>       /* log */
 
-#define __MS_BETWEEN_TRIES__ 5000
+#define __MS_BETWEEN_TRIES__ 10000
 #define __TRIES__ 10
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
 _ecpname(ecpname){
@@ -49,6 +49,11 @@ void UserManager::list(){
   if(__DEBUG__) UI::Dialog::IO->println("[ UserManager::list            ] Processing message");
   std::string code;
   stream >> code;
+  if(code == std::string("EOF")){
+    UI::Dialog::IO->println("There is no questionnaire available at the moment. Try again later.");
+    UI::Dialog::IO->println();
+    return;
+  }
   int nt;
   stream >> nt;
   std::cout << code << " " << nt << std::endl;
@@ -66,16 +71,17 @@ void UserManager::list(){
     UI::Dialog::IO->println(topic);
     i++;
   }
-  UI::Dialog::IO->println();
   if(__DEBUG__) UI::Dialog::IO->println("[ UserManager::list            ] Message processed");
 }
+
 // if(__DEBUG__) UI::Dialog::IO->println("");
+
 void UserManager::request(int tnn){
   SocketUDP ecp = SocketUDP(_ecpname.data(), _port);
   std::string message;
   if(__DEBUG__) UI::Dialog::IO->println("[ UserManager::request         ] ");
   for(auto i = 0; i < __TRIES__; i++){
-    ecp.send(std::string("TER ") + std::to_string(tnn) + std::string("\n"));
+    ecp.send((std::string("TER ").append(std::to_string(tnn))).append("\n"));
     try{
       ecp.timeout(__MS_BETWEEN_TRIES__);
       message = ecp.receive();
