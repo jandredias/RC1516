@@ -69,7 +69,7 @@ namespace UI{
     boost::replace_all(s, "[GREEN]", Dialog::GREEN);
     boost::replace_all(s, "[YELLOW]", Dialog::YELLOW);
     boost::replace_all(s, "[BLUE]", Dialog::BLUE);
-    boost::replace_all(s, "[MAGENTA]", Dialog::MAGENT);
+    boost::replace_all(s, "[MAGENT]", Dialog::MAGENT);
     boost::replace_all(s, "[CYAN]", Dialog::CYAN);
     boost::replace_all(s, "[WHITE]", Dialog::WHITE);
     return s;

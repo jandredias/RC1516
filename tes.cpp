@@ -8,7 +8,7 @@
 #define __PORT__ 59000
 
 #ifndef __DEBUG__
-#define __DEBUG__ 0
+#define __DEBUG__ 1
 #endif
 
 #include "TesManager.h"
@@ -28,12 +28,17 @@ int main(int argc, char* argv[]){
   }
   try{
     TesManager *manager = new TesManager(port);
+    std::vector<std::thread> threads;
+    threads.push_back(std::thread(&TesManager::acceptRequestsTCP, manager));
+    threads.push_back(std::thread(&TesManager::acceptRequestsUDP, manager));
+    threads.push_back(std::thread(&TesManager::processTCP, manager));
+    threads.push_back(std::thread(&TesManager::processRQT, manager));
+    threads.push_back(std::thread(&TesManager::processRQS, manager));
+    threads.push_back(std::thread(&TesManager::processAWI, manager));
+    threads.push_back(std::thread(&TesManager::answerTCP, manager));
 
-    std::thread processingRequests(&TesManager::processRequests, manager);
-    std::thread acceptingClients(&TesManager::acceptRequests, manager);
+    for(std::thread &a : threads) a.join();
 
-    acceptingClients.join();
-    processingRequests.join();
   }catch(std::string s){
     std::cout << s << std::endl;
   }

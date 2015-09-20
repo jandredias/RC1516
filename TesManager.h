@@ -1,23 +1,49 @@
 #pragma once
 
-#include "RequestQuiz.h"
+#include "RequestTES.h"
 #include "SocketUDP.h"
 #include "SocketTCP.h"
 #include <queue>
 #include <semaphore.h>
+#include <mutex>
 
 #ifndef __DEBUG__
-#define __DEBUG__ 0
+#define __DEBUG__ 1
 #endif
+#include <map>
 
 class TesManager{
+  std::queue<RequestTES> _requests;
+  std::queue<RequestTES> _rqtRequests;
+  std::queue<RequestTES> _rqsRequests;
+  std::queue<RequestTES> _awiRequests;
+  std::queue<RequestTES> _answers;
 
-  int _qid;
-  int _port;
-  bool _exit;
-  std::queue<RequestQuiz> _requests;
+  std::map<int, std::string> _questionaries;
 
-  sem_t *_requestsSem;
+  sem_t * _requestsSem;
+  sem_t * _rqtRequestsSem;
+  sem_t * _rqsRequestsSem;
+  sem_t * _awiRequestsSem;
+  sem_t * _answerSem;
+
+  std::mutex _questionariesMutex;
+  std::mutex _reqMutex;
+  std::mutex _rqtMutex;
+  std::mutex _rqsMutex;
+  std::mutex _awiMutex;
+  std::mutex _answerMutex;
+
+  std::mutex _receiverSocketUDPMutex;
+  std::mutex _senderSocketUDPMutex;
+
+  SocketUDP *_receiverSocketUDP;
+  SocketUDP *_senderSocketUDP;
+
+
+    int _qid;
+    int _port;
+    bool _exit;
 
 public:
   /**
@@ -49,7 +75,7 @@ public:
    * @param                 seconds untill the deadline
    * @return                a deadline
    */
-  int deadline(int);
+  int deadline(int = 600);
 
   /**
    * @return                always returns new quiz id
@@ -57,22 +83,44 @@ public:
   int qid();
 
   /**
-   *@description            thread method that will accept new clients
+   *@description            thread method that will accept new TCP clients
    */
-  void acceptRequests();
+  void acceptRequestsTCP();
 
   /**
-   * @description           thread that will process requests vector
+   *@description            thread method that will accept new UDP clients
    */
-  void processRequests();
+  void acceptRequestsUDP();
 
   /**
-   * @description           function that will be processing requests for quiz
+   * @description  will process TCP requests and filter them
    */
-  void quiz();
+  void processTCP();
 
-   /**
-    * @description          function that will be processing answers submited
-    */
-  void answers();
+  /**
+   * @description           will process RQT requests
+   */
+  void processRQT();
+
+  /**
+   * @description           will process RQS requests
+   */
+  void processRQS();
+
+  /**
+   * @description           will process AWI requests
+   */
+  void processAWI();
+
+  /**
+   * @description           will send answers to TCP clients
+   */
+  void answerTCP();
+
+
+  /**
+   * @return  std::pair <std::string, int> pdf content and size
+   */
+  std::pair <std::string, int> pdf(std::string);
+
 };
