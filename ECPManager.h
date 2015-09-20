@@ -1,22 +1,40 @@
 #pragma once
 
+#include "RequestECP.h"
 #include "SocketUDP.h"
+#include "SocketTCP.h"
 #include <queue>
 #include <semaphore.h>
+#include <mutex>          // std::mutex
+
+#include <utility>      // std::pair, std::make_pair
+
+#ifndef __DEBUG__
+#define __DEBUG__ 1
+#endif
 
 class ECPManager{
 
-  std::queue<RequestsECP> _tqrRequests;
-  std::queue<RequestsECP> _terRequests;
-  std::queue<RequestsECP> _iqrRequests;
-  std::queue<RequestsECP> _answers;
+  std::queue<RequestECP> _tqrRequests;
+  std::queue<RequestECP> _terRequests;
+  std::queue<RequestECP> _iqrRequests;
+  std::queue<RequestECP> _answers;
 
-  std::vector<Result> _results;
+  //std::vector<int> _results;
 
   sem_t *_tqrSemaphore;
   sem_t *_terSemaphore;
   sem_t *_iqrSemaphore;
   sem_t *_answerSemaphore;
+
+  std::mutex _tqrMutex;
+  std::mutex _iqrMutex;
+  std::mutex _terMutex;
+  std::mutex _answerMutex;
+
+  std::mutex _UDPMutex;
+
+  SocketUDP socketUDP;
 
   int _port;
   bool _exit;
@@ -27,6 +45,7 @@ class ECPManager{
   int _maxProcessIQRThreads;
   int _maxSendAnswerThreads;
 
+  std::string _topicsFile;
 public:
   ECPManager(int);
   ~ECPManager();
@@ -55,5 +74,12 @@ public:
    * @description           will send answers to clients and TES
    */
   void sendAnswer();
+
+  /**
+   * @return std::pair <std::string,int> will contain the topics separated by
+   * spaces and the number of topics
+   */
+  std::pair <std::string,int> topics();
+
 
 };

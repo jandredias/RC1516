@@ -13,8 +13,14 @@ all:	ecp tes user
 #===========   Central Evaluation Contact Point Server  ============
 #===================================================================
 
-ecp:	ecp.cpp
-	$(CC) $(FLAGS) ecp.cpp -o ecp
+ecp:	ecp.cpp ECPManager.o RequestECP.o SocketUDP.o Dialog.o
+	$(CC) $(FLAGS) ecp.cpp ECPManager.o RequestECP.o SocketUDP.o Dialog.o -lrt -pthread -o ecp
+
+RequestECP.o:	RequestECP.h RequestECP.cpp
+	$(COMP) RequestECP.cpp -o RequestECP.o
+
+ECPManager.o:	ECPManager.h ECPManager.cpp
+	$(COMP) ECPManager.cpp -o ECPManager.o
 
 #===================================================================
 #=============         TOPIC EVALUATION SERVER        ==============
@@ -42,7 +48,7 @@ UserManager.o:	UserManager.h UserManager.cpp
 	$(COMP) UserManager.cpp -o UserManager.o
 
 Dialog.o:	Dialog.h Dialog.cpp
-	$(COMP) Dialog.cpp -o Dialog.o
+	$(COMP) Dialog.cpp -lrt -o Dialog.o
 
 MenuBuilder.o:	MenuBuilder.cpp MenuBuilder.h
 	$(COMP) MenuBuilder.cpp -o MenuBuilder.o
@@ -70,7 +76,7 @@ SocketUDP.o:	SocketTCP.h SocketUDP.cpp
 
 
 clean:
-	rm -rf ecp tes user *.o
+	rm -rf ecp tes user *.o *.pdf
 
 app:	App.cpp AppServer.cpp
 	g++ -std=c++11 App.cpp -o App

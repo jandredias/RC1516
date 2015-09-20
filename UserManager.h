@@ -1,6 +1,10 @@
 #pragma once
 #include <string>
 
+#ifndef __DEBUG__
+#define __DEBUG__ 1
+#endif
+
 class UserManager {
   int _sid;
   int _port;

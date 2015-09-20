@@ -5,28 +5,75 @@
 #include <sstream>
 #include <unistd.h>
 #include "Dialog.h"
+#include <math.h>       /* log */
 
-#define __MS_BETWEEN_TRIES__ 1000
+#define __MS_BETWEEN_TRIES__ 5000
 #define __TRIES__ 10
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
 _ecpname(ecpname){
 }
 
 void UserManager::list(){
-  SocketUDP s = SocketUDP(_ecpname.data(), _port);
-  s.send("TQR\n");
-  std::stringstream stream(s.receive());
+  if(__DEBUG__) UI::Dialog::IO->println("[ UserManager::list            ] Creating socket");
+  SocketUDP ecp = SocketUDP(_ecpname.data(), _port);
+  std::string message;
+  if(__DEBUG__) UI::Dialog::IO->println("[ UserManager::list            ] Socket created");
+  if(__DEBUG__) UI::Dialog::IO->println("[ UserManager::list            ] Sending message");
+  std::stringstream stream;
+  for(auto i = 0; i < __TRIES__; i++){
+    ecp.send(std::string("TQR\n"));
+    try{
+      ecp.timeout(__MS_BETWEEN_TRIES__);
+      stream << ecp.receive();
+      if(__DEBUG__) UI::Dialog::IO->println("[ UserManager::list            ] Message sent to ECP");
+      if(__DEBUG__) UI::Dialog::IO->println("[ UserManager::list            ] Receiving message from ECP");
+      if(__DEBUG__) UI::Dialog::IO->println("[ UserManager::list            ] Message received from ECP");
+      break;
+    }catch(std::string s){
+      if(errno == 11){
+        UI::Dialog::IO->print(". ");
+        UI::Dialog::IO->flush();
+        if(i < __TRIES__ - 1)
+          continue;
+        UI::Dialog::IO->println();
+        UI::Dialog::IO->println();
+      }else{
+        UI::Dialog::IO->println("error sending message to ECP server");
+      }
+    }
+    UI::Dialog::IO->println();
+    UI::Dialog::IO->println("Could not connect to ECP Server!");
+    UI::Dialog::IO->println("Try again later.");
+    return;
+  }
+  if(__DEBUG__) UI::Dialog::IO->println("[ UserManager::list            ] Processing message");
   std::string code;
   stream >> code;
   int nt;
   stream >> nt;
   std::cout << code << " " << nt << std::endl;
 
-}
+  int numberOfChars = log10(nt) + 1;
 
+  std::string topic;
+  int i = 0;
+  UI::Dialog::IO->println(std::string("Topics:"));
+  while(stream >> topic){
+    if(i == 0) UI::Dialog::IO->print(" ");
+    UI::Dialog::IO->print(std::string(" ", 1 + numberOfChars - log10(i)));
+    UI::Dialog::IO->print(std::to_string(i));
+    UI::Dialog::IO->print(std::string(" - "));
+    UI::Dialog::IO->println(topic);
+    i++;
+  }
+  UI::Dialog::IO->println();
+  if(__DEBUG__) UI::Dialog::IO->println("[ UserManager::list            ] Message processed");
+}
+// if(__DEBUG__) UI::Dialog::IO->println("");
 void UserManager::request(int tnn){
   SocketUDP ecp = SocketUDP(_ecpname.data(), _port);
   std::string message;
+  if(__DEBUG__) UI::Dialog::IO->println("[ UserManager::request         ] ");
   for(auto i = 0; i < __TRIES__; i++){
     ecp.send(std::string("TER ") + std::to_string(tnn) + std::string("\n"));
     try{

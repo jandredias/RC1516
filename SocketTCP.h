@@ -14,7 +14,9 @@
 #include <iostream>   // std::cout
 #include <string>     // std::string, std::to_string
 
-#define __DEBUG__ 0
+#ifndef __DEBUG__
+#define __DEBUG__ 1
+#endif
 
 class SocketTCP{
   int _fd;

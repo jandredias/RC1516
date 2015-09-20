@@ -17,7 +17,9 @@
 
 #define BUFFER_SIZE 2048
 
-#define __DEBUG__ 0
+#ifndef __DEBUG__
+#define __DEBUG__ 1
+#endif
 
 class SocketUDP {
   int _fd;
@@ -48,6 +50,7 @@ public:
    * @param int               port where the socket will read and send data to
    */
   SocketUDP(int);
+
   /**
    * @param  std::string   string text that will be send to the socket
    */
@@ -73,10 +76,21 @@ public:
   /**
    * @return std::string    returns client's hostname
    */
-   std::string hostname();
+  std::string hostname();
 
-   /**
-    * @description          set timeout while reading messages
-    */
-    void timeout(int);
+  /**
+   * @description          set timeout while reading messages
+   */
+  void timeout(int);
+
+  /**
+   * @return struct sockaddr_in will return struct that represents the request
+   */
+  struct sockaddr_in client();
+
+  /**
+   * @param struct sockaddr_in struct that represents the request
+   */
+  void client(struct sockaddr_in);
+
 };

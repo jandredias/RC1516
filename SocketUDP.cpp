@@ -38,15 +38,14 @@ SocketUDP::SocketUDP(int port) : _server(true){
 void SocketUDP::send(std::string text){
 
   if(text[text.size() - 1] != '\n') text += '\n';
-
-  sendto(_fd, text.data(), text.size(), 0, (struct sockaddr*) &_serverAddr, _serverLen);
+  sendto(_fd, text.data(), text.size(), 0, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr));
 }
 
 std::string SocketUDP::receive(int flags){
   char buffer[BUFFER_SIZE];
+  _serverLen = sizeof(_serverAddr);
   int n = recvfrom(_fd, buffer, BUFFER_SIZE, flags, (struct sockaddr*) &_serverAddr, &_serverLen);
-
-  if(n == -1) throw std::string("error reading content from the socket");
+  if(n == -1) throw std::string("SocketUDP::receive ") + std::string(strerror(errno));
   std::string msg(buffer);
   int pos = msg.find('\n');
   return msg.substr(0, pos);
@@ -78,3 +77,7 @@ void SocketUDP::timeout(int ms){
   if(setsockopt(_fd, SOL_SOCKET, SO_RCVTIMEO, &tv,sizeof(tv)) < 0)
     throw std::string("SocketUDP::setTimeOut ") + std::string(strerror(errno));
 }
+
+
+struct sockaddr_in SocketUDP::client(){ return _serverAddr; }
+void SocketUDP::client(struct sockaddr_in client){ _serverAddr = client; }

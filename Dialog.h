@@ -1,7 +1,7 @@
 #pragma once
 #ifndef abc__
 #define abc__
-
+#include <mutex>
 #include <string>
 
 namespace UI{
@@ -17,6 +17,8 @@ namespace UI{
 
     static const char BOOL_FALSE = 'n';
     static const char BOOL_TRUE = 'y';
+
+    std::mutex _mutex;
     std::string filterString(std::string);
   public:
     static Dialog* IO;
