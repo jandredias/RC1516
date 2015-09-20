@@ -22,6 +22,7 @@ public:
    * @param int             deadline timestamp
    */
   RequestTES(SocketTCP, int = 0, int = 0, int = 0);
+  SocketTCP client(){ return _client; }
   void sid(int);
   int qid();
   void qid(int);

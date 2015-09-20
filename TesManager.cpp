@@ -44,7 +44,17 @@ void TesManager::acceptRequestsTCP(){
                     std::string("[ [BLUE]TesManager::acceptRequests[REGULAR]  ]  Requests size ")\
                     + std::to_string(_rqtRequests.size()));
 
-    _requests.push(RequestTES(_socketTCP.accept()));
+    SocketTCP s = _socketTCP.accept();
+
+    if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Reading from client");
+    if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Client request read");
+
+    RequestTES r = RequestTES(s);
+
+    _reqMutex.lock();
+    _requests.push(r);
+    _reqMutex.unlock();
+
     if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Client connected");
     sem_post(_requestsSem);
   }
@@ -72,7 +82,10 @@ void TesManager::processTCP(){
                     std::string("[ [GREEN]TesManager::processTCP[REGULAR]      ] Requests size: ") + \
                     std::to_string(_requests.size()));
     _reqMutex.unlock();
+
+    if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Reading message from Request");
     r.message(r.read());
+    if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Message read from Request");
     std::stringstream stream(r.message());
     std::string typeOfRequest;
     stream >> typeOfRequest;
@@ -156,7 +169,10 @@ void TesManager::processRQT(){
       answer += std::string(" ");
       answer += pair.first;
       answer += std::string("\n");
-      r.message(answer);
+      if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] ");
+      if(__DEBUG__) UI::Dialog::IO->println(r.answer());
+
+      r.answer(answer);
     }
     _answerMutex.lock();
     if(__DEBUG__) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Inserting request on Answer queue");
@@ -222,7 +238,7 @@ void TesManager::answerTCP(){
     _answers.pop();
     if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removed request from the RQT queue");
     _answerMutex.unlock();
-
+    if(__DEBUG__) UI::Dialog::IO->println(r.answer());
     r.write();
     r.disconnect();
   }
