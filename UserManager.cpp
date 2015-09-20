@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include "Dialog.h"
 #include <math.h>       /* log */
+#include <fstream>      // std::ofstream
 
 #define __MS_BETWEEN_TRIES__ 2000
 #define __TRIES__ 10
@@ -175,18 +176,51 @@ void UserManager::request(int tnn){
   if(__DEBUG__) UI::Dialog::IO->println(std::string("Connected!"));
   if(__DEBUG__) UI::Dialog::IO->println(std::string("Writing..."));
 
-  tes.write(std::string("TER ") + std::to_string(tnn) + std::string("\n"));
+  tes.write(std::string("RQT ") + std::to_string(_sid) + std::string("\n"));
 
   if(__DEBUG__) UI::Dialog::IO->println(std::string("TER ") + std::to_string(tnn) + std::string("\n"));
 
   if(__DEBUG__) UI::Dialog::IO->println(std::string("Written"));
 
-  if(__DEBUG__) UI::Dialog::IO->println(std::string("Reading"));
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("Reading Server Answer"));
 
-  message = tes.read();
 
-  if(__DEBUG__) UI::Dialog::IO->println(std::string("Read"));
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("Reading AQT"));
+  message = tes.readWord();
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("CODE: ") + message);
+  if(message != std::string("AQT")){
+     UI::Dialog::IO->println(std::string("Unknown format of information"));
+     return;
+  }
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("Reading Server QID"));
+  std::string qid = tes.readWord();
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("QID: ") + qid);
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("Reading Server deadline"));
+  std::string time = tes.readWord();
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("Deadline: ") + time);
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("Reading Server size"));
+  std::string size = tes.readWord();
+
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("Size: ") + size);
+  char b;
+
+  std::string filename = std::string("T01Q") + qid + std::string(".pdf");
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("Writting to file") + filename);
+
+  std::ofstream pdfFile(filename, std::ofstream::out);
+  int fd = tes.rawRead();
+  for(int i = 0; i < atoi(size.data()); i++){
+    while(::read(fd, &b, 1) == 0);
+      pdfFile << b;
+  }
+  pdfFile.close();
+
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("File written"));
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("Disconnecting"));
   tes.disconnect();
+
+  if(__DEBUG__) UI::Dialog::IO->println(std::string("Disconnected"));
+
 }
 
 void UserManager::submit(){

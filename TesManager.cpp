@@ -163,16 +163,20 @@ void TesManager::processRQT(){
       answer  = std::string("AQT ");
       answer += std::to_string(r.qid());
       answer += std::string(" ");
-
+      std::string filename = std::to_string(rand() % 5 + 1) + std::string(".pdf");
+      if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Reading file: ");
+      if(__DEBUG__) UI::Dialog::IO->println(filename);
       std::pair <std::string, int> pair = pdf(std::to_string(rand() % 5 + 1) + std::string(".pdf"));
+      if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] File read");
       answer += std::to_string(pair.second);
       answer += std::string(" ");
       answer += pair.first;
       answer += std::string("\n");
-      if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] ");
-      if(__DEBUG__) UI::Dialog::IO->println(r.answer());
 
       r.answer(answer);
+      if(__DEBUG__) UI::Dialog::IO->println(r.answer());
+      if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] ");
+
     }
     _answerMutex.lock();
     if(__DEBUG__) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Inserting request on Answer queue");

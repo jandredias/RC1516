@@ -89,7 +89,8 @@ public:
   void write(std::string);
 
   std::string read();
-
+  std::string readWord();
+  int rawRead();
   void listen(int = 5);
 
   /**

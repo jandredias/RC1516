@@ -75,6 +75,24 @@ std::string SocketTCP::read(){
   return text;
 }
 
+std::string SocketTCP::readWord(){
+  if(!_connected) throw std::string("Socket is not connected");
+  std::string text = "";
+
+  int n;
+  char b;
+  while(1){
+    n = ::read(_fd, &b, 1);
+    if(n == 1 && (b != ' ' && b!= '\n' && b!='\t')) text += b;
+    else if( n == 1 && (b == ' ' || b== '\n' || b=='\t') ) break;
+    else if( n == -1 ) perror("error reading from socket server");
+  }
+  return text;
+}
+int SocketTCP::rawRead(){
+  return _fd;
+}
+
 void SocketTCP::listen(int max){ ::listen(_fd, max); }
 
 SocketTCP SocketTCP::accept(){
