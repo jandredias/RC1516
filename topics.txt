@@ -1,6 +1,6 @@
-Camada_de_aplicação localhost 59000
-Camada_de_transporte localhost 59000
-Camada_de_rede localhost 59000
-Camada_da_ligação_de_dados localhost 59000
-Aplicações_multimedia localhost 59000
-Segurança_em_redes localhost 59000
+Camada_de_aplicação jdiastk.com 59000
+Camada_de_transporte jdiastk.com 59000
+Camada_de_rede jdiastk.com 59000
+Camada_da_ligação_de_dados jdiastk.com 59000
+Aplicações_multimedia jdiastk.com 59000
+Segurança_em_redes jdiastk.com 59000

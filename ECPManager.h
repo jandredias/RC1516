@@ -10,7 +10,7 @@
 #include <utility>      // std::pair, std::make_pair
 
 #ifndef __DEBUG__
-#define __DEBUG__ 1
+#define __DEBUG__ 0
 #endif
 
 class ECPManager{
