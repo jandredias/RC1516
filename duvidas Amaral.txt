@@ -1,0 +1,8 @@
+line 8-12:
+	tab convention?
+line 14:
+	Really a for?
+line 158:
+	//TODO
+last line: ECPManager.CPP	
+	std::pair <std::string,int> ECPManager::topics(){	
