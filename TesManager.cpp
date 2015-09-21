@@ -163,19 +163,24 @@ void TesManager::processRQT(){
       answer  = std::string("AQT ");
       answer += std::to_string(r.qid());
       answer += std::string(" ");
+      answer += std::to_string(deadline());
+      answer += std::string(" ");
       std::string filename = std::to_string(rand() % 5 + 1) + std::string(".pdf");
+
       if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Reading file: ");
       if(__DEBUG__) UI::Dialog::IO->println(filename);
-      std::pair <std::string, int> pair = pdf(std::to_string(rand() % 5 + 1) + std::string(".pdf"));
-      if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] File read");
+      std::pair <char*, int> pair = pdf(std::to_string(rand() % 5 + 1) + std::string(".pdf"));
+      if(__DEBUG__) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] File read");
       answer += std::to_string(pair.second);
       answer += std::string(" ");
-      answer += pair.first;
-      answer += std::string("\n");
+      r.fileSize(pair.second);
+      if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Answer before data: ");
+      if(__DEBUG__) UI::Dialog::IO->println(answer);
 
+
+      r.file(pair.first);
       r.answer(answer);
-      if(__DEBUG__) UI::Dialog::IO->println(r.answer());
-      if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] ");
+      //if(__DEBUG__) UI::Dialog::IO->println(r.answer());
 
     }
     _answerMutex.lock();
@@ -242,13 +247,15 @@ void TesManager::answerTCP(){
     _answers.pop();
     if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removed request from the RQT queue");
     _answerMutex.unlock();
-    if(__DEBUG__) UI::Dialog::IO->println(r.answer());
+    if(__DEBUG__ && r.answer().size() < 100) UI::Dialog::IO->println(r.answer());
+
     r.write();
+
     r.disconnect();
   }
 }
 
-std::pair <std::string, int> TesManager::pdf(std::string filename){
+std::pair <char *, int> TesManager::pdf(std::string filename){
   std::ifstream file(filename, std::ifstream::binary);
   if(file){
     file.seekg(0, file.end);
@@ -258,14 +265,17 @@ std::pair <std::string, int> TesManager::pdf(std::string filename){
     char *buffer = new char[length];
 
     file.read(buffer, length);
-    if (file)
-      std::cout << "all characters read successfully.";
-    else
-      std::cout << "error: only " << file.gcount() << " could be read";
-    std::string content(buffer, length);
-    delete[] buffer;
+    if(__DEBUG__){
+      if (file)
+        UI::Dialog::IO->println("[ TesManager::pdf             ] All characters read from file");
+      else{
+        UI::Dialog::IO->print  ("[ TesManager::pdf             ] Only ");
+        UI::Dialog::IO->print  (std::to_string(file.gcount()));
+        UI::Dialog::IO->println(" could be read");
+      }
+    }
     file.close();
-    return std::make_pair(content,length);
+    return std::make_pair(buffer,length);
   }
-  return std::make_pair(std::string(), 0);
+  return std::make_pair((char*)NULL, 0);
 }

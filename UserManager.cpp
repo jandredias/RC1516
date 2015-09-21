@@ -210,8 +210,11 @@ void UserManager::request(int tnn){
   std::ofstream pdfFile(filename, std::ofstream::out);
   int fd = tes.rawRead();
   for(int i = 0; i < atoi(size.data()); i++){
+    if(__DEBUG__) UI::Dialog::IO->println(std::string("I'm reading the socket"));
     while(::read(fd, &b, 1) == 0);
       pdfFile << b;
+    if(__DEBUG__) UI::Dialog::IO->print(std::string("Read one byte"));
+    if(__DEBUG__) UI::Dialog::IO->println(std::to_string(i));
   }
   pdfFile.close();
 

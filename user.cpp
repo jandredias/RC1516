@@ -7,7 +7,7 @@
 #define __HOST__ "localhost"
 
 #ifndef __DEBUG__
-#define __DEBUG__ 0
+#define __DEBUG__ 1
 #endif
 
 int main(int argc, char* argv[]){

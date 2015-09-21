@@ -8,7 +8,7 @@
 #include <mutex>
 
 #ifndef __DEBUG__
-#define __DEBUG__ 0
+#define __DEBUG__ 1
 #endif
 #include <map>
 
@@ -119,8 +119,8 @@ public:
 
 
   /**
-   * @return  std::pair <std::string, int> pdf content and size
+   * @return  std::pair <char*, int> pdf content and size
    */
-  std::pair <std::string, int> pdf(std::string);
+  std::pair <char *, int> pdf(std::string);
 
 };

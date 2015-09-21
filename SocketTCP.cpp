@@ -1,5 +1,5 @@
 #include "SocketTCP.h"
-
+#include "Dialog.h"
 SocketTCP::SocketTCP(const char addr[], int port) : _server(false), _connected(false){
   _fd = socket(AF_INET, SOCK_STREAM, 0);
   if(_fd < 0) throw std::string("couldn't create socket");
@@ -47,10 +47,9 @@ void SocketTCP::disconnect(){
     throw std::string("Error closing socket");
   _connected = false;
 }
-
-void SocketTCP::write(std::string text){
-  const char *ptr = text.data();
-  int left = text.size();
+void SocketTCP::write(const char* text, int size){
+  const char *ptr = text;
+  int left = size;
 
   if(!_connected) throw std::string("Socket is not connected");
 
@@ -59,6 +58,39 @@ void SocketTCP::write(std::string text){
     left -= written;
     ptr += written;
   }
+}
+
+void SocketTCP::write(char* text, int size){
+  char *ptr = text;
+  int left = size;
+
+  if(!_connected) throw std::string("Socket is not connected");
+  if(__DEBUG__) UI::Dialog::IO->print(std::string("LEFT: "));
+  if(__DEBUG__) UI::Dialog::IO->println(std::to_string(left));
+  while(left > 0){
+    if(__DEBUG__) UI::Dialog::IO->println(std::string("Writing to socket"));
+    int written = ::write(_fd, ptr, left);
+
+    if(__DEBUG__) UI::Dialog::IO->print(std::string("Chars written to socket: "));
+    if(__DEBUG__) UI::Dialog::IO->println(std::to_string(written));
+    left -= written;
+    ptr += written;
+  }
+}
+void SocketTCP::write(std::string text){
+  write(text.data(),text.size());
+}
+char* SocketTCP::read(int x){
+  if(!_connected) throw std::string("Socket is not connected");
+  char *buffer = new char[x];
+  int read = 0;
+
+  while(x){
+    read = ::read(_fd, buffer + read, x - read);
+    if(read < 0) throw std::string("SOCKETTCP::read") + strerror(errno);
+  }
+  return buffer;
+
 }
 std::string SocketTCP::read(){
   if(!_connected) throw std::string("Socket is not connected");

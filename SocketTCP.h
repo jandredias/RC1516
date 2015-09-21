@@ -15,7 +15,7 @@
 #include <string>     // std::string, std::to_string
 
 #ifndef __DEBUG__
-#define __DEBUG__ 0
+#define __DEBUG__ 1
 #endif
 
 class SocketTCP{
@@ -87,8 +87,11 @@ public:
    * @param std::string
    */
   void write(std::string);
+  void write(char*, int);
+  void write(const char*, int);
 
   std::string read();
+  char * read(int);
   std::string readWord();
   int rawRead();
   void listen(int = 5);
