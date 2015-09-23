@@ -6,8 +6,8 @@
 #define __PORT__ 58023
 #define __HOST__ "localhost"
 
-#ifndef __DEBUG__
-#define __DEBUG__ 1
+#ifndef DEBUG
+#define DEBUG 0
 #endif
 
 int main(int argc, char* argv[]){

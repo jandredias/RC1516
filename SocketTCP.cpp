@@ -5,7 +5,7 @@ SocketTCP::SocketTCP(const char addr[], int port) : _server(false), _connected(f
   if(_fd < 0) throw std::string("couldn't create socket");
   _hostptr = gethostbyname(addr);
 
-  if(__DEBUG__){
+  if(DEBUG){
     std::cout << "official name: " << _hostptr->h_name << std::endl;
     std::cout << "internet address: "
               << inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0]) << " "
@@ -65,14 +65,14 @@ void SocketTCP::write(char* text, int size){
   int left = size;
 
   if(!_connected) throw std::string("Socket is not connected");
-  if(__DEBUG__) UI::Dialog::IO->print(std::string("LEFT: "));
-  if(__DEBUG__) UI::Dialog::IO->println(std::to_string(left));
+  if(DEBUG) UI::Dialog::IO->print(std::string("LEFT: "));
+  if(DEBUG) UI::Dialog::IO->println(std::to_string(left));
   while(left > 0){
-    if(__DEBUG__) UI::Dialog::IO->println(std::string("Writing to socket"));
+    if(DEBUG) UI::Dialog::IO->println(std::string("Writing to socket"));
     int written = ::write(_fd, ptr, left);
 
-    if(__DEBUG__) UI::Dialog::IO->print(std::string("Chars written to socket: "));
-    if(__DEBUG__) UI::Dialog::IO->println(std::to_string(written));
+    if(DEBUG) UI::Dialog::IO->print(std::string("Chars written to socket: "));
+    if(DEBUG) UI::Dialog::IO->println(std::to_string(written));
     left -= written;
     ptr += written;
   }

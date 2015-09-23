@@ -17,8 +17,8 @@
 
 #define BUFFER_SIZE 2048
 
-#ifndef __DEBUG__
-#define __DEBUG__ 1
+#ifndef DEBUG
+#define DEBUG 0
 #endif
 
 class SocketUDP {

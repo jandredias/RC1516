@@ -7,8 +7,8 @@
 #include <semaphore.h>
 #include <mutex>
 
-#ifndef __DEBUG__
-#define __DEBUG__ 1
+#ifndef DEBUG
+#define DEBUG 0
 #endif
 #include <map>
 

@@ -5,8 +5,8 @@
 #include "SocketUDP.h"
 #include <string>
 #include "Dialog.h"
-#ifndef __DEBUG__
-#define __DEBUG__ 1
+#ifndef DEBUG
+#define DEBUG 0
 #endif
 class RequestTES{
   SocketTCP _client;
