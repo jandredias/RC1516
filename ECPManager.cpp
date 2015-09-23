@@ -9,7 +9,7 @@ ECPManager::ECPManager(int port) : _tqrSemaphore(new sem_t()),
 	_answerSemaphore(new sem_t()), _port(port),
 	_exit(false), _maxAcceptingThreads(3), _maxProcessTQRThreads(1),
 	_maxProcessTERThreads(1), _maxProcessIQRThreads(1), _maxSendAnswerThreads(5),
-	_topicsFile("topics.txt")
+	_topicsFile("topics.txt"),_statsFile("stats.txt")
 {
 
   sem_init(_tqrSemaphore, 0, 0);
@@ -200,6 +200,8 @@ void ECPManager::processTER(){
 }
 
 void ECPManager::processIQR(){
+  std::ifstream iFile(_statsFile);
+  
   if(__DEBUG__) UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Begin");
   while(!_exit){
     if(__DEBUG__) UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] I'm waiting for requests to process");
@@ -225,6 +227,18 @@ void ECPManager::processIQR(){
 	
 	// Request beeing handled
 	//TODO
+	// create score
+	//
+	// Check for repeated request
+	//  
+	// Add counter to the topic 
+	// Update counter on stats.txt 
+    //  
+	
+	iFile.open (_statsFile, std::fstream::app);
+	iFile << "Writing this to a file.\n";
+	iFile.close();
+	//  
 	// End of Handle
 	
     r.answer(answer);
@@ -251,8 +265,8 @@ void ECPManager::sendAnswer(){
                     std::string("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Requests size: ") + \
                     std::to_string(_answers.size()));
 
-    _answerMutex.lock();           //Lock the queue to remove a request
-                                //MultiThreading requires this mutex
+    _answerMutex.lock();          //Lock the queue to remove a request
+                                 //MultiThreading requires this mutex
     RequestECP r = _answers.front();
 
     _answers.pop();

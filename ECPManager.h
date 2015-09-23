@@ -48,6 +48,7 @@ class ECPManager{
   int _maxSendAnswerThreads;
 
   std::string _topicsFile;
+  std::string _statsFile;
 public:
   ECPManager(int);
   ~ECPManager();
