@@ -3,8 +3,8 @@
 #include <thread>         // std::thread
 #define __PORT__ 58023
 
-#ifndef __DEBUG__
-#define __DEBUG__ 0
+#ifndef DEBUG
+#define DEBUG 0
 #endif
 
 #include "ECPManager.h"

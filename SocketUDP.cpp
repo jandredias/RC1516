@@ -10,8 +10,8 @@ SocketUDP::SocketUDP(const char addr[], int port) : _port(port), _server(false){
 
   _hostptr = gethostbyname(addr);
 
-  if(__DEBUG__) std::cout << "official name: " << _hostptr->h_name << std::endl;
-  if(__DEBUG__) std::cout << "internet address: "
+  if(DEBUG) std::cout << "official name: " << _hostptr->h_name << std::endl;
+  if(DEBUG) std::cout << "internet address: "
                           << inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0]) << " "
                           << ntohl(((struct in_addr *) _hostptr->h_addr_list[0])->s_addr) << std::endl;
 

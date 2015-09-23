@@ -4,7 +4,10 @@
 #include "SocketTCP.h"
 #include "SocketUDP.h"
 #include <string>
-
+#include "Dialog.h"
+#ifndef DEBUG
+#define DEBUG 0
+#endif
 class RequestTES{
   SocketTCP _client;
   std::string _message;
@@ -13,6 +16,7 @@ class RequestTES{
   int       _sid;
   int       _deadline;
   int       _fileSize;
+  char *    _file;
 
 public:
   /**
@@ -37,4 +41,6 @@ public:
   std::string read();
   void disconnect();
   bool finished();
+  char* file(){ return _file; }
+  void file(char* file){ _file = file; }
 };
