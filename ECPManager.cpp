@@ -25,12 +25,12 @@ ECPManager::~ECPManager(){
 }
 
 void ECPManager::acceptRequests(){
-  
+
   if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Creating socket");
   _socketUDP = SocketUDP(_port);
   _senderSocketUDP = SocketUDP(_port);
   if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Socket created");
-  
+
   while(!_exit){
     try{
       if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Waiting for messages");
@@ -48,7 +48,7 @@ void ECPManager::acceptRequests(){
       if(__DEBUG__) UI::Dialog::IO->println(
         std::string("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Size of Message: ") +\
         std::to_string(message.size()));
-		
+
       if(message == std::string("TQR")){
         RequestECP request(message, client);
         _tqrMutex.lock();           //Lock the queue to insert a request
@@ -57,7 +57,7 @@ void ECPManager::acceptRequests(){
         if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in TQR queue");
         sem_post(_tqrSemaphore);    //Post semaphore so a thread is called
       }
-	  
+
 	  else if(message.substr(0,3) == std::string("TER")){
         RequestECP request(message, client);
         _terMutex.lock();           //Lock the queue to insert a request
@@ -66,7 +66,7 @@ void ECPManager::acceptRequests(){
         if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in TER queue");
         sem_post(_terSemaphore);    //Post semaphore so a thread is called
       }
-	  
+
 	  else if(message.substr(0,3) == std::string("IQR")){
         RequestECP request(message, client);
         _iqrMutex.lock();           //Lock the queue to insert a request
@@ -75,7 +75,7 @@ void ECPManager::acceptRequests(){
         if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in IQR queue");
         sem_post(_iqrSemaphore);    //Post semaphore so a thread is called
       }
-	  
+
 	  else{
         RequestECP request(message, client);
         request.answer("ERR\n");
@@ -97,7 +97,7 @@ void ECPManager::processTQR(){
   while(!_exit){
     if(__DEBUG__) UI::Dialog::IO->println("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] I'm waiting for requests to process");
     sem_wait(_tqrSemaphore);
-    
+
 	if(__DEBUG__) UI::Dialog::IO->println(
                     std::string("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Requests size: ") + \
                     std::to_string(_tqrRequests.size()));
@@ -112,12 +112,12 @@ void ECPManager::processTQR(){
     if(__DEBUG__) UI::Dialog::IO->println(std::string("Request: ").append(r.read()));
     std::pair <std::string,int> topicsList;
     std::string answer;
-	
-	
+
+
 	// Request beeing handled
     try{
       topicsList = topics();
-      answer = "AQT ";
+      answer = "AWT ";
       answer += std::to_string(topicsList.second);
       answer += std::string(" ");
       answer += topicsList.first;
@@ -128,7 +128,7 @@ void ECPManager::processTQR(){
       }
     }
 	// End of Handle
-	
+
     r.answer(answer);
     _answerMutex.lock();
     if(__DEBUG__) UI::Dialog::IO->println("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Inserting Request on Answer Queue");
@@ -148,7 +148,7 @@ void ECPManager::processTER(){
   while(!_exit){
     if(__DEBUG__) UI::Dialog::IO->println("[ [YELLOW]ECPManager::processTER[REGULAR]      ] I'm waiting for requests to process");
     sem_wait(_terSemaphore);
-    
+
 	if(__DEBUG__) UI::Dialog::IO->println(
                     std::string("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Requests size: ") + \
                     std::to_string(_terRequests.size()));
@@ -162,7 +162,7 @@ void ECPManager::processTER(){
     _terMutex.unlock();         //Lock the queue to remove a request
     if(__DEBUG__) UI::Dialog::IO->println(std::string("Request: ").append(r.read()));
     std::string answer;
-	
+
 	// Request beeing handled
     std::stringstream stream(r.read()); //TODO??
     std::string code;
@@ -177,15 +177,23 @@ void ECPManager::processTER(){
       if(tIDstr[index] < '0' || tIDstr[index] > '9') is_number = false;
 
     if(tIDstr.size() == 0 || !is_number || trash != std::string("")){
-      r.answer("ERR");
-    }else{
+			if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]ECPManager::processTER[REGULAR]      ] It's not a number. Size of input: ");
+			if(__DEBUG__) UI::Dialog::IO->print(std::to_string(tIDstr.size()));
+			if(__DEBUG__) UI::Dialog::IO->print(" | input: ");
+			if(__DEBUG__) UI::Dialog::IO->println(tIDstr);
+      answer = "ERR";
+    }else {
+			if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]ECPManager::processTER[REGULAR]      ] It's a topic number. Size of input: ");
+			if(__DEBUG__) UI::Dialog::IO->print(std::to_string(tIDstr.size()));
+			if(__DEBUG__) UI::Dialog::IO->print(" | input: ");
+			if(__DEBUG__) UI::Dialog::IO->println(tIDstr);
       tID = atoi(tIDstr.data());
       std::pair <std::string, int> data = topicData(tID);
       answer = std::string("AWTES ") + data.first + std::string(" ") + \
        std::to_string(data.second);
     }
 	// End of Handle
-	
+
     r.answer(answer);
     _answerMutex.lock();
     if(__DEBUG__) UI::Dialog::IO->println("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Inserting Request on Answer Queue");
@@ -222,11 +230,11 @@ void ECPManager::processIQR(){
     if(__DEBUG__) UI::Dialog::IO->println(std::string("Request: ").append(r.read()));
 
     std::string answer;
-	
+
 	// Request beeing handled
 	//TODO
 	// End of Handle
-	
+
     r.answer(answer);
     _answerMutex.lock();
     if(__DEBUG__) UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Inserting Request on Answer Queue");
@@ -310,5 +318,5 @@ std::pair <std::string,int> ECPManager::topics(){
     iFile >> topic; iFile >> topic;
   }
   if(i == 0) throw std::string("EOF");
-  return std::make_pair(topics,i);
+  return std::make_pair(topics.substr(0,topics.size()-1),i);
 }
