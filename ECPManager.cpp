@@ -360,7 +360,10 @@ void ECPManager::processIQR(){
 
 
     std::string answer;
-
+		std::stringstream stream;
+		string lixo;
+		lixo << stream;
+		int SID
 
 
 
@@ -373,10 +376,8 @@ void ECPManager::processIQR(){
 	// Add counter to the topic
 	// Update counter on stats.txt
   	std::ofstream iFile;
-	iFile.open(_statsFile,std::fstream::out);
-	if(iFile.fail()){
-		iFile.open(_statsFile, std::fstream::out);
-	}
+	iFile.open(_statsFile,std::fstream::app);
+
 
 	/*
 	iFile.open (_statsFile, std::fstream::app);*/
