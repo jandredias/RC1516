@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <fstream>      // std::ifstream
+#include <iostream>
 #include "Dialog.h"
 
 ECPManager::ECPManager(int port) : _tqrSemaphore(new sem_t()),
@@ -209,8 +210,7 @@ void ECPManager::processTER(){
 
 void ECPManager::processIQR(){
 
-  std::ifstream iFile(_statsFile);
-  if(DEBUG) UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Begin");
+   if(DEBUG) UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Begin");
 
   while(!_exit){
     if(DEBUG) UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] I'm waiting for requests to process");
@@ -242,9 +242,14 @@ void ECPManager::processIQR(){
 	//  
 	// Add counter to the topic 
 	// Update counter on stats.txt 
-    //  
-	
-	iFile.open (_statsFile, std::fstream::app);
+  	std::ofstream iFile;
+	iFile.open(_statsFile,std::fstream::out);
+	if(iFile.fail()){
+		iFile.open(_statsFile, std::fstream::out);
+	}
+       
+	/*
+	iFile.open (_statsFile, std::fstream::app);*/
 	iFile << "Writing this to a file.\n";
 	iFile.close();
 	//  

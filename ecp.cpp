@@ -14,6 +14,7 @@ int main(int argc, char* argv[]){
   if(argc == 3){	
 	if(std::string(argv[1]) != std::string("-p")){
 	  std::cout << "wrong format of parameters" << std::endl;
+	  return 1;
 	}
 	else{
 	  //should redefine ecp port
