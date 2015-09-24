@@ -1,14 +1,17 @@
 #pragma once
 #include <string>
 
-#ifndef __DEBUG__
-#define __DEBUG__ 0
+#ifndef DEBUG
+#define DEBUG 0
 #endif
 
 class UserManager {
   int _sid;
   int _port;
   std::string _ecpname;
+
+  std::string _tesname;
+  int _tesport;
 public:
 
   /**
@@ -31,5 +34,5 @@ public:
   /**
    * @description          submits answers
    */
-  void submit();
+  void submit(int, char*);
 };

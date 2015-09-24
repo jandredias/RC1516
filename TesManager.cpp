@@ -29,25 +29,25 @@ int TesManager::qid(){ return _qid++; }
 
 void TesManager::acceptRequestsTCP(){
   //FIXME
-  if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Creating socket");
+  if(DEBUG) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Creating socket");
   SocketTCP _socketTCP(_port);
-  if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Socket created ");
-  if(__DEBUG__) UI::Dialog::IO->println(
+  if(DEBUG) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Socket created ");
+  if(DEBUG) UI::Dialog::IO->println(
                   std::string("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Listening on port ")\
                   + std::to_string(_port));
 
   _socketTCP.listen(10);
 
   while(!_exit){
-    if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Waiting for clients");
-    if(__DEBUG__) UI::Dialog::IO->println(
+    if(DEBUG) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Waiting for clients");
+    if(DEBUG) UI::Dialog::IO->println(
                     std::string("[ [BLUE]TesManager::acceptRequests[REGULAR]  ]  Requests size ")\
                     + std::to_string(_rqtRequests.size()));
 
     SocketTCP s = _socketTCP.accept();
 
-    if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Reading from client");
-    if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Client request read");
+    if(DEBUG) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Reading from client");
+    if(DEBUG) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Client request read");
 
     RequestTES r = RequestTES(s);
 
@@ -55,7 +55,7 @@ void TesManager::acceptRequestsTCP(){
     _requests.push(r);
     _reqMutex.unlock();
 
-    if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Client connected");
+    if(DEBUG) UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Client connected");
     sem_post(_requestsSem);
   }
 }
@@ -65,76 +65,76 @@ void TesManager::acceptRequestsUDP(){
 }
 
 void TesManager::processTCP(){
-  if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] processRequests");
+  if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] processRequests");
   while(!_exit){
     sem_wait(_requestsSem);
-    if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Client is waiting for answer");
-    if(__DEBUG__) UI::Dialog::IO->println(
+    if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Client is waiting for answer");
+    if(DEBUG) UI::Dialog::IO->println(
                     std::string("[ [GREEN]TesManager::processTCP[REGULAR]      ] Requests size: ") + \
                     std::to_string(_requests.size()));
 
     _reqMutex.lock();
-    if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Getting first in the queue");
+    if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Getting first in the queue");
     RequestTES r = _requests.front();
     _requests.pop();
-    if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Removing first Request from the queue");
-    if(__DEBUG__) UI::Dialog::IO->println(
+    if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Removing first Request from the queue");
+    if(DEBUG) UI::Dialog::IO->println(
                     std::string("[ [GREEN]TesManager::processTCP[REGULAR]      ] Requests size: ") + \
                     std::to_string(_requests.size()));
     _reqMutex.unlock();
 
-    if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Reading message from Request");
+    if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Reading message from Request");
     r.message(r.read());
-    if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Message read from Request");
+    if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Message read from Request");
     std::stringstream stream(r.message());
     std::string typeOfRequest;
     stream >> typeOfRequest;
     if(typeOfRequest == std::string("RQT")){
-      if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request is RQT");
+      if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request is RQT");
       _rqtMutex.lock();
-      if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Inserting request on RQT queue");
+      if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Inserting request on RQT queue");
       _rqtRequests.push(r);
       sem_post(_rqtRequestsSem);
       _rqtMutex.unlock();
-      if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Request inserted in RQT queue");
+      if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Request inserted in RQT queue");
     }else if(typeOfRequest == std::string("RQS")){
-      if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request is RQS");
+      if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request is RQS");
       _rqsMutex.lock();
-      if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Inserting request on RQS queue");
+      if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Inserting request on RQS queue");
       _rqsRequests.push(r);
       sem_post(_rqsRequestsSem);
       _rqsMutex.unlock();
-      if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Request inserted in RQS queue");
+      if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Request inserted in RQS queue");
     }else{
-      if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request unknown");
+      if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request unknown");
       r.message("ERR\n");
       _answerMutex.lock();
-      if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Inserting request on RQS queue");
+      if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Inserting request on RQS queue");
       _answers.push(r);
       sem_post(_answerSem);
-      if(__DEBUG__) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Request inserted in RQS queue");
+      if(DEBUG) UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Request inserted in RQS queue");
       _answerMutex.unlock();
     }
   }
 }
 
 void TesManager::processRQT(){
-  if(__DEBUG__) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] BEGIN");
+  if(DEBUG) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] BEGIN");
   while(!_exit){
-    if(__DEBUG__) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] I'm waiting for requests to process");
+    if(DEBUG) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] I'm waiting for requests to process");
 
     sem_wait(_rqtRequestsSem);
 
-    if(__DEBUG__) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Client is waiting for answer");
-    if(__DEBUG__) UI::Dialog::IO->println(
+    if(DEBUG) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Client is waiting for answer");
+    if(DEBUG) UI::Dialog::IO->println(
                     std::string("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Requests size: ") + \
                     std::to_string(_rqtRequests.size()));
 
     _rqtMutex.lock();
-    if(__DEBUG__) UI::Dialog::IO->println("[ [YELLOW]TesManager::processTCP[REGULAR]      ] Removing request from the RQT queue");
+    if(DEBUG) UI::Dialog::IO->println("[ [YELLOW]TesManager::processTCP[REGULAR]      ] Removing request from the RQT queue");
     RequestTES r = _rqtRequests.front();
     _rqtRequests.pop();
-    if(__DEBUG__) UI::Dialog::IO->println("[ [YELLOW]TesManager::processTCP[REGULAR]      ] Removed request from the RQT queue");
+    if(DEBUG) UI::Dialog::IO->println("[ [YELLOW]TesManager::processTCP[REGULAR]      ] Removed request from the RQT queue");
     _rqtMutex.unlock();
 
     std::stringstream stream(r.message());
@@ -163,47 +163,52 @@ void TesManager::processRQT(){
       answer  = std::string("AQT ");
       answer += std::to_string(r.qid());
       answer += std::string(" ");
+      answer += std::to_string(deadline());
+      answer += std::string(" ");
       std::string filename = std::to_string(rand() % 5 + 1) + std::string(".pdf");
-      if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Reading file: ");
-      if(__DEBUG__) UI::Dialog::IO->println(filename);
-      std::pair <std::string, int> pair = pdf(std::to_string(rand() % 5 + 1) + std::string(".pdf"));
-      if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] File read");
+
+      if(DEBUG) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Reading file: ");
+      if(DEBUG) UI::Dialog::IO->println(filename);
+      std::pair <char*, int> pair = pdf(std::to_string(rand() % 5 + 1) + std::string(".pdf"));
+      if(DEBUG) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] File read");
       answer += std::to_string(pair.second);
       answer += std::string(" ");
-      answer += pair.first;
-      answer += std::string("\n");
+      r.fileSize(pair.second);
+      if(DEBUG) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Answer before data: ");
+      if(DEBUG) UI::Dialog::IO->println(answer);
 
+
+      r.file(pair.first);
       r.answer(answer);
-      if(__DEBUG__) UI::Dialog::IO->println(r.answer());
-      if(__DEBUG__) UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] ");
+      //if(DEBUG) UI::Dialog::IO->println(r.answer());
 
     }
     _answerMutex.lock();
-    if(__DEBUG__) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Inserting request on Answer queue");
+    if(DEBUG) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Inserting request on Answer queue");
     _answers.push(r);
     sem_post(_answerSem);
-    if(__DEBUG__) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Request inserted in Answer queue");
+    if(DEBUG) UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Request inserted in Answer queue");
     _answerMutex.unlock();
   }
 }
 
 void TesManager::processRQS(){
-  if(__DEBUG__) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] BEGIN");
+  if(DEBUG) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] BEGIN");
   while(!_exit){
-    if(__DEBUG__) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] I'm waiting for requests to process");
+    if(DEBUG) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] I'm waiting for requests to process");
 
     sem_wait(_rqsRequestsSem);
 
-    if(__DEBUG__) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Client is waiting for answer");
-    if(__DEBUG__) UI::Dialog::IO->println(
+    if(DEBUG) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Client is waiting for answer");
+    if(DEBUG) UI::Dialog::IO->println(
                     std::string("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Requests size: ") + \
                     std::to_string(_rqsRequests.size()));
 
     _rqsMutex.lock();
-    if(__DEBUG__) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Removing request from the RQS queue");
+    if(DEBUG) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Removing request from the RQS queue");
     RequestTES r = _rqsRequests.front();
     _rqsRequests.pop();
-    if(__DEBUG__) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Removed request from the RQS queue");
+    if(DEBUG) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Removed request from the RQS queue");
     _rqsMutex.unlock();
 
     std::cout << r.read() << std::endl;
@@ -212,10 +217,10 @@ void TesManager::processRQS(){
     //FIXME
 
     _answerMutex.lock();
-    if(__DEBUG__) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Inserting request on Answer queue");
+    if(DEBUG) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Inserting request on Answer queue");
     _answers.push(r);
     sem_post(_answerSem);
-    if(__DEBUG__) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Request inserted in Answer queue");
+    if(DEBUG) UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Request inserted in Answer queue");
     _answerMutex.unlock();
   }
 }
@@ -225,30 +230,32 @@ void TesManager::processAWI(){
 }
 
 void TesManager::answerTCP(){
-  if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] BEGIN");
+  if(DEBUG) UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] BEGIN");
   while(!_exit){
-    if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] I'm waiting for requests to process");
+    if(DEBUG) UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] I'm waiting for requests to process");
 
     sem_wait(_answerSem);
 
-    if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Client is waiting for answer");
-    if(__DEBUG__) UI::Dialog::IO->println(
+    if(DEBUG) UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Client is waiting for answer");
+    if(DEBUG) UI::Dialog::IO->println(
                     std::string("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Requests size: ") + \
                     std::to_string(_rqtRequests.size()));
 
     _answerMutex.lock();
-    if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removing request from the RQT queue");
+    if(DEBUG) UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removing request from the RQT queue");
     RequestTES r = _answers.front();
     _answers.pop();
-    if(__DEBUG__) UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removed request from the RQT queue");
+    if(DEBUG) UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removed request from the RQT queue");
     _answerMutex.unlock();
-    if(__DEBUG__) UI::Dialog::IO->println(r.answer());
+    if(DEBUG && r.answer().size() < 100) UI::Dialog::IO->println(r.answer());
+
     r.write();
+
     r.disconnect();
   }
 }
 
-std::pair <std::string, int> TesManager::pdf(std::string filename){
+std::pair <char *, int> TesManager::pdf(std::string filename){
   std::ifstream file(filename, std::ifstream::binary);
   if(file){
     file.seekg(0, file.end);
@@ -258,14 +265,17 @@ std::pair <std::string, int> TesManager::pdf(std::string filename){
     char *buffer = new char[length];
 
     file.read(buffer, length);
-    if (file)
-      std::cout << "all characters read successfully.";
-    else
-      std::cout << "error: only " << file.gcount() << " could be read";
-    std::string content(buffer, length);
-    delete[] buffer;
+    if(DEBUG){
+      if (file)
+        UI::Dialog::IO->println("[ TesManager::pdf             ] All characters read from file");
+      else{
+        UI::Dialog::IO->print  ("[ TesManager::pdf             ] Only ");
+        UI::Dialog::IO->print  (std::to_string(file.gcount()));
+        UI::Dialog::IO->println(" could be read");
+      }
+    }
     file.close();
-    return std::make_pair(content,length);
+    return std::make_pair(buffer,length);
   }
-  return std::make_pair(std::string(), 0);
+  return std::make_pair((char*)NULL, 0);
 }

@@ -9,8 +9,8 @@
 
 #include <utility>      // std::pair, std::make_pair
 
-#ifndef __DEBUG__
-#define __DEBUG__ 0
+#ifndef DEBUG
+#define DEBUG 0
 #endif
 
 class ECPManager{
@@ -48,6 +48,7 @@ class ECPManager{
   int _maxSendAnswerThreads;
 
   std::string _topicsFile;
+  std::string _statsFile;
 public:
   ECPManager(int);
   ~ECPManager();

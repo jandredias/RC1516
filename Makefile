@@ -73,13 +73,16 @@ SocketTCP.o:	SocketTCP.h SocketTCP.cpp
 SocketUDP.o:	SocketTCP.h SocketUDP.cpp
 	$(COMP) SocketUDP.cpp -o SocketUDP.o
 
-Enable:
-	sed -i -- 's/__DEBUG__\ 0/__DEBUG__\ 1/g' *
-	(make clean; make)
+enable:
+	sed -i -- 's/DEBUG\ 0/DEBUG\ 1/g' *
+	make clean
+	make
 
-Disable:
-	sed -i -- 's/__DEBUG__\ 1/__DEBUG__\ 0/g' *
-	(make clean; make)
+disable:
+	sed -i -- 's/DEBUG\ 1/DEBUG\ 0/g' *
+	make clean
+	make
+
 clean:
 	rm -rf ecp tes user *.o *.pdf
 

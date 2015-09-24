@@ -10,7 +10,16 @@ std::string RequestTES::answer(){ return _answer; }
 
 void RequestTES::message(std::string text){ _message = text; }
 void RequestTES::write(std::string text){ _client.write(text); }
-void RequestTES::write(){ _client.write(_answer); }
+void RequestTES::write(){
+  if(DEBUG) UI::Dialog::IO->println(std::string("Writing to socket"));
+  _client.write(_answer);
+  if(DEBUG) UI::Dialog::IO->println(std::string("First part written"));
+
+  if(DEBUG) UI::Dialog::IO->println(std::string("Writing file to socket"));
+  _client.write(_file, _fileSize);
+  if(DEBUG) UI::Dialog::IO->println(std::string("File written"));
+  delete[] _file;
+}
 std::string RequestTES::read(){ return _client.read(); }
 void RequestTES::disconnect(){ _client.disconnect(); }
 bool RequestTES::finished(){ return !_client.connected(); }
