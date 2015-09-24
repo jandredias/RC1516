@@ -233,6 +233,9 @@ void ECPManager::processIQR(){
     if(DEBUG) UI::Dialog::IO->println(std::string("Request: ").append(r.read()));
 
     std::string answer;
+	
+	
+	
 
 	// Request beeing handled
 	//TODO
