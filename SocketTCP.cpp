@@ -2,15 +2,15 @@
 #include "Dialog.h"
 SocketTCP::SocketTCP(const char addr[], int port) : _server(false), _connected(false){
   _fd = socket(AF_INET, SOCK_STREAM, 0);
-  if(_fd < 0) throw std::string("couldn't create socket");
+  if(_fd < 0) throw std::string("SocketTCP::SocketTCP ").append(strerror(errno));
   _hostptr = gethostbyname(addr);
 
-  if(DEBUG){
+  #if DEBUG
     std::cout << "official name: " << _hostptr->h_name << std::endl;
     std::cout << "internet address: "
               << inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0]) << " "
               << ntohl(((struct in_addr*) _hostptr->h_addr_list[0])->s_addr) << std::endl;
-  }
+  #endif
 
   memset((void *) &_serverAddr, (int) '\0', sizeof(_serverAddr));
 
@@ -28,7 +28,8 @@ SocketTCP::SocketTCP(int port) : _server(true), _connected(false){
   _serverAddr.sin_port = htons((u_short) port);
   _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr));
+  int ret = bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr));
+  if(ret < 0) throw std::string("SocketTCP::SocketTCP ").append(strerror(errno));
 }
 
 void SocketTCP::fd(int fd){ _fd = fd; }
@@ -44,7 +45,7 @@ void SocketTCP::connect(){
 
 void SocketTCP::disconnect(){
   if(::close(_fd))
-    throw std::string("Error closing socket");
+    throw std::string("SocketTCP::disconnect ").append(strerror(errno));
   _connected = false;
 }
 void SocketTCP::write(const char* text, int size){
@@ -55,6 +56,7 @@ void SocketTCP::write(const char* text, int size){
 
   while(left > 0){
     int written = ::write(_fd, ptr, left);
+    if(written < -1) throw std::string("SocketTCP::write ").append(strerror(errno));
     left -= written;
     ptr += written;
   }
@@ -64,15 +66,28 @@ void SocketTCP::write(char* text, int size){
   char *ptr = text;
   int left = size;
 
-  if(!_connected) throw std::string("Socket is not connected");
-  if(DEBUG) UI::Dialog::IO->print(std::string("LEFT: "));
-  if(DEBUG) UI::Dialog::IO->println(std::to_string(left));
+  if(!_connected) throw std::string("SocketTCP::write: Socket is not connected");
+
+  #if DEBUG
+  UI::Dialog::IO->print(std::string("LEFT: "));
+  UI::Dialog::IO->println(std::to_string(left));
+  #endif
+
   while(left > 0){
-    if(DEBUG) UI::Dialog::IO->println(std::string("Writing to socket"));
+
+    #if DEBUG
+    UI::Dialog::IO->println(std::string("Writing to socket"));
+    #endif
+
     int written = ::write(_fd, ptr, left);
 
-    if(DEBUG) UI::Dialog::IO->print(std::string("Chars written to socket: "));
-    if(DEBUG) UI::Dialog::IO->println(std::to_string(written));
+    if(written < -1) throw std::string("SocketTCP::write ").append(strerror(errno));
+
+    #if DEBUG
+    UI::Dialog::IO->print(std::string("Chars written to socket: "));
+    UI::Dialog::IO->println(std::to_string(written));
+    #endif
+
     left -= written;
     ptr += written;
   }
@@ -81,7 +96,7 @@ void SocketTCP::write(std::string text){
   write(text.data(),text.size());
 }
 char* SocketTCP::read(int x){
-  if(!_connected) throw std::string("Socket is not connected");
+  if(!_connected) throw std::string("SocketTCP::read Socket is not connected");
   char *buffer = new char[x];
   int read = 0;
 
@@ -102,13 +117,13 @@ std::string SocketTCP::read(){
     n = ::read(_fd, &b, 1);
     if(n == 1 && b != '\n') text += b;
     else if( n == 1 && b == '\n' ) break;
-    else if( n == -1) perror("error reading from socket server");
+    else if( n == -1) perror("error reading from socket server ");
   }
   return text;
 }
 
 std::string SocketTCP::readWord(){
-  if(!_connected) throw std::string("Socket is not connected");
+  if(!_connected) throw std::string("Socket is not connected ");
   std::string text = "";
 
   int n;
@@ -117,10 +132,11 @@ std::string SocketTCP::readWord(){
     n = ::read(_fd, &b, 1);
     if(n == 1 && (b != ' ' && b!= '\n' && b!='\t')) text += b;
     else if( n == 1 && (b == ' ' || b== '\n' || b=='\t') ) break;
-    else if( n == -1 ) perror("error reading from socket server");
+    else if( n == -1 ) throw std::string("SOCKETTCP::readWord ") + strerror(errno);
   }
   return text;
 }
+
 int SocketTCP::rawRead(){
   return _fd;
 }
@@ -133,10 +149,9 @@ SocketTCP SocketTCP::accept(){
   socklen_t sizeofClient = sizeof(_clientAddr);
 
   newSocket = ::accept(_fd, (struct sockaddr*) &_clientAddr, &sizeofClient);
-  if(newSocket < 0) throw std::string("error creating dedicate connection");
+  if(newSocket < 0) throw std::string("SOCKETTCP::accept ") + strerror(errno);
 
-  SocketTCP s = SocketTCP();
-
+  SocketTCP s;
   s.fd(newSocket);
   return s;
 }

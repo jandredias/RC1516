@@ -5,6 +5,10 @@
 #define DEBUG 0
 #endif
 
+
+#define __MS_BETWEEN_TRIES__ 2000
+#define __TRIES__ 10
+
 class UserManager {
   int _sid;
   int _port;

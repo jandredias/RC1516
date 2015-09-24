@@ -11,13 +11,26 @@ std::string RequestTES::answer(){ return _answer; }
 void RequestTES::message(std::string text){ _message = text; }
 void RequestTES::write(std::string text){ _client.write(text); }
 void RequestTES::write(){
-  if(DEBUG) UI::Dialog::IO->println(std::string("Writing to socket"));
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("Writing to socket"));
+  #endif
+  
   _client.write(_answer);
-  if(DEBUG) UI::Dialog::IO->println(std::string("First part written"));
 
-  if(DEBUG) UI::Dialog::IO->println(std::string("Writing file to socket"));
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("First part written"));
+  #endif
+
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("Writing file to socket"));
+  #endif
+
   _client.write(_file, _fileSize);
-  if(DEBUG) UI::Dialog::IO->println(std::string("File written"));
+
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("File written"));
+  #endif
+
   delete[] _file;
 }
 std::string RequestTES::read(){ return _client.read(); }

@@ -8,27 +8,36 @@
 #include <math.h>       /* log */
 #include <fstream>      // std::ofstream
 
-#define __MS_BETWEEN_TRIES__ 2000
-#define __TRIES__ 10
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
 _ecpname(ecpname){
 }
 
 void UserManager::list(){
-  if(DEBUG) UI::Dialog::IO->println("[ UserManager::list            ] Creating socket");
+  #if DEBUG
+  UI::Dialog::IO->println("[ UserManager::list            ] Creating socket");
+  #endif
+
   SocketUDP ecp = SocketUDP(_ecpname.data(), _port);
   std::string message;
-  if(DEBUG) UI::Dialog::IO->println("[ UserManager::list            ] Socket created");
-  if(DEBUG) UI::Dialog::IO->println("[ UserManager::list            ] Sending message");
+
+  #if DEBUG
+  UI::Dialog::IO->println("[ UserManager::list            ] Socket created");
+  UI::Dialog::IO->println("[ UserManager::list            ] Sending message");
+  #endif
+
   std::stringstream stream;
   for(auto i = 0; i < __TRIES__; i++){
     ecp.send(std::string("TQR\n"));
     try{
       ecp.timeout(__MS_BETWEEN_TRIES__);
       stream << ecp.receive();
-      if(DEBUG) UI::Dialog::IO->println("[ UserManager::list            ] Message sent to ECP");
-      if(DEBUG) UI::Dialog::IO->println("[ UserManager::list            ] Receiving message from ECP");
-      if(DEBUG) UI::Dialog::IO->println("[ UserManager::list            ] Message received from ECP");
+
+      #if DEBUG
+      UI::Dialog::IO->println("[ UserManager::list            ] Message sent to ECP");
+      UI::Dialog::IO->println("[ UserManager::list            ] Receiving message from ECP");
+      UI::Dialog::IO->println("[ UserManager::list            ] Message received from ECP");
+      #endif
+
       break;
     }catch(std::string s){
       if(errno == 11){
@@ -47,7 +56,11 @@ void UserManager::list(){
     UI::Dialog::IO->println("Try again later.");
     return;
   }
-  if(DEBUG) UI::Dialog::IO->println("[ UserManager::list            ] Processing message");
+
+  #if DEBUG
+  UI::Dialog::IO->println("[ UserManager::list            ] Processing message");
+  #endif
+
   std::string code;
   stream >> code;
   if(code == std::string("EOF")){
@@ -72,25 +85,35 @@ void UserManager::list(){
     UI::Dialog::IO->println(topic);
     i++;
   }
-  if(DEBUG) UI::Dialog::IO->println("[ UserManager::list            ] Message processed");
-}
 
-// if(DEBUG) UI::Dialog::IO->println("");
+  #if DEBUG
+  UI::Dialog::IO->println("[ UserManager::list            ] Message processed");
+  #endif
+
+}
 
 void UserManager::request(int tnn){
   SocketUDP ecp = SocketUDP(_ecpname.data(), _port);
   std::string message;
-  if(DEBUG) UI::Dialog::IO->println("[ UserManager::request            ] Socket created");
-  if(DEBUG) UI::Dialog::IO->println("[ UserManager::request            ] Sending message");
+
+  #if DEBUG
+  UI::Dialog::IO->println("[ UserManager::request            ] Socket created");
+  UI::Dialog::IO->println("[ UserManager::request            ] Sending message");
+  #endif
+
   std::stringstream stream;
   for(auto i = 0; i < __TRIES__; i++){
     ecp.send(std::string("TER ") + std::to_string(tnn) + std::string("\n"));
     try{
       ecp.timeout(__MS_BETWEEN_TRIES__);
       stream << ecp.receive();
-      if(DEBUG) UI::Dialog::IO->println("[ UserManager::request            ] Message sent to ECP");
-      if(DEBUG) UI::Dialog::IO->println("[ UserManager::request            ] Receiving message from ECP");
-      if(DEBUG) UI::Dialog::IO->println("[ UserManager::request            ] Message received from ECP");
+
+      #if DEBUG
+      UI::Dialog::IO->println("[ UserManager::request            ] Message sent to ECP");
+      UI::Dialog::IO->println("[ UserManager::request            ] Receiving message from ECP");
+      UI::Dialog::IO->println("[ UserManager::request            ] Message received from ECP");
+      #endif
+
       break;
     }catch(std::string s){
       if(errno == 11){
@@ -124,8 +147,9 @@ void UserManager::request(int tnn){
     return;
   }
 
-  if(DEBUG) UI::Dialog::IO->println("Connecting to TES Server");
-
+  #if DEBUG
+  UI::Dialog::IO->println("Connecting to TES Server");
+  #endif
   std::string code;
   std::string hostname;
   int port;
@@ -133,12 +157,16 @@ void UserManager::request(int tnn){
   stream >> hostname;
   stream >> port;
 
-  if(DEBUG) std::cout << "Creating socket" << std::endl;
+  #if DEBUG
+  std::cout << "Creating socket" << std::endl;
+  #endif
 
   SocketTCP tes(hostname.data(), port);
 
-  if(DEBUG) std::cout << "Socket created" << std::endl;
-  if(DEBUG) std::cout << "Connecting..." << std::endl;
+  #if DEBUG
+  std::cout << "Socket created" << std::endl;
+  std::cout << "Connecting..." << std::endl;
+  #endif
 
   try{
     tes.connect();
@@ -149,64 +177,101 @@ void UserManager::request(int tnn){
   _tesname = hostname;
   _tesport = port;
 
-  if(DEBUG) UI::Dialog::IO->println(std::string("Connected!"));
-  if(DEBUG) UI::Dialog::IO->println(std::string("Writing..."));
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("Connected!"));
+  UI::Dialog::IO->println(std::string("Writing..."));
+  #endif
 
   tes.write(std::string("RQT ") + std::to_string(_sid) + std::string("\n"));
 
-  if(DEBUG) UI::Dialog::IO->println(std::string("TER ") + std::to_string(tnn) + std::string("\n"));
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("TER ") + std::to_string(tnn) + std::string("\n"));
+  UI::Dialog::IO->println(std::string("Written"));
+  UI::Dialog::IO->println(std::string("Reading Server Answer"));
+  UI::Dialog::IO->println(std::string("Reading AQT"));
+  #endif
 
-  if(DEBUG) UI::Dialog::IO->println(std::string("Written"));
-
-  if(DEBUG) UI::Dialog::IO->println(std::string("Reading Server Answer"));
-
-
-  if(DEBUG) UI::Dialog::IO->println(std::string("Reading AQT"));
   message = tes.readWord();
-  if(DEBUG) UI::Dialog::IO->println(std::string("CODE: ") + message);
+
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("CODE: ") + message);
+  #endif
+
   if(message != std::string("AQT")){
      UI::Dialog::IO->println(std::string("Unknown format of information"));
      return;
   }
-  if(DEBUG) UI::Dialog::IO->println(std::string("Reading Server QID"));
+
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("Reading Server QID"));
+  #endif
+
   std::string qid = tes.readWord();
-  if(DEBUG) UI::Dialog::IO->println(std::string("QID: ") + qid);
-  if(DEBUG) UI::Dialog::IO->println(std::string("Reading Server deadline"));
+
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("QID: ") + qid);
+  UI::Dialog::IO->println(std::string("Reading Server deadline"));
+  #endif
+
   std::string time = tes.readWord();
-  if(DEBUG) UI::Dialog::IO->println(std::string("Deadline: ") + time);
-  if(DEBUG) UI::Dialog::IO->println(std::string("Reading Server size"));
+
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("Deadline: ") + time);
+  UI::Dialog::IO->println(std::string("Reading Server size"));
+  #endif
+
   std::string size = tes.readWord();
 
-  if(DEBUG) UI::Dialog::IO->println(std::string("Size: ") + size);
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("Size: ") + size);
+  #endif
+
   char b;
 
   std::string filename = std::string("T01Q") + qid + std::string(".pdf");
-  if(DEBUG) UI::Dialog::IO->println(std::string("Writting to file") + filename);
+
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("Writting to file") + filename);
+  #endif
 
   std::ofstream pdfFile(filename, std::ofstream::out);
   int fd = tes.rawRead();
   for(int i = 0; i < atoi(size.data()); i++){
-    if(DEBUG) UI::Dialog::IO->println(std::string("I'm reading the socket"));
+
+    #if DEBUG
+    UI::Dialog::IO->println(std::string("I'm reading the socket"));
+    #endif
+
     while(::read(fd, &b, 1) == 0);
-      pdfFile << b;
-    if(DEBUG) UI::Dialog::IO->print(std::string("Read one byte"));
-    if(DEBUG) UI::Dialog::IO->println(std::to_string(i));
+    pdfFile << b;
+
+    #if DEBUG
+    UI::Dialog::IO->print(std::string("Read one byte"));
+    UI::Dialog::IO->println(std::to_string(i));
+    #endif
+
   }
   pdfFile.close();
 
-  if(DEBUG) UI::Dialog::IO->println(std::string("File written"));
-  if(DEBUG) UI::Dialog::IO->println(std::string("Disconnecting"));
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("File written"));
+  UI::Dialog::IO->println(std::string("Disconnecting"));
+  #endif
+
   tes.disconnect();
 
-  if(DEBUG) UI::Dialog::IO->println(std::string("Disconnected"));
-
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("Disconnected"));
+  #endif
 }
 
 void UserManager::submit(int qid, char r[]){
   SocketTCP tes(_tesname.data(), _tesport);
 
-  if(DEBUG) UI::Dialog::IO->println("Socket created");
-  if(DEBUG) UI::Dialog::IO->println("Connecting...");
+  #if DEBUG
+  UI::Dialog::IO->println("Socket created");
+  UI::Dialog::IO->println("Connecting...");
+  #endif
 
   try{
     tes.connect();
@@ -216,8 +281,10 @@ void UserManager::submit(int qid, char r[]){
   }
 
 
-  if(DEBUG) UI::Dialog::IO->println(std::string("Connected!"));
-  if(DEBUG) UI::Dialog::IO->println(std::string("Writing..."));
+  #if DEBUG
+  UI::Dialog::IO->println(std::string("Connected!"));
+  UI::Dialog::IO->println(std::string("Writing..."));
+  #endif
 
   tes.write(std::string("RQS ") + std::to_string(_sid));
   for(int i = 0; i < 5; i++){
