@@ -31,43 +31,54 @@ void TesManager::acceptRequestsTCP(){
   #if DEBUG
   UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Creating socket");
   #endif
+  try{
+    SocketTCP _socketTCP(_port);
 
-  SocketTCP _socketTCP(_port);
-  #if DEBUG
-  UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Socket created ");
-  UI::Dialog::IO->println(
-    std::string("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Listening on port ")\
-    + std::to_string(_port));
-  #endif
-
-  _socketTCP.listen(10);
-
-  while(!_exit){
     #if DEBUG
-    UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Waiting for clients");
+    UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Socket created ");
     UI::Dialog::IO->println(
-      std::string("[ [BLUE]TesManager::acceptRequests[REGULAR]  ]  Requests size ")\
-      + std::to_string(_rqtRequests.size()));
+      std::string("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Listening on port ")\
+      + std::to_string(_port));
     #endif
 
-    SocketTCP s = _socketTCP.accept();
+    _socketTCP.listen(10);
 
-    #if DEBUG
-    UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Reading from client");
-    UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Client request read");
-    #endif
+    while(!_exit){
+      #if DEBUG
+      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Waiting for clients");
+      UI::Dialog::IO->println(
+        std::string("[ [BLUE]TesManager::acceptRequests[REGULAR]  ]  Requests size ")\
+        + std::to_string(_rqtRequests.size()));
+      #endif
 
-    RequestTES r = RequestTES(s);
+      SocketTCP s = _socketTCP.accept();
 
-    _reqMutex.lock();
-    _requests.push(r);
-    _reqMutex.unlock();
+      #if DEBUG
+      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Reading from client");
+      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Client request read");
+      #endif
 
-    #if DEBUG
-    UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Client connected");
-    #endif
+      RequestTES r = RequestTES(s);
 
+      _reqMutex.lock();
+      _requests.push(r);
+      _reqMutex.unlock();
+
+      #if DEBUG
+      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequests[REGULAR]  ] Client connected");
+      #endif
+
+      sem_post(_requestsSem);
+    }
+  }catch(std::string s){
+    UI::Dialog::IO->println(s);
+    _exit = 1;
     sem_post(_requestsSem);
+    sem_post(_answerSem);
+    sem_post(_rqtRequestsSem);
+    sem_post(_rqsRequestsSem);
+    sem_post(_awiRequestsSem);
+    return;
   }
 }
 
@@ -83,6 +94,7 @@ void TesManager::processTCP(){
 
   while(!_exit){
     sem_wait(_requestsSem);
+    if(_exit) return;
     #if DEBUG
     UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Client is waiting for answer");
     UI::Dialog::IO->println(
@@ -198,6 +210,7 @@ void TesManager::processRQT(){
     #endif
 
     sem_wait(_rqtRequestsSem);
+    if(_exit) return;
 
     #if DEBUG
     UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Client is waiting for answer");
@@ -309,6 +322,7 @@ void TesManager::processRQS(){
     #endif
 
     sem_wait(_rqsRequestsSem);
+    if(_exit) return;
 
     #if DEBUG
     UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Client is waiting for answer");
@@ -369,6 +383,7 @@ void TesManager::answerTCP(){
     #endif
 
     sem_wait(_answerSem);
+    if(_exit) return;
 
 
     #if DEBUG
@@ -425,7 +440,7 @@ std::pair <char *, int> TesManager::pdf(std::string filename){
         UI::Dialog::IO->println(" could be read");
       }
     #endif
-    
+
     file.close();
     return std::make_pair(buffer,length);
   }

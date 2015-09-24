@@ -1,5 +1,6 @@
 #include "SocketTCP.h"
 #include "Dialog.h"
+
 SocketTCP::SocketTCP(const char addr[], int port) : _server(false), _connected(false){
   _fd = socket(AF_INET, SOCK_STREAM, 0);
   if(_fd < 0) throw std::string("SocketTCP::SocketTCP ").append(strerror(errno));
@@ -29,7 +30,8 @@ SocketTCP::SocketTCP(int port) : _server(true), _connected(false){
   _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
   int ret = bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr));
-  if(ret < 0) throw std::string("SocketTCP::SocketTCP ").append(strerror(errno));
+  if(ret < 0) throw std::string("SocketTCP::SocketTCP123 ").append(strerror(errno));
+
 }
 
 void SocketTCP::fd(int fd){ _fd = fd; }

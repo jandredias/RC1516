@@ -33,7 +33,7 @@ void ECPManager::acceptRequests(){
 
 	try{
   _socketUDP = SocketUDP(_port);
-  _senderSocketUDP = SocketUDP(_port);
+  //_senderSocketUDP = SocketUDP(_port);
 	}catch(std::string s){
 		UI::Dialog::IO->println(s);
 		return;
