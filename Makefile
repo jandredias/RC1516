@@ -74,12 +74,12 @@ SocketUDP.o:	SocketTCP.h SocketUDP.cpp
 	$(COMP) SocketUDP.cpp -o SocketUDP.o
 
 enable:
-	sed -i -- 's/DEBUG\ 0/DEBUG\ 1/g' *
+	sed -i -- 's/DEBUG\ 0/DEBUG\ 1/g' *.cpp *.h
 	make clean
 	make
 
 disable:
-	sed -i -- 's/DEBUG\ 1/DEBUG\ 0/g' *
+	sed -i -- 's/DEBUG\ 1/DEBUG\ 0/g' *.cpp *.h
 	make clean
 	make
 
