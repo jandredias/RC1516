@@ -266,6 +266,10 @@ void UserManager::request(int tnn){
 }
 
 void UserManager::submit(int qid, char r[]){
+  if(_tesname == std::string("") || _tesport == 0){
+    UI::Dialog::IO->println(std::string("You should first request a questionnaire."));
+    return;
+  }
   SocketTCP tes(_tesname.data(), _tesport);
 
   #if DEBUG
