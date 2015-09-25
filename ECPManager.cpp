@@ -375,6 +375,7 @@ void ECPManager::processIQR(){
 
 	bool correctMessageFormat = true;
 
+	if (message != "IQR")  correctMessageFormat = false;
 	/* Checking SID is a number */
 	for(int index = 0; index < (int) SIDstr.size(); index++)
     if(SIDstr[index] < '0' || SIDstr[index] > '9') correctMessageFormat = false;
@@ -399,6 +400,7 @@ void ECPManager::processIQR(){
 		UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("score: ")).append(score));
 		#endif
 
+
 	//TODO
 	//
 	// Check for repeated request
@@ -407,12 +409,13 @@ void ECPManager::processIQR(){
 		UI::Dialog::IO->println(stats_message);
 		std::ofstream iFile;
 		iFile.open(_statsFile,std::fstream::app);
-
-
 		/*
 		iFile.open (_statsFile, std::fstream::app);*/
 		iFile << stats_message.append(std::string("\n"));
 		iFile.close();
+		answer = std::string("AWI " + QIDstr); // newline required TODO ???
+
+
 
 	}
 	else{
