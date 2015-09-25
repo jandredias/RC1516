@@ -359,13 +359,30 @@ void ECPManager::processIQR(){
 		#endif
 
 
-    std::string answer;
-		std::stringstream stream;
-		string lixo;
-		lixo << stream;
-		int SID
+    	std::string answer;
+    	std::stringstream stream;
+        std::string message;
+        std::string SIDstr;
+        std::string QIDstr;
+        std::string topic_name;
+        std::string score;
+	
+	stream >> message;
+	stream >> SIDstr;
+	stream >> QIDstr; 
+	stream >> topic_name;
+	stream >> score;
 
+	UI::Dialog::IO->println(message);
+	UI::Dialog::IO->println(SIDstr);
+	UI::Dialog::IO->println(QIDstr);
+	UI::Dialog::IO->println(topic_name);
+	UI::Dialog::IO->println(score);
 
+/*bool is_number = true;
+    for(int index = 0; index < (int) tIDstr.size(); index++)
+      if(tIDstr[index] < '0' || tIDstr[index] > '9') is_number = false;
+*/
 
 	// Request beeing handled
 	//TODO
