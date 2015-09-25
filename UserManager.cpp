@@ -27,8 +27,11 @@ void UserManager::list(){
 
   std::stringstream stream;
   for(auto i = 0; i < __TRIES__; i++){
-    ecp.send(std::string("TQR\n"));
-    try{
+   //ecp.send(std::string("TQR\n"));
+   ecp.send(std::string("IQR 78865 Q1965 shitty9topic 70\n"));
+   ecp.send(std::string("TQR"));
+   ecp.send(std::string("TER 1"));
+   try{
       ecp.timeout(__MS_BETWEEN_TRIES__);
       stream << ecp.receive();
 
