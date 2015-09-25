@@ -253,7 +253,7 @@ void ECPManager::processTER(){
     std::string answer;
 
 	// Request beeing handled
-    std::stringstream stream(r.read()); //TODO??
+    std::stringstream stream(r.read()); 
     std::string code;
     std::string tIDstr;
     std::string trash;
@@ -366,13 +366,14 @@ void ECPManager::processIQR(){
 	std::string QIDstr;
   std::string topic_name;
   std::string score;
+  std::string trash;
 
 	stream >> message;
 	stream >> SIDstr;
 	stream >> QIDstr;
 	stream >> topic_name;
 	stream >> score;
-
+	stream >> trash;
 	bool correctMessageFormat = true;
 
 	if (message != "IQR")  correctMessageFormat = false;
@@ -390,7 +391,7 @@ void ECPManager::processIQR(){
 	int scoreNR = std::stoi(score);
 	if (scoreNR < 0 || scoreNR > 100) correctMessageFormat = false;
 
-	if 	(correctMessageFormat){
+	if 	(correctMessageFormat && trash == std::string("")){
 		#if DEBUG
 		UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Received Message in the correctMessageFormat");
 		UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("Message: ")).append(message));
@@ -405,7 +406,7 @@ void ECPManager::processIQR(){
 	//
 	// Check for repeated request
 	//
-		std::string stats_message = SIDstr + std::string(" ") + topic_name + std::string(" ") + score;
+		std::string stats_message = SIDstr + std::string(" ") + topic_name + std::string(" ") + score + std::string("%");
 		UI::Dialog::IO->println(stats_message);
 		std::ofstream iFile;
 		iFile.open(_statsFile,std::fstream::app);
@@ -413,7 +414,7 @@ void ECPManager::processIQR(){
 		iFile.open (_statsFile, std::fstream::app);*/
 		iFile << stats_message.append(std::string("\n"));
 		iFile.close();
-		answer = std::string("AWI " + QIDstr); // newline required TODO ???
+		answer = std::string("AWI " + QIDstr);
 
 
 
