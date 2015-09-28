@@ -141,4 +141,13 @@ public:
      */
       void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,int scr)
 
+  /**
+    * @description will send a message to ECP server with the user score
+    * @param std::string SID
+    * @param std::string QID
+    * @param std::string topic_name
+    * @param int scr
+    */
+  void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,int scr)
+
 };

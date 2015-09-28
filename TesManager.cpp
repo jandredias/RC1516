@@ -230,7 +230,7 @@ void TesManager::processTCP(){
       #endif
 
     }else {
-		
+
       #if DEBUG
       UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request unknown");
       #endif
@@ -405,29 +405,37 @@ void TesManager::processRQS(){
     UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Message:" + r.message());
     #endif
     _rqsMutex.unlock();
-	
+
 	char answers[5];
 	std::string req;
 	std::string uid;
 	std::string qid;
 	std::string tmp;
-	
+
 	std::stringstream stream(r.message());
-	
+
 	stream >> req;
 	stream >> uid;
+  // Acho que nao tens de fazer isto, é feito pelo metodo score
 	stream >> tmp; answers[0] = atoi(tmp.data());
 	stream >> tmp; answers[1] = atoi(tmp.data());
 	stream >> tmp; answers[2] = atoi(tmp.data());
 	stream >> tmp; answers[3] = atoi(tmp.data());
 	stream >> tmp; answers[4] = atoi(tmp.data());
+  //
+
+  // if(everyThingRightFormat)  //Miguel you must check every argument
 	for(int i=0;i<5;i++){
 		UI::Dialog::IO->print(std::string("[[MAGENT]TesManager::processRQS[REGULAR]] answers:") + answers[i]+ '\n') ;
 	}
-	
+
 	char file[] =  "1.pdf";
 	int scr = score(answers,file);
-    r.answer("AQS 2 "+ std::to_string(scr));
+  r.answer("AQS 2 "+ std::to_string(scr));
+
+  //REQUEST IQR to ECP
+  sendIQR(SID,QUID,topic_name,scr)
+
 
     //FIXME
 
@@ -445,6 +453,8 @@ void TesManager::processRQS(){
     #endif
 
     _answerMutex.unlock();
+
+
   }
 }
 
@@ -561,4 +571,61 @@ int TesManager::score(char answers[], char filename[]){
   }
   in.close();
   return scoreValue;
+}
+void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,int scr){
+  SocketUDP ecp = SocketUDP(_ecpname.data(), _port);
+  std::string message;
+  std::string QID_Received;
+
+  #if DEBUG
+  UI::Dialog::IO->println("[ TesManager::sendIQR             ] Socket created");
+  UI::Dialog::IO->println("[ TesManager::sendIQR             ] Sending message");
+  #endif
+
+  std::stringstream stream;
+  for(auto i = 0; i < __TRIES__; i++){
+    ecp.send(std::string("IQR ") + std::string(SID) + std::string(QID) + std::string(topic_name) + std::to_string(scr) + std::string("\n"));
+    try{
+      ecp.timeout(__MS_BETWEEN_TRIES__);
+      stream << ecp.receive();
+
+      #if DEBUG
+      UI::Dialog::IO->println("[ TesManager::sendIQR             ] Message sent to ECP");
+      UI::Dialog::IO->println("[ TesManager::sendIQR             ] Receiving message from ECP");
+      UI::Dialog::IO->println("[ TesManager::sendIQR             ] Message received from ECP");
+      #endif
+
+      break;
+    }catch(std::string s){
+      if(errno == 11){
+        UI::Dialog::IO->print(". ");
+        UI::Dialog::IO->flush();
+        if(i < __TRIES__ - 1)
+          continue;
+        UI::Dialog::IO->println();
+        UI::Dialog::IO->println();
+      }else{
+        UI::Dialog::IO->println("error sending message to ECP server");
+      }
+    }
+    UI::Dialog::IO->println();
+    UI::Dialog::IO->println("Could not connect to ECP Server!");
+    UI::Dialog::IO->println("Try again later.");
+    return;
+  }
+  stream >> message;
+  stream >> QID_Received;
+  if(message == std::string("AWI") && QID_Received == QID){
+    UI::Dialog::IO->println("ECP received the score.");
+    return;
+  }else if(message == std::string("ERR")){
+    UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
+    UI::Dialog::IO->println("Try again.");
+    return;
+  }else if(message != std::string("AWI")){
+    UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
+    UI::Dialog::IO->println("Try again.");
+    return;
+  }
+
 }
