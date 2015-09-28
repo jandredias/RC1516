@@ -13,6 +13,8 @@
 #include <map>
 
 class TesManager{
+  std::string _ecpname;
+  int         _ecpport;
   std::queue<RequestTES> _requests;
   std::queue<RequestTES> _rqtRequests;
   std::queue<RequestTES> _rqsRequests;
@@ -117,6 +119,13 @@ public:
    */
   void answerTCP();
 
+  /**
+   * @description will return the score for a questionnaire and a set of answers
+   * @param char[] answers
+   * @param char file name
+   * @return int score
+   */
+  int score(char[], char[]);
 
   /**
    * @return  std::pair <char*, int> pdf content and size

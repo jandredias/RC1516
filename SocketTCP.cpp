@@ -3,8 +3,11 @@
 
 SocketTCP::SocketTCP(const char addr[], int port) : _server(false), _connected(false){
   _fd = socket(AF_INET, SOCK_STREAM, 0);
+
   if(_fd < 0) throw std::string("SocketTCP::SocketTCP ").append(strerror(errno));
+
   _hostptr = gethostbyname(addr);
+  if(_hostptr == NULL) throw std::string("SocketTCP::SocketTCP error getting host by name");
 
   #if DEBUG
     std::cout << "official name: " << _hostptr->h_name << std::endl;
@@ -29,9 +32,8 @@ SocketTCP::SocketTCP(int port) : _server(true), _connected(false){
   _serverAddr.sin_port = htons((u_short) port);
   _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  int ret = bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr));
-  if(ret < 0) throw std::string("SocketTCP::SocketTCP123 ").append(strerror(errno));
-
+  if(bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0)
+    throw std::string("SocketTCP::SocketTCP123 ").append(strerror(errno));
 }
 
 void SocketTCP::fd(int fd){ _fd = fd; }
@@ -40,6 +42,7 @@ int SocketTCP::fd(){ return _fd; }
 
 void SocketTCP::connect(){
   if(_server) throw std::string("error! you can't connect from a server side socket");
+
   if(::connect(_fd,(struct sockaddr *) &_serverAddr, sizeof(_serverAddr)) < 0)
     throw std::string("SocketTCP::connect").append(strerror(errno));
   _connected = true;
@@ -58,7 +61,11 @@ void SocketTCP::write(const char* text, int size){
 
   while(left > 0){
     int written = ::write(_fd, ptr, left);
-    if(written < -1) throw std::string("SocketTCP::write ").append(strerror(errno));
+    if(written < -1){
+      if(errno == EPIPE)
+        throw std::string("DISCONNETED");
+      throw std::string("SocketTCP::write ").append(strerror(errno));
+    }
     left -= written;
     ptr += written;
   }
@@ -83,8 +90,11 @@ void SocketTCP::write(char* text, int size){
 
     int written = ::write(_fd, ptr, left);
 
-    if(written < -1) throw std::string("SocketTCP::write ").append(strerror(errno));
-
+    if(written < -1){
+      if(errno == EPIPE)
+        throw std::string("DISCONNETED");
+      throw std::string("SocketTCP::write ").append(strerror(errno));
+    }
     #if DEBUG
     UI::Dialog::IO->print(std::string("Chars written to socket: "));
     UI::Dialog::IO->println(std::to_string(written));
@@ -159,3 +169,13 @@ SocketTCP SocketTCP::accept(){
 }
 
 bool SocketTCP::connected(){ return _connected; }
+
+std::string SocketTCP::ip(){
+  struct sockaddr_in *addr_in = (struct sockaddr_in *) &_serverAddr;
+  char *s = inet_ntoa(addr_in->sin_addr);
+  return std::string(s);
+}
+
+std::string SocketTCP::hostname(){
+  return std::string();
+}

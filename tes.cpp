@@ -5,8 +5,8 @@
 #include <cstdlib>
 #include <thread>         // std::thread
 
-#define __PORT__ 59000
-
+#define PORT 59000
+#define ANSWER_NO 5
 #ifndef DEBUG
 #define DEBUG 0
 #endif
@@ -15,7 +15,7 @@
 
 
 int main(int argc, char* argv[]){
-  int port = __PORT__;
+  int port = PORT;
   if(!(argc == 1 || argc == 3)){ std::cout <<"wrong number of parameteres" << std::endl; return 1; }
   for(int i = 1; i < argc; i += 2){
     if(std::string(argv[i]) != std::string("-p")){
@@ -35,8 +35,8 @@ int main(int argc, char* argv[]){
     threads.push_back(std::thread(&TesManager::processRQT, manager));
     threads.push_back(std::thread(&TesManager::processRQS, manager));
     threads.push_back(std::thread(&TesManager::processAWI, manager));
-    threads.push_back(std::thread(&TesManager::answerTCP, manager));
-
+    for(int i = 0; i < ANSWER_NO; i++)
+      threads.push_back(std::thread(&TesManager::answerTCP, manager));
     for(std::thread &a : threads) a.join();
 
   }catch(std::string s){

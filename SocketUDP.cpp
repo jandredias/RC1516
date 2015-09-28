@@ -34,18 +34,15 @@ SocketUDP::SocketUDP(int port) : _port(port),  _server(true){
   _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
   _serverAddr.sin_port        = htons((u_short) port);
 
-  int ret = bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr));
-  if(ret == -1) throw std::string("SocketUDP::SocketUDP ").append(strerror(errno));
+  if(bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0)
+    throw std::string("SocketUDP::SocketUDP ").append(strerror(errno));
 }
 
 void SocketUDP::send(std::string text){
-
   if(text[text.size() - 1] != '\n') text += '\n';
   sendto(_fd, text.data(), text.size(), 0, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr));
-
 }
 std::string SocketUDP::port(){
-
   return std::to_string(_port);
 
 }

@@ -253,7 +253,7 @@ void ECPManager::processTER(){
     std::string answer;
 
 	// Request beeing handled
-    std::stringstream stream(r.read()); 
+    std::stringstream stream(r.read());
     std::string code;
     std::string tIDstr;
     std::string trash;
@@ -393,7 +393,7 @@ void ECPManager::processIQR(){
 
 	if 	(correctMessageFormat && trash == std::string("")){
 		#if DEBUG
-		UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Received Message in the correctMessageFormat");
+		UI::Dialog::IO->println(            "[ [CYAN]ECPManager::processIQR[REGULAR]      ] Received Message in the correctMessageFormat");
 		UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("Message: ")).append(message));
 		UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("SIDstr: ")).append(SIDstr));
 		UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("QIDstr: ")).append(QIDstr));
@@ -401,11 +401,6 @@ void ECPManager::processIQR(){
 		UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("score: ")).append(score));
 		#endif
 
-
-	//TODO
-	//
-	// Check for repeated request
-	//
 		std::string stats_message = SIDstr + std::string(" ") + topic_name + std::string(" ") + score + std::string("%");
 		UI::Dialog::IO->println(stats_message);
 		std::ofstream iFile;

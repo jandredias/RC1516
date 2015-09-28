@@ -3,7 +3,7 @@
 #include <sstream>
 #include <fstream>      // std::ifstream
 #include <utility>
-TesManager::TesManager(int port) :  _requestsSem(new sem_t()),
+TesManager::TesManager(int port) : _ecpname("localhost"), _ecpport(58023), _requestsSem(new sem_t()),
 _rqtRequestsSem(new sem_t()), _rqsRequestsSem(new sem_t()),
 _awiRequestsSem(new sem_t()), _answerSem(new sem_t()), _qid(1), _port(port),
 _exit(false) {
@@ -28,9 +28,11 @@ int TesManager::deadline(int s){ return time() + s; }
 int TesManager::qid(){ return _qid++; }
 
 void TesManager::acceptRequestsTCP(){
+
   #if DEBUG
   UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Creating socket");
   #endif
+
   try{
     SocketTCP _socketTCP(_port);
 
@@ -87,75 +89,75 @@ void TesManager::acceptRequestsUDP(){
   #if DEBUG
   UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Sending message");
   #endif
-  
+
     #if DEBUG
   UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Creating socket");
   #endif
   try{
-     _socketUDP = SocketUDP(_port);
+     //_socketUDP = SocketUDP(_port);
 	}catch(std::string s){
 		UI::Dialog::IO->println(s);
 		return;
 	}
-    #if DEBUG
-     UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Socket created");
-    #endif
+  #if DEBUG
+   UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Socket created");
+  #endif
 
-    while(!_exit){
-		try{
+  while(!_exit){
+/*		try{
       #if DEBUG
       UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Waiting for messages");
       #endif
 
        _receiverSocketUDPMutex.lock();
       std::string message = _socketUDP.receive();
-      
+
        struct sockaddr_in client = _socketUDP.client();
       _receiverSocketUDPMutex.unlock();
-      
+
        UI::Dialog::IO->println(message + std::string(" from ") + _socketUDP.ip() +\
         std::string(" on port ") + _socketUDP.port());
-        
+
         #if DEBUG
 			UI::Dialog::IO->println(
         std::string("[ [CYAN]TesManager::acceptRequestsUD[REGULAR] ] Size of Message: ") +\
         std::to_string(message.size()));
 			#endif
 
-		if(message == std::string("AWI")){
+		  if(message == std::string("AWI")){
         RequestTES request(message, client);
         _awiMutex.lock();           //Lock the queue to insert a request
         _awiRequests.push(request);
         _awiMutex.unlock();         //Unlock the queue so other threads can use it
-        
-      #if DEBUG
-      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Reading from client");
-      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Client request read");
-      #endif
 
-      RequestTES r = RequestTES(s);
+        #if DEBUG
+        UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Reading from client");
+        UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Client request read");
+        #endif
 
-      _reqMutex.lock();
-      _requests.push(r);
-      _reqMutex.unlock();
+        RequestTES r = RequestTES(s);
 
-      #if DEBUG
-      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Client connected");
-      #endif
+        _reqMutex.lock();
+        _requests.push(r);
+        _reqMutex.unlock();
 
+        #if DEBUG
+        UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Client connected");
+        #endif
+
+        sem_post(_requestsSem);
+      }
+    }catch(std::string s){
+      UI::Dialog::IO->println(s);
+      _exit = 1;
       sem_post(_requestsSem);
-    }
-  }catch(std::string s){
-    UI::Dialog::IO->println(s);
-    _exit = 1;
-    sem_post(_requestsSem);
-    sem_post(_answerSem);
-    sem_post(_rqtRequestsSem);
-    sem_post(_rqsRequestsSem);
-    sem_post(_awiRequestsSem);
-    return;
+      sem_post(_answerSem);
+      sem_post(_rqtRequestsSem);
+      sem_post(_rqsRequestsSem);
+      sem_post(_awiRequestsSem);
+      return;
+    }*/
   }
-	}
 }
 
 void TesManager::processTCP(){
@@ -306,6 +308,9 @@ void TesManager::processRQT(){
 
     _rqtMutex.unlock();
 
+    UI::Dialog::IO->println("TQR" + std::string(" from ") + r.client().ip() +\
+      std::string(" on port "));// + r.client().port());
+
     std::stringstream stream(r.message());
 
     std::string code;
@@ -316,7 +321,7 @@ void TesManager::processRQT(){
     stream >> code;
     stream >> SIDstr;
     stream >> trash;
-    int tID;
+    //int tID;
     bool is_number = true;
     for(int index = 0; index < (int) SIDstr.size(); index++)
       if(SIDstr[index] < '0' || SIDstr[index] > '9') is_number = false;
@@ -440,7 +445,7 @@ void TesManager::processRQS(){
 
 void TesManager::processAWI(){
   //TODO
-  UI::Dialog::IO->println("[RED] PROCESSAWI)");
+  UI::Dialog::IO->println("[RED] PROCESSAWI [REGULAR]");
 }
 
 void TesManager::answerTCP(){
@@ -518,4 +523,34 @@ std::pair <char *, int> TesManager::pdf(std::string filename){
     return std::make_pair(buffer,length);
   }
   return std::make_pair((char*)NULL, 0);
+}
+
+int TesManager::score(char answers[], char filename[]){
+  std::ifstream in("answers.txt");
+  int scoreValue = 0;
+  if(in){
+    while(1){
+      std::string name;
+      std::string aux;
+      char ans[5];
+      in >> name;
+      for(int i = 0; i < 5; i++){
+        in >> aux;
+        ans[i] = aux.data()[0];
+      }
+      if(name == std::string(filename)){
+        for(int i = 0; i < 5; i++){
+          if(answers[i] != 'N' && answers[i] != 'n')
+            scoreValue += (answers[i] == ans[i]) ? 20 : -5;
+        }
+        scoreValue = (scoreValue < 0) ? 0 : scoreValue;
+        UI::Dialog::IO->print("Pontuacao: ");
+        UI::Dialog::IO->println(std::to_string(scoreValue));
+        break;
+      }
+      if(in.eof()) break;
+    }
+  }
+  in.close();
+  return scoreValue;
 }
