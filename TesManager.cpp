@@ -416,7 +416,7 @@ void TesManager::processRQS(){
 
 	stream >> req;
 	stream >> uid;
-  // Acho que nao tens de fazer isto, é feito pelo metodo score
+  // Acho que nao tens de fazer isto, é feito pelo metodo score FIXME
 	stream >> tmp; answers[0] = atoi(tmp.data());
 	stream >> tmp; answers[1] = atoi(tmp.data());
 	stream >> tmp; answers[2] = atoi(tmp.data());
@@ -434,7 +434,7 @@ void TesManager::processRQS(){
   r.answer("AQS 2 "+ std::to_string(scr));
 
   //REQUEST IQR to ECP
-  sendIQR(SID,QUID,topic_name,scr)
+  //sendIQR(SID,QUID,topic_name,scr)
 
 
     //FIXME
@@ -572,6 +572,7 @@ int TesManager::score(char answers[], char filename[]){
   in.close();
   return scoreValue;
 }
+/*
 void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,int scr){
   SocketUDP ecp = SocketUDP(_ecpname.data(), _port);
   std::string message;
@@ -629,3 +630,4 @@ void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,
   }
 
 }
+*/
