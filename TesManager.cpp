@@ -3,6 +3,8 @@
 #include <sstream>
 #include <fstream>      // std::ifstream
 #include <utility>
+#include <cstdlib>
+
 TesManager::TesManager(int port) : _ecpname("localhost"), _ecpport(58023), _requestsSem(new sem_t()),
 _rqtRequestsSem(new sem_t()), _rqsRequestsSem(new sem_t()),
 _awiRequestsSem(new sem_t()), _answerSem(new sem_t()), _qid(1), _port(port),
@@ -86,78 +88,60 @@ void TesManager::acceptRequestsTCP(){
 
 void TesManager::acceptRequestsUDP(){
   //TODO
-  #if DEBUG
-  UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Sending message");
+  /*
+	 #if DEBUG
+  UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Creating socket");
   #endif
+
+  try{
+    SocketUDP _socketUDP(_port);
 
     #if DEBUG
-  UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Creating socket");
-  #endif
-  try{
-     //_socketUDP = SocketUDP(_port);
-	}catch(std::string s){
-		UI::Dialog::IO->println(s);
-		return;
-	}
-  #if DEBUG
-   UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Socket created");
-  #endif
+    UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Socket created ");
+    UI::Dialog::IO->println(
+      std::string("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Listening on port ")\
+      + std::to_string(_port));
+    #endif
 
-  while(!_exit){
-/*		try{
+    _socketUDP.listen(10);
+
+    while(!_exit){
       #if DEBUG
-      UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Waiting for messages");
+      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Waiting for clients");
+      UI::Dialog::IO->println(
+        std::string("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]]  Requests size ")\
+        + std::to_string(_rqtRequests.size()));
       #endif
 
-       _receiverSocketUDPMutex.lock();
-      std::string message = _socketUDP.receive();
+      SocketTCP s = _socketTCP.accept();
 
-       struct sockaddr_in client = _socketUDP.client();
-      _receiverSocketUDPMutex.unlock();
+      #if DEBUG
+      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Reading from client");
+      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Client request read");
+      #endif
 
-       UI::Dialog::IO->println(message + std::string(" from ") + _socketUDP.ip() +\
-        std::string(" on port ") + _socketUDP.port());
+      RequestTES r = RequestTES(s);
 
-        #if DEBUG
-			UI::Dialog::IO->println(
-        std::string("[ [CYAN]TesManager::acceptRequestsUD[REGULAR] ] Size of Message: ") +\
-        std::to_string(message.size()));
-			#endif
+      _reqMutex.lock();
+      _requests.push(r);
+      _reqMutex.unlock();
 
-		  if(message == std::string("AWI")){
-        RequestTES request(message, client);
-        _awiMutex.lock();           //Lock the queue to insert a request
-        _awiRequests.push(request);
-        _awiMutex.unlock();         //Unlock the queue so other threads can use it
+      #if DEBUG
+      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Client connected");
+      #endif
 
-        #if DEBUG
-        UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Reading from client");
-        UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Client request read");
-        #endif
-
-        RequestTES r = RequestTES(s);
-
-        _reqMutex.lock();
-        _requests.push(r);
-        _reqMutex.unlock();
-
-        #if DEBUG
-        UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Client connected");
-        #endif
-
-        sem_post(_requestsSem);
-      }
-    }catch(std::string s){
-      UI::Dialog::IO->println(s);
-      _exit = 1;
       sem_post(_requestsSem);
-      sem_post(_answerSem);
-      sem_post(_rqtRequestsSem);
-      sem_post(_rqsRequestsSem);
-      sem_post(_awiRequestsSem);
-      return;
-    }*/
-  }
+    }
+  }catch(std::string s){
+    UI::Dialog::IO->println(s);
+    _exit = 1;
+    sem_post(_requestsSem);
+    sem_post(_answerSem);
+    sem_post(_rqtRequestsSem);
+    sem_post(_rqsRequestsSem);
+    sem_post(_awiRequestsSem);
+    return;
+  }*/
 }
 
 void TesManager::processTCP(){
@@ -197,7 +181,6 @@ void TesManager::processTCP(){
     #if DEBUG
     UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Reading message from Request");
     #endif
-
     r.message(r.read());
 
     #if DEBUG
@@ -246,24 +229,25 @@ void TesManager::processTCP(){
       UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Request inserted in RQS queue");
       #endif
 
-    }else{
-
+    }else {
+		
       #if DEBUG
       UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request unknown");
       #endif
-
-      r.message("ERR\n");
+	  UI::Dialog::IO->println("[ [RED]DONT CARE[REGULAR]      ] Type of request unknown");
+      std::string answer = std::string("ERR");
+      r.message(answer);
       _answerMutex.lock();
 
       #if DEBUG
-      UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Inserting request on RQS queue");
+      UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Inserting request on answer queue");
       #endif
 
       _answers.push(r);
       sem_post(_answerSem);
 
       #if DEBUG
-      UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Request inserted in RQS queue");
+      UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Request inserted in answer queue");
       #endif
 
       _answerMutex.unlock();
@@ -308,8 +292,8 @@ void TesManager::processRQT(){
 
     _rqtMutex.unlock();
 
-    UI::Dialog::IO->println("TQR" + std::string(" from ") + r.client().ip() +\
-      std::string(" on port "));// + r.client().port());
+   /* UI::Dialog::IO->println("TQR" + std::string(" from ") + r.client().ip() +\
+      std::string(" on port "));// + r.client().port());*/
 
     std::stringstream stream(r.message());
 
@@ -418,11 +402,32 @@ void TesManager::processRQS(){
 
     #if DEBUG
     UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Removed request from the RQS queue");
+    UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Message:" + r.message());
     #endif
     _rqsMutex.unlock();
-
-    std::cout << r.read() << std::endl;
-    r.answer("AQS \n");
+	
+	char answers[5];
+	std::string req;
+	std::string uid;
+	std::string qid;
+	std::string tmp;
+	
+	std::stringstream stream(r.message());
+	
+	stream >> req;
+	stream >> uid;
+	stream >> tmp; answers[0] = atoi(tmp.data());
+	stream >> tmp; answers[1] = atoi(tmp.data());
+	stream >> tmp; answers[2] = atoi(tmp.data());
+	stream >> tmp; answers[3] = atoi(tmp.data());
+	stream >> tmp; answers[4] = atoi(tmp.data());
+	for(int i=0;i<5;i++){
+		UI::Dialog::IO->print(std::string("[[MAGENT]TesManager::processRQS[REGULAR]] answers:") + answers[i]+ '\n') ;
+	}
+	
+	char file[] =  "1.pdf";
+	int scr = score(answers,file);
+    r.answer("AQS 2 "+ std::to_string(scr));
 
     //FIXME
 
@@ -445,7 +450,10 @@ void TesManager::processRQS(){
 
 void TesManager::processAWI(){
   //TODO
-  UI::Dialog::IO->println("[RED] PROCESSAWI [REGULAR]");
+   #if DEBUG
+  UI::Dialog::IO->println("[ [RED]TesManager::processAWI[REGULAR]      ] BEGIN");
+  #endif
+
 }
 
 void TesManager::answerTCP(){
@@ -477,14 +485,14 @@ void TesManager::answerTCP(){
     _answerMutex.lock();
 
     #if DEBUG
-    UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removing request from the RQT queue");
+    UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removing request from the ANSWER queue");
     #endif
 
     RequestTES r = _answers.front();
     _answers.pop();
 
     #if DEBUG
-    UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removed request from the RQT queue");
+    UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removed request from the ANSWER queue");
     #endif
 
     _answerMutex.unlock();
