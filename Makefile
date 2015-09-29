@@ -3,7 +3,9 @@
 #============= DO NOT CHANGE ANYTHING AFTER THIS LINE ==============
 #===================================================================
 CC = g++
-FLAGS = -std=c++11 -O3 -ggdb -Wall -pedantic
+FLAGS = -std=c++11 -O3 -ggdb -Wall -pedantic -Wpedantic -pedantic-errors \
+        -Wextra -w -Waggressive-loop-optimizations 
+#				-static-libstdc++
 
 COMP = $(CC) $(FLAGS) -g -c
 
