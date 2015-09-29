@@ -26,37 +26,37 @@ int main(int argc, char* argv[]){
   bool flag_p = false;
   bool flag_n = false;
   bool flag_e = false;
+  bool flag_good;
 
   if(!(argc == 1 || argc == 3 || argc == 5 || argc == 7)){ std::cout <<"wrong number of parameteres" << std::endl; return 1; }
   for(int i = 1; i < argc; i += 2){
+    flag_good = true;
     //Flag p - TESport
-    if(std::string(argv[i]) != std::string("-p") && !flag_p){
-      std::cout << "wrong format of parameters" << std::endl;
-    }
-    else{
+    if(!flag_p && std::string(argv[i]) == std::string("-p")){
       //should redefine tes port
       tesPort = atoi(argv[i+1]);
       flag_p = true;
+      flag_good = false;
     }
 
     //Flag n - ECPname
-    if(std::string(argv[i]) != std::string("-n") && !flag_n){
-      std::cout << "wrong format of parameters" << std::endl;
-    }
-    else{
+    else if(!flag_n && std::string(argv[i]) == std::string("-n")){
       //should redefine ecp name
       ecpName = argv[i+1];
       flag_n = true;
+      flag_good = false;
     }
 
     //Flag e - ECPport
-    if(std::string(argv[i]) != std::string("-e") && !flag_e){
-      std::cout << "wrong format of parameters" << std::endl;
-    }
-    else{
+    else if(!flag_e && std::string(argv[i]) == std::string("-e")){
       //should redefine ecp port
       ecpPort = atoi(argv[i+1]);
       flag_e = true;
+      flag_good = false;
+    }
+
+    if(flag_good){
+      std::cout << "wrong format of parameters" << std::endl;
     }
   }
   try{

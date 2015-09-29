@@ -374,7 +374,7 @@ void TesManager::processRQT(){
 }
 
 void TesManager::processRQS(){
-  
+
   #if DEBUG
   UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] BEGIN");
   #endif
@@ -462,6 +462,8 @@ void TesManager::processRQS(){
 }
 
 void TesManager::processAWI(){
+  //sendIQR("78865","Q0156","The_topic_is_Real",45);
+  //sendIQR("78865","Q0156","The_topic_is_Real",95);
   //TODO
    #if DEBUG
   UI::Dialog::IO->println("[ [RED]TesManager::processAWI[REGULAR]      ] BEGIN");
@@ -517,7 +519,7 @@ void TesManager::answerTCP(){
     snprintf(a, 4,"%s", r.message().data());
     #if DEBUG
 	UI::Dialog::IO->println(std::string("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Message: ").append(a) );
-    #endif		
+    #endif
     if(!(strcmp(a,"RQS") == 0)) r.write();
 
     r.disconnect();
@@ -581,8 +583,13 @@ int TesManager::score(char answers[], char filename[]){
 }
 
 void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,int scr){
-  std::cout << _ecpname.data() << std::endl;
-  std::cout << _ecpport << std::endl;
+
+  #if DEBUG
+  UI::Dialog::IO->println(            "[ TesManager::sendIQR             ] ECP server data:");
+  UI::Dialog::IO->println(std::string("[ TesManager::sendIQR             ] Server Name: ").append(_ecpname.data()));
+  UI::Dialog::IO->println(std::string("[ TesManager::sendIQR             ] Server Port: ").append(std::to_string(_ecpport)));
+  #endif
+
   SocketUDP ecp = SocketUDP(_ecpname.data(), _ecpport );
   std::string message;
   std::string QID_Received;
