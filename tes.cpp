@@ -5,7 +5,9 @@
 #include <cstdlib>
 #include <thread>         // std::thread
 
-#define PORT 59000
+#define __PORT_TES__ 59000
+#define __PORT_ECP__ 58023
+#define __HOST__ "localhost"
 #define ANSWER_NO 5
 #ifndef DEBUG
 #define DEBUG 0
@@ -15,19 +17,50 @@
 
 
 int main(int argc, char* argv[]){
-  int port = PORT;
-  if(!(argc == 1 || argc == 3)){ std::cout <<"wrong number of parameteres" << std::endl; return 1; }
+  int tesPort = __PORT_TES__;
+
+  /* Definir dados do Servidor ECP */
+  int ecpPort = __PORT_ECP__;
+  std::string ecpName = __HOST__;
+
+  bool flag_p = false;
+  bool flag_n = false;
+  bool flag_e = false;
+
+  if(!(argc == 1 || argc == 3 || argc == 5 || argc == 7)){ std::cout <<"wrong number of parameteres" << std::endl; return 1; }
   for(int i = 1; i < argc; i += 2){
-    if(std::string(argv[i]) != std::string("-p")){
+    //Flag p - TESport
+    if(std::string(argv[i]) != std::string("-p") && !flag_p){
+      std::cout << "wrong format of parameters" << std::endl;
+    }
+    else{
+      //should redefine tes port
+      tesPort = atoi(argv[i+1]);
+      flag_p = true;
+    }
+
+    //Flag n - ECPname
+    if(std::string(argv[i]) != std::string("-n") && !flag_n){
+      std::cout << "wrong format of parameters" << std::endl;
+    }
+    else{
+      //should redefine ecp name
+      ecpName = argv[i+1];
+      flag_n = true;
+    }
+
+    //Flag e - ECPport
+    if(std::string(argv[i]) != std::string("-e") && !flag_e){
       std::cout << "wrong format of parameters" << std::endl;
     }
     else{
       //should redefine ecp port
-      port = atoi(argv[i+1]);
+      ecpPort = atoi(argv[i+1]);
+      flag_e = true;
     }
   }
   try{
-    TesManager *manager = new TesManager(port);
+    TesManager *manager = new TesManager(tesPort,ecpPort,ecpName);
     std::vector<std::thread> threads;
     threads.push_back(std::thread(&TesManager::acceptRequestsTCP, manager));
     threads.push_back(std::thread(&TesManager::acceptRequestsUDP, manager));

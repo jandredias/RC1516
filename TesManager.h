@@ -6,11 +6,13 @@
 #include <queue>
 #include <semaphore.h>
 #include <mutex>
+#include <map>
 
 #ifndef DEBUG
 #define DEBUG 0
 #endif
-#include <map>
+#define __MS_BETWEEN_TRIES__ 2000
+#define __TRIES__ 10
 
 class TesManager{
   std::string _ecpname;
@@ -65,7 +67,12 @@ public:
    *                        in the future there might be several processRequests
    *                        threads working at the same time
    */
-  TesManager(int);
+   /**
+    * @param int             port TES is listening (TCP)
+    * @param int             port to connect with ECP (UDP)
+    * @param std::string     ecp hostname
+    */
+  TesManager(int, int, std::string);
   ~TesManager();
 
   /**
@@ -130,7 +137,7 @@ public:
   /**
    * @return  std::pair <char*, int> pdf content and size
    */
-  std::pair <char *, int> pdf(std::string);
+  std::pair<char *, int> pdf(std::string);
 
   /**
     * @description will send a message to ECP server with the user score
@@ -139,6 +146,6 @@ public:
     * @param std::string topic_name
     * @param int scr
     */
-  void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,int scr)
+  void sendIQR(std::string SID,std::string QID,std::string topic_name,int scr);
 
 };

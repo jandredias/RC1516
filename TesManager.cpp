@@ -5,10 +5,13 @@
 #include <utility>
 #include <cstdlib>
 
-TesManager::TesManager(int port) : _ecpname("localhost"), _ecpport(58023), _requestsSem(new sem_t()),
+#include <ostream>
+
+TesManager::TesManager(int port, int ecpPort, std::string ecpName) :  _requestsSem(new sem_t()),
 _rqtRequestsSem(new sem_t()), _rqsRequestsSem(new sem_t()),
 _awiRequestsSem(new sem_t()), _answerSem(new sem_t()), _qid(1), _port(port),
-_exit(false) {
+_ecpport(ecpPort),_ecpname(ecpName), _exit(false) {
+
   sem_init(_requestsSem, 0, 0);
   sem_init(_rqtRequestsSem, 0, 0);
   sem_init(_rqsRequestsSem, 0, 0);
@@ -371,7 +374,7 @@ void TesManager::processRQT(){
 }
 
 void TesManager::processRQS(){
-
+  
   #if DEBUG
   UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] BEGIN");
   #endif
@@ -572,9 +575,11 @@ int TesManager::score(char answers[], char filename[]){
   in.close();
   return scoreValue;
 }
-/*
+
 void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,int scr){
-  SocketUDP ecp = SocketUDP(_ecpname.data(), _port);
+  std::cout << _ecpname.data() << std::endl;
+  std::cout << _ecpport << std::endl;
+  SocketUDP ecp = SocketUDP(_ecpname.data(), _ecpport );
   std::string message;
   std::string QID_Received;
 
@@ -585,7 +590,7 @@ void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,
 
   std::stringstream stream;
   for(auto i = 0; i < __TRIES__; i++){
-    ecp.send(std::string("IQR ") + std::string(SID) + std::string(QID) + std::string(topic_name) + std::to_string(scr) + std::string("\n"));
+    ecp.send(std::string("IQR ") + std::string(SID) + std::string(" ") + std::string(QID) + std::string(" ") + std::string(topic_name) + std::string(" ") + std::to_string(scr) + std::string("\n"));
     try{
       ecp.timeout(__MS_BETWEEN_TRIES__);
       stream << ecp.receive();
@@ -630,4 +635,3 @@ void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,
   }
 
 }
-*/
