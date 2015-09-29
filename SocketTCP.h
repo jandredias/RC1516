@@ -101,4 +101,8 @@ public:
    */
   SocketTCP accept();
 
+
+  std::string ip();
+
+  std::string hostname();
 };
