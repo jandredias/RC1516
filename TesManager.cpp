@@ -237,9 +237,9 @@ void TesManager::processTCP(){
       #if DEBUG
       UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request unknown");
       #endif
-	  UI::Dialog::IO->println("[ [RED]DONT CARE[REGULAR]      ] Type of request unknown");
+	  UI::Dialog::IO->println("[ [RED]DONT CARE -- ERROR[REGULAR]          ] Type of request unknown");
       std::string answer = std::string("ERR");
-      r.message(answer);
+      r.answer(answer);
       _answerMutex.lock();
 
       #if DEBUG
@@ -513,12 +513,12 @@ void TesManager::answerTCP(){
     #if DEBUG
     if(r.answer().size() < 100) UI::Dialog::IO->println(r.answer());
     #endif
-    char a[4];
-    snprintf(a, 4,"%s", r.message().data());
+    char requestType[4];
+    snprintf(requestType, 4,"%s", r.message().data());
     #if DEBUG
-	UI::Dialog::IO->println(std::string("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Message: ").append(a) );
+	UI::Dialog::IO->println(std::string("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Request Type: ").append(requestType) );
     #endif		
-    if(!(strcmp(a,"RQS") == 0)) r.write();
+    if((strcmp(requestType,"RQT") == 0)) r.write();
 
     r.disconnect();
   }
