@@ -434,7 +434,7 @@ void TesManager::processRQS(){
 
 	char file[] =  "1.pdf";
 	int scr = score(answers,file);
-  r.answer("AQS 2 "+ std::to_string(scr));
+	r.answer("AQS 2 "+ std::to_string(scr));
 
   //REQUEST IQR to ECP
   //sendIQR(SID,QUID,topic_name,scr)
@@ -513,8 +513,12 @@ void TesManager::answerTCP(){
     #if DEBUG
     if(r.answer().size() < 100) UI::Dialog::IO->println(r.answer());
     #endif
-
-    r.write();
+    char a[4];
+    snprintf(a, 4,"%s", r.message().data());
+    #if DEBUG
+	UI::Dialog::IO->println(std::string("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Message: ").append(a) );
+    #endif		
+    if(!(strcmp(a,"RQS") == 0)) r.write();
 
     r.disconnect();
   }
