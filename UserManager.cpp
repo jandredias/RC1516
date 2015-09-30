@@ -9,8 +9,7 @@
 #include <fstream>      // std::ofstream
 
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
-_ecpname(ecpname){
-}
+_ecpname(ecpname){}
 
 void UserManager::list(){
   #if DEBUG
@@ -18,6 +17,7 @@ void UserManager::list(){
   #endif
 
   SocketUDP ecp = SocketUDP(_ecpname.data(), _port);
+
   std::string message;
 
   #if DEBUG
@@ -26,35 +26,38 @@ void UserManager::list(){
   #endif
 
   std::stringstream stream;
-  for(auto i = 0; i < __TRIES__; i++){
+
+  /*
+   * This for cycle tries to connect to ECP for X times and will "return" the
+   * server message on std::stringstream stream
+   */
+  for(auto i = 0; i < TRIES; i++){
    ecp.send(std::string("TQR\n"));
-  try{
-      ecp.timeout(__MS_BETWEEN_TRIES__);
-      stream << ecp.receive();
+    try{
+        ecp.timeout(MS_BETWEEN_TRIES);
+        stream << ecp.receive();
 
-      #if DEBUG
-      UI::Dialog::IO->println("[ UserManager::list            ] Message sent to ECP");
-      UI::Dialog::IO->println("[ UserManager::list            ] Receiving message from ECP");
-      UI::Dialog::IO->println("[ UserManager::list            ] Message received from ECP");
-      #endif
+        #if DEBUG
+        UI::Dialog::IO->println("[ UserManager::list            ] Message sent to ECP");
+        UI::Dialog::IO->println("[ UserManager::list            ] Receiving message from ECP");
+        UI::Dialog::IO->println("[ UserManager::list            ] Message received from ECP");
+        #endif
 
-      break;
+        break;
     }catch(std::string s){
       if(errno == 11){
         UI::Dialog::IO->print(". ");
         UI::Dialog::IO->flush();
-        if(i < __TRIES__ - 1)
-          continue;
+        if(i < TRIES - 1) continue;
         UI::Dialog::IO->println();
         UI::Dialog::IO->println();
       }else{
+        UI::Dialog::IO->println(s);
         UI::Dialog::IO->println("error sending message to ECP server");
       }
     }
     UI::Dialog::IO->println();
-    UI::Dialog::IO->println("Could not connect to ECP Server!");
-    UI::Dialog::IO->println("Try again later.");
-    return;
+    throw std::string("Could not connect to ECP Server!\nTry again later.");
   }
 
   #if DEBUG
@@ -103,10 +106,10 @@ void UserManager::request(int tnn){
   #endif
 
   std::stringstream stream;
-  for(auto i = 0; i < __TRIES__; i++){
+  for(auto i = 0; i < TRIES; i++){
     ecp.send(std::string("TER ") + std::to_string(tnn) + std::string("\n"));
     try{
-      ecp.timeout(__MS_BETWEEN_TRIES__);
+      ecp.timeout(MS_BETWEEN_TRIES);
       stream << ecp.receive();
 
       #if DEBUG
@@ -120,7 +123,7 @@ void UserManager::request(int tnn){
       if(errno == 11){
         UI::Dialog::IO->print(". ");
         UI::Dialog::IO->flush();
-        if(i < __TRIES__ - 1)
+        if(i < TRIES - 1)
           continue;
         UI::Dialog::IO->println();
         UI::Dialog::IO->println();

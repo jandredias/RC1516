@@ -2,12 +2,12 @@
 #include <string>
 
 #ifndef DEBUG
-#define DEBUG 1
+#define DEBUG 0
 #endif
 
 
-#define __MS_BETWEEN_TRIES__ 2000
-#define __TRIES__ 10
+#define MS_BETWEEN_TRIES 2000
+#define TRIES 10
 
 class UserManager {
   int _sid;

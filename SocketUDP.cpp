@@ -1,5 +1,5 @@
 #include "SocketUDP.h"
-
+#include "Exception.h"
 SocketUDP::SocketUDP() : _server(true){}
 
 SocketUDP::SocketUDP(const char addr[], int port) : _port(port), _server(false){
@@ -39,7 +39,7 @@ SocketUDP::SocketUDP(int port) : _port(port),  _server(true){
 }
 
 void SocketUDP::send(std::string text){
-  if(text[text.size() - 1] != '\n') text += '\n';
+  //if(text[text.size() - 1] != '\n') text += '\n';
   sendto(_fd, text.data(), text.size(), 0, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr));
 }
 std::string SocketUDP::port(){
@@ -49,23 +49,23 @@ std::string SocketUDP::port(){
 std::string SocketUDP::receive(int flags){
   char buffer[BUFFER_SIZE];
   _serverLen = sizeof(_serverAddr);
-  int n = recvfrom(_fd, buffer, BUFFER_SIZE, flags, (struct sockaddr*) &_serverAddr, &_serverLen);
 
-  if(n == -1) throw std::string("SocketUDP::receive ").append(strerror(errno));
+  int n = recvfrom(_fd, buffer, BUFFER_SIZE, flags, (struct sockaddr*) &_serverAddr, &_serverLen);
+  if(n >= BUFFER_SIZE) throw MessageTooLongUDP();
+  else if(n == -1) throw std::string("SocketUDP::receive ").append(strerror(errno));
 
   std::string msg(buffer);
   int pos = msg.find('\n');
+  if(pos == std::string::npos) throw UnknownFormatProtocol();
   return msg.substr(0, pos);
 }
 
 void SocketUDP::close(){
-  if(::close(_fd) == -1) throw std::string();
+  if(::close(_fd) == -1) throw std::string("SocketUDP::close ").append(strerror(errno));
 }
 
 std::string SocketUDP::ip(){
-  struct sockaddr_in *addr_in = (struct sockaddr_in *) &_serverAddr;
-  char *s = inet_ntoa(addr_in->sin_addr);
-  return std::string(s);
+  return std::string(inet_ntoa(((struct sockaddr_in *) &_serverAddr)->sin_addr));
 }
 
 std::string SocketUDP::hostname(){

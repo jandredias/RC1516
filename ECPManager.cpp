@@ -511,8 +511,9 @@ void ECPManager::sendAnswer(){
 	    std::string("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Sending message: ") + \
 	    r.answer());
 		#endif
-
     _socketUDP.send(r.answer());
+
+	//	_socketUDP.send(r.answer().substr(0, r.answer().size() - 3));
 
     #if DEBUG
 		UI::Dialog::IO->println("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Message sent by UDP Socket");

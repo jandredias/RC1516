@@ -6,7 +6,7 @@
 #include <string>
 #include "Dialog.h"
 #ifndef DEBUG
-#define DEBUG 1
+#define DEBUG 0
 #endif
 class RequestTES{
   SocketTCP _client;
