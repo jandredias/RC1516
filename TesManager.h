@@ -9,7 +9,7 @@
 #include <map>
 
 #ifndef DEBUG
-#define DEBUG 0
+#define DEBUG 1
 #endif
 #define __MS_BETWEEN_TRIES__ 2000
 #define __TRIES__ 10

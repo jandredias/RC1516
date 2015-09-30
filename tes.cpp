@@ -10,7 +10,7 @@
 #define __HOST__ "localhost"
 #define ANSWER_NO 5
 #ifndef DEBUG
-#define DEBUG 0
+#define DEBUG 1
 #endif
 
 #include "TesManager.h"

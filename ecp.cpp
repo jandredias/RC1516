@@ -4,7 +4,7 @@
 #define __PORT__ 58023
 
 #ifndef DEBUG
-#define DEBUG 0
+#define DEBUG 1
 #endif
 
 #include "ECPManager.h"

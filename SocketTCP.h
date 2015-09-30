@@ -15,7 +15,7 @@
 #include <string>     // std::string, std::to_string
 
 #ifndef DEBUG
-#define DEBUG 0
+#define DEBUG 1
 #endif
 
 class SocketTCP{
