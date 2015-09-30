@@ -1,10 +1,11 @@
-
 #===================================================================
 #============= DO NOT CHANGE ANYTHING AFTER THIS LINE ==============
 #===================================================================
 CC = g++
+
 FLAGS = -std=c++11 -O3 -ggdb -Wall -pedantic -Wpedantic -pedantic-errors \
-        -Wextra -w -Waggressive-loop-optimizations 
+        -Wextra -w -Waggressive-loop-optimizations -Werror -pedantic-errors \
+				-Wparentheses -Wunknown-pragmas
 #				-static-libstdc++
 
 COMP = $(CC) $(FLAGS) -g -c
@@ -15,53 +16,67 @@ all:	ecp tes user
 #===========   Central Evaluation Contact Point Server  ============
 #===================================================================
 
-ecp:	ecp.cpp ECPManager.o RequestECP.o SocketUDP.o Dialog.o
-	$(CC) $(FLAGS) ecp.cpp ECPManager.o RequestECP.o SocketUDP.o Dialog.o -lrt -pthread -o ecp
+ecp:	ecp.o ECPManager.o RequestECP.o SocketUDP.o Dialog.o
+	$(CC) $(FLAGS) ecp.o ECPManager.o RequestECP.o SocketUDP.o Dialog.o -lrt -pthread -o ecp
 
-RequestECP.o:	RequestECP.h RequestECP.cpp
+ecp.o: ecp.cpp ECPManager.h RequestECP.h SocketUDP.h SocketTCP.h
+	$(COMP) ecp.cpp -o ecp.o
+RequestECP.o: RequestECP.cpp RequestECP.h
 	$(COMP) RequestECP.cpp -o RequestECP.o
 
-ECPManager.o:	ECPManager.h ECPManager.cpp
+ECPManager.o: ECPManager.cpp ECPManager.h RequestECP.h SocketUDP.h \
+	 SocketTCP.h Dialog.h
 	$(COMP) ECPManager.cpp -o ECPManager.o
 
 #===================================================================
 #=============         TOPIC EVALUATION SERVER        ==============
 #===================================================================
 
-tes:	tes.cpp SocketTCP.o SocketUDP.o Dialog.o RequestTES.o TesManager.o
-	$(CC) $(FLAGS) tes.cpp SocketTCP.o SocketUDP.o Dialog.o RequestTES.o TesManager.o -pthread -o tes
-	tar xvf quiz.tar.xz
+tes:	tes.o SocketTCP.o SocketUDP.o Dialog.o RequestTES.o TesManager.o
+	$(CC) $(FLAGS) tes.o SocketTCP.o SocketUDP.o Dialog.o RequestTES.o TesManager.o -pthread -o tes
 
-RequestTES.o:	RequestTES.h RequestTES.cpp
+tes.o: tes.cpp SocketTCP.h SocketUDP.h TesManager.h RequestTES.h Dialog.h
+	$(COMP) tes.cpp -o tes.o
+
+RequestTES.o: RequestTES.cpp RequestTES.h SocketTCP.h SocketUDP.h \
+	 Dialog.h
 	$(COMP) RequestTES.cpp -o RequestTES.o
 
-TesManager.o:	TesManager.h TesManager.cpp
+TesManager.o: TesManager.cpp TesManager.h RequestTES.h SocketTCP.h \
+	 SocketUDP.h Dialog.h
 	$(COMP) TesManager.cpp -o TesManager.o
 
+pdf:	1.pdf 2.pdf 3.pdf 4.pdf 5.pdf
+	tar xvf quiz.tar.xz
 
 #===================================================================
 #=============                   USER                 ==============
 #===================================================================
 
-user:	user.cpp MenuBuilder.o List.o Submit.o Request.o UserManager.o SocketTCP.o SocketUDP.o Dialog.o
-	$(CC) $(FLAGS) user.cpp MenuBuilder.o List.o Submit.o Dialog.o Request.o UserManager.o SocketTCP.o SocketUDP.o -o user
+user:	user.o MenuBuilder.o List.o Submit.o Request.o UserManager.o SocketTCP.o SocketUDP.o Dialog.o
+	$(CC) $(FLAGS) user.o MenuBuilder.o List.o Submit.o Dialog.o Request.o UserManager.o SocketTCP.o SocketUDP.o -o user
 
-UserManager.o:	UserManager.h UserManager.cpp
+user.o: user.cpp MenuBuilder.h UserManager.h Dialog.h
+	$(COMP) user.cpp -o user.o
+
+UserManager.o: UserManager.cpp UserManager.h SocketUDP.h SocketTCP.h \
+	 Dialog.h
 	$(COMP) UserManager.cpp -o UserManager.o
 
-Dialog.o:	Dialog.h Dialog.cpp
+Dialog.o: Dialog.cpp Dialog.h
 	$(COMP) Dialog.cpp -lrt -o Dialog.o
 
-MenuBuilder.o:	MenuBuilder.cpp MenuBuilder.h
+MenuBuilder.o: MenuBuilder.cpp MenuBuilder.h UserManager.h Menu.h \
+	 Command.h Dialog.h List.h Request.h Submit.h
 	$(COMP) MenuBuilder.cpp -o MenuBuilder.o
 
-List.o:	List.cpp List.h
+List.o: List.cpp List.h Command.h UserManager.h
 	$(COMP) List.cpp -o List.o
 
-Submit.o:	Submit.cpp Submit.h
+Submit.o: Submit.cpp Submit.h Command.h UserManager.h Dialog.h
 	$(COMP) Submit.cpp -o Submit.o
 
-Request.o:	Request.cpp Request.h
+Request.o: Request.cpp Request.h Command.h UserManager.h Dialog.h
 	$(COMP) Request.cpp -o Request.o
 
 
@@ -69,10 +84,10 @@ Request.o:	Request.cpp Request.h
 #=============                 OTHERS                 ==============
 #===================================================================
 
-SocketTCP.o:	SocketTCP.h SocketTCP.cpp
+SocketTCP.o: SocketTCP.cpp SocketTCP.h Dialog.h
 	$(COMP) SocketTCP.cpp -o SocketTCP.o
 
-SocketUDP.o:	SocketTCP.h SocketUDP.cpp
+SocketUDP.o: SocketUDP.cpp SocketUDP.h
 	$(COMP) SocketUDP.cpp -o SocketUDP.o
 
 enable:
