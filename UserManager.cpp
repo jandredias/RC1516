@@ -70,16 +70,17 @@ void UserManager::list(){
   }
   int nt;
   stream >> nt;
-  std::cout << code << " " << nt << std::endl;
 
+  #if DEBUG
+    UI::Dialog::IO->println(code  + std::string(" ") + std::to_string(nt));
+  #endif
   int numberOfChars = log10(nt) + 1;
 
   std::string topic;
-  int i = 0;
+  int i = 1;
   UI::Dialog::IO->println(std::string("Topics:"));
   while(stream >> topic){
-    if(i == 0) UI::Dialog::IO->print(" ");
-    UI::Dialog::IO->print(std::string(" ", 1 + numberOfChars - log10(i)));
+    UI::Dialog::IO->print(std::string(" ", numberOfChars - log10(i)));
     UI::Dialog::IO->print(std::to_string(i));
     UI::Dialog::IO->print(std::string(" - "));
     UI::Dialog::IO->println(topic);
@@ -238,17 +239,8 @@ void UserManager::request(int tnn){
   int fd = tes.rawRead();
   for(int i = 0; i < atoi(size.data()); i++){
 
-    #if DEBUG
-    UI::Dialog::IO->println(std::string("I'm reading the socket"));
-    #endif
-
     while(::read(fd, &b, 1) == 0);
     pdfFile << b;
-
-    #if DEBUG
-    UI::Dialog::IO->print(std::string("Read one byte"));
-    UI::Dialog::IO->println(std::to_string(i));
-    #endif
 
   }
   pdfFile.close();
@@ -290,7 +282,7 @@ void UserManager::submit(int qid, char r[]){
   UI::Dialog::IO->println(std::string("Writing..."));
   #endif
 
-  tes.write(std::string("RQS ") + std::to_string(_sid));
+  tes.write(std::string("RQS ") + std::to_string(_sid) + UI::Dialog::IO->readString());
   for(int i = 0; i < 5; i++){
     tes.write(" ");
     tes.write(std::to_string(r[i]));

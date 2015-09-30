@@ -24,8 +24,8 @@ void RequestTES::write(){
   #if DEBUG
   UI::Dialog::IO->println(std::string("Writing file to socket"));
   #endif
-
-  _client.write(_file, _fileSize);
+  if(_fileSize > 0)
+    _client.write(_file, _fileSize);
 
   #if DEBUG
   UI::Dialog::IO->println(std::string("File written"));
