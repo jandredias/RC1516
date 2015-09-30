@@ -7,11 +7,11 @@
 #include "Dialog.h"
 #include <math.h>       /* log */
 #include <fstream>      // std::ofstream
-
+#include "Exception.h"
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
 _ecpname(ecpname){}
 
-void UserManager::list(){
+std::string UserManager::list(){
   #if DEBUG
   UI::Dialog::IO->println("[ UserManager::list            ] Creating socket");
   #endif
@@ -21,8 +21,8 @@ void UserManager::list(){
   std::string message;
 
   #if DEBUG
-  UI::Dialog::IO->println("[ UserManager::list            ] Socket created");
-  UI::Dialog::IO->println("[ UserManager::list            ] Sending message");
+  UI::Dialog::IO->println("[ UserManager::list            ] Socket created\n"
+                          "[ UserManager::list            ] Sending message");
   #endif
 
   std::stringstream stream;
@@ -38,9 +38,9 @@ void UserManager::list(){
         stream << ecp.receive();
 
         #if DEBUG
-        UI::Dialog::IO->println("[ UserManager::list            ] Message sent to ECP");
-        UI::Dialog::IO->println("[ UserManager::list            ] Receiving message from ECP");
-        UI::Dialog::IO->println("[ UserManager::list            ] Message received from ECP");
+        UI::Dialog::IO->println("[ UserManager::list            ] Message sent to ECP\n"
+                                "[ UserManager::list            ] Receiving message from ECP\n"
+                                "[ UserManager::list            ] Message received from ECP");
         #endif
 
         break;
@@ -52,12 +52,10 @@ void UserManager::list(){
         UI::Dialog::IO->println();
         UI::Dialog::IO->println();
       }else{
-        UI::Dialog::IO->println(s);
-        UI::Dialog::IO->println("error sending message to ECP server");
+        throw WritingOnSocket();
       }
     }
-    UI::Dialog::IO->println();
-    throw std::string("Could not connect to ECP Server!\nTry again later.");
+    throw ECPOffline();
   }
 
   #if DEBUG
@@ -67,55 +65,72 @@ void UserManager::list(){
   std::string code;
   stream >> code;
   if(code == std::string("EOF")){
-    UI::Dialog::IO->println("There is no questionnaire available at the moment. Try again later.");
-    UI::Dialog::IO->println();
-    return;
+    char c = '\0';
+    stream.get(&c,1);
+    if(c == '\n'){
+      throw NoQuestionnaire();
+    }
+    throw UnknownFormatProtocol();
+  }else if(code != std::string("AWT")){
+    throw UnknownFormatProtocol();
   }
   int nt;
   stream >> nt;
 
+  if(nt <= 0){
+    throw UnknownFormatProtocol();
+  }
+
   #if DEBUG
     UI::Dialog::IO->println(code  + std::string(" ") + std::to_string(nt));
   #endif
-  int numberOfChars = log10(nt) + 1;
 
   std::string topic;
-  int i = 1;
-  UI::Dialog::IO->println(std::string("Topics:"));
-  while(stream >> topic){
-    UI::Dialog::IO->print(std::string(" ", numberOfChars - log10(i)));
-    UI::Dialog::IO->print(std::to_string(i));
-    UI::Dialog::IO->print(std::string(" - "));
-    UI::Dialog::IO->println(topic);
-    i++;
-  }
 
+  std::string text = "Topics:\n";
+  for(int i = 1; i < nt + 1; i++){
+    stream >> topic;
+    if(i != nt && stream.eof()) throw WrongNumberofTopics();
+    text += std::to_string(i);
+    text += std::string(" - ");
+    text += topic;
+    text += std::string("\n");
+  }
+  if(!stream.eof()){
+      throw UnknownFormatProtocol();
+  }
   #if DEBUG
   UI::Dialog::IO->println("[ UserManager::list            ] Message processed");
   #endif
 
+  return text;
 }
 
-void UserManager::request(int tnn){
-  SocketUDP ecp = SocketUDP(_ecpname.data(), _port);
-  std::string message;
+std::string UserManager::request(int tnn){
 
   #if DEBUG
-  UI::Dialog::IO->println("[ UserManager::request            ] Socket created");
-  UI::Dialog::IO->println("[ UserManager::request            ] Sending message");
+  UI::Dialog::IO->println("[ UserManager::request            ] Creating socket");
+  #endif
+
+  SocketUDP ecp = SocketUDP(_ecpname.data(), _port);
+
+
+  #if DEBUG
+  UI::Dialog::IO->println("[ UserManager::request            ] Socket created\n"
+                          "[ UserManager::request            ] Sending message");
   #endif
 
   std::stringstream stream;
   for(auto i = 0; i < TRIES; i++){
-    ecp.send(std::string("TER ") + std::to_string(tnn) + std::string("\n"));
+    ecp.send("TER " + std::to_string(tnn) + "\n");
     try{
       ecp.timeout(MS_BETWEEN_TRIES);
       stream << ecp.receive();
 
       #if DEBUG
-      UI::Dialog::IO->println("[ UserManager::request            ] Message sent to ECP");
-      UI::Dialog::IO->println("[ UserManager::request            ] Receiving message from ECP");
-      UI::Dialog::IO->println("[ UserManager::request            ] Message received from ECP");
+      UI::Dialog::IO->println("[ UserManager::request            ] Message sent to ECP\n"
+                              "[ UserManager::request            ] Receiving message from ECP\n"
+                              "[ UserManager::request            ] Message received from ECP");
       #endif
 
       break;
@@ -128,35 +143,34 @@ void UserManager::request(int tnn){
         UI::Dialog::IO->println();
         UI::Dialog::IO->println();
       }else{
-        UI::Dialog::IO->println("error sending message to ECP server");
+        throw WritingOnSocket();
       }
     }
-    UI::Dialog::IO->println();
-    UI::Dialog::IO->println("Could not connect to ECP Server!");
-    UI::Dialog::IO->println("Try again later.");
-    return;
+    throw ECPOffline();
   }
-  stream >> message;
-  if(message == std::string("EOF")){
-    UI::Dialog::IO->println("There is no questionnaire topics available at the moment.");
-    UI::Dialog::IO->println("Try again later.");
-    return;
-  }else if(message == std::string("ERR")){
-    UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
-    UI::Dialog::IO->println("Try again.");
-    return;
-  }else if(message != std::string("AWTES")){
-    UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
-    UI::Dialog::IO->println("Try again.");
-    return;
+
+  std::string code;
+  stream >> code;
+
+  if(code == std::string("EOF")){
+    char c = '\0';
+    stream.get(&c,1);
+    if(c == '\n'){
+      throw NoQuestionnaire();
+    }
+    throw UnknownFormatProtocol();
+  }else if(code == std::string("ERR")){
+    throw ErrorOnMessage();
+  }else if(code != std::string("AWTES")){
+    throw UnknownFormatProtocol();
   }
 
   #if DEBUG
   UI::Dialog::IO->println("Connecting to TES Server");
   #endif
-  std::string code;
-  std::string hostname;
-  int port;
+
+  std::string hostname = "";
+  int port = 0;
 
   stream >> hostname;
   stream >> port;
@@ -165,6 +179,9 @@ void UserManager::request(int tnn){
   std::cout << "Creating socket" << std::endl;
   #endif
 
+  if(hostname == std::string("")) throw InvalidHostname();
+  if(port <= 0) throw InvalidPort();
+
   SocketTCP tes(hostname.data(), port);
 
   #if DEBUG
@@ -172,12 +189,8 @@ void UserManager::request(int tnn){
   std::cout << "Connecting..." << std::endl;
   #endif
 
-  try{
-    tes.connect();
-  }catch(std::string s){
-    UI::Dialog::IO->println(s);
-    return;
-  }
+  tes.connect();
+
   _tesname = hostname;
   _tesport = port;
 
@@ -194,7 +207,7 @@ void UserManager::request(int tnn){
   UI::Dialog::IO->println(std::string("Reading Server Answer"));
   UI::Dialog::IO->println(std::string("Reading AQT"));
   #endif
-
+std::string message;
   message = tes.readWord();
 
   #if DEBUG
@@ -203,7 +216,7 @@ void UserManager::request(int tnn){
 
   if(message != std::string("AQT")){
      UI::Dialog::IO->println(std::string("Unknown format of information"));
-     return;
+     return message;
   }
 
   #if DEBUG
@@ -258,6 +271,7 @@ void UserManager::request(int tnn){
   #if DEBUG
   UI::Dialog::IO->println(std::string("Disconnected"));
   #endif
+  return message;
 }
 
 void UserManager::submit(int qid, char r[]){

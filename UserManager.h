@@ -27,13 +27,17 @@ public:
 
   /**
    * @description           lists available topics
+   * @return std::string will return the string containg the topics received
+   * from the ecp server
    */
-  void list();
+  std::string list();
 
   /**
    * @description          requests
+   * @return std::string will return the questionnaire id, that is also the pdf
+   * file name
    */
-  void request(int);
+  std::string request(int);
 
   /**
    * @description          submits answers

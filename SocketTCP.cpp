@@ -1,13 +1,13 @@
 #include "SocketTCP.h"
 #include "Dialog.h"
-
+#include "Exception.h"
 SocketTCP::SocketTCP(const char addr[], int port) : _server(false), _connected(false){
   _fd = socket(AF_INET, SOCK_STREAM, 0);
 
-  if(_fd < 0) throw std::string("SocketTCP::SocketTCP ").append(strerror(errno));
+  if(_fd < 0) throw TCPCreating(strerror(errno));
 
   _hostptr = gethostbyname(addr);
-  if(_hostptr == NULL) throw std::string("SocketTCP::SocketTCP error getting host by name");
+  if(_hostptr == NULL) throw TCPCreating("SocketTCP::SocketTCP error getting host by name");
 
   #if DEBUG
     std::cout << "official name: " << _hostptr->h_name << std::endl;
@@ -41,16 +41,16 @@ void SocketTCP::fd(int fd){ _fd = fd; }
 int SocketTCP::fd(){ return _fd; }
 
 void SocketTCP::connect(){
-  if(_server) throw std::string("error! you can't connect from a server side socket");
+  if(_server) throw connectOnServer();
 
   if(::connect(_fd,(struct sockaddr *) &_serverAddr, sizeof(_serverAddr)) < 0)
-    throw std::string("SocketTCP::connect").append(strerror(errno));
+    throw ErrorConnectingTCP(strerror(errno));
   _connected = true;
 }
 
 void SocketTCP::disconnect(){
   if(::close(_fd))
-    throw std::string("SocketTCP::disconnect ").append(strerror(errno));
+    throw DisconnectingTCP(strerror(errno));
   _connected = false;
 }
 void SocketTCP::write(const char* text, int size){
