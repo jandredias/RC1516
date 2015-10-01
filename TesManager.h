@@ -23,6 +23,8 @@ class TesManager{
   std::queue<RequestTES> _awiRequests;
   std::queue<RequestTES> _answers;
 
+  std::queue<std::string> _pendingQID;
+
   std::map<int, std::string> _questionaries;
 
   sem_t * _requestsSem;

@@ -7,15 +7,17 @@
 
 #include <ostream>
 
-TesManager::TesManager(int port, int ecpPort, std::string ecpName) :  _requestsSem(new sem_t()),
-_rqtRequestsSem(new sem_t()), _rqsRequestsSem(new sem_t()),
-_awiRequestsSem(new sem_t()), _answerSem(new sem_t()), _qid(1), _port(port),
-_ecpport(ecpPort),_ecpname(ecpName), _exit(false) {
+TesManager::TesManager(int port, int ecpPort, std::string ecpName) :
+_requestsSem(new sem_t()), _rqtRequestsSem(new sem_t()),
+_rqsRequestsSem(new sem_t()), _awiRequestsSem(new sem_t()),
+_answerSem(new sem_t()), _qid(1), _port(port),
+_ecpport(ecpPort), _ecpname(ecpName), _exit(false) {
 
   sem_init(_requestsSem, 0, 0);
   sem_init(_rqtRequestsSem, 0, 0);
   sem_init(_rqsRequestsSem, 0, 0);
   sem_init(_awiRequestsSem, 0, 0);
+
 }
 
 TesManager::~TesManager(){
@@ -436,6 +438,20 @@ void TesManager::processRQS(){
 	int scr = score(answers,file);
 	r.answer("AQS 2 "+ std::to_string(scr));
 
+  _questionariesMutex.lock();
+
+  #if DEBUG
+  UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Inserting request on questionnaire queue");
+  #endif
+
+  _pendingQID.push(qid); // Must also have topic_name;sid,scores so he IQR can be resent
+
+  #if DEBUG
+  UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Request inserted in questionnaire queue");
+  #endif
+
+  _questionariesMutex.unlock();
+
   //REQUEST IQR to ECP
   //sendIQR(SID,QUID,topic_name,scr)
 
@@ -465,10 +481,69 @@ void TesManager::processAWI(){
   //sendIQR("78865","Q0156","The_topic_is_Real",45);
   //sendIQR("78865","Q0156","The_topic_is_Real",95);
   //TODO
-   #if DEBUG
-  UI::Dialog::IO->println("[ [RED]TesManager::processAWI[REGULAR]      ] BEGIN");
+
+
+  #if DEBUG
+  UI::Dialog::IO->println("[ [CYAN]TesManager::processAWI[REGULAR]      ] BEGIN");
   #endif
 
+  while(!_exit){
+
+    #if DEBUG
+    UI::Dialog::IO->println("[ [CYAN]TesManager::processAWI[REGULAR]      ] I'm waiting for requests to process");
+    #endif
+
+    sem_wait(_awiRequestsSem);
+    if(_exit) return;
+
+    #if DEBUG
+    UI::Dialog::IO->println("[ [CYAN]TesManager::processAWI[REGULAR]      ] Client is waiting for answer");
+    UI::Dialog::IO->println(
+      std::string("[ [CYAN]TesManager::processAWI[REGULAR]      ] Requests size: ") + \
+      std::to_string(_awiRequests.size()));
+    #endif
+
+    _awiMutex.lock();
+
+    #if DEBUG
+    UI::Dialog::IO->println("[ [CYAN]TesManager::processAWI[REGULAR]      ] Removing request from the AWI queue");
+    #endif
+    RequestTES r = _awiRequests.front();
+    _awiRequests.pop();
+
+    #if DEBUG
+    UI::Dialog::IO->println("[ [CYAN]TesManager::processAWI[REGULAR]      ] Removed request from the AWI queue");
+    UI::Dialog::IO->println("[ [CYAN]TesManager::processAWI[REGULAR]      ] Message:" + r.message());
+    #endif
+
+    _awiMutex.unlock();
+
+    std::stringstream stream(r.message());
+    std::string message;
+    std::string QID_Received;
+
+    stream >> message;
+    stream >> QID_Received;
+
+    //search for QID in QUEUE
+    //If it is there remove it and string to user
+    /*if(message == std::string("AWI") && QID_Received == QID){
+      UI::Dialog::IO->println("ECP received the score.");
+      return;
+
+    //else:
+
+    /*Missing ways to actually verify this shit..*/
+    /*}else if(message == std::string("ERR")){
+      UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
+      UI::Dialog::IO->println("Try again.");
+      return;
+    }else if(message != std::string("AWI")){
+      UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
+      UI::Dialog::IO->println("Try again.");
+      return;
+    }*/
+  }
 }
 
 void TesManager::answerTCP(){
@@ -630,19 +705,6 @@ void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,
     UI::Dialog::IO->println("Try again later.");
     return;
   }
-  stream >> message;
-  stream >> QID_Received;
-  if(message == std::string("AWI") && QID_Received == QID){
-    UI::Dialog::IO->println("ECP received the score.");
-    return;
-  }else if(message == std::string("ERR")){
-    UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
-    UI::Dialog::IO->println("Try again.");
-    return;
-  }else if(message != std::string("AWI")){
-    UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
-    UI::Dialog::IO->println("Try again.");
-    return;
-  }
+
 
 }
