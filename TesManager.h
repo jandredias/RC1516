@@ -32,6 +32,7 @@ class TesManager{
   sem_t * _rqsRequestsSem;
   sem_t * _awiRequestsSem;
   sem_t * _answerSem;
+  sem_t * _questionariesSem;
 
   std::mutex _questionariesMutex;
   std::mutex _reqMutex;
@@ -122,6 +123,11 @@ public:
    * @description           will process AWI requests
    */
   void processAWI();
+
+  /**
+    * @description          will ensure the IQR requests are received
+    */
+  void processQID();
 
   /**
    * @description           will send answers to TCP clients

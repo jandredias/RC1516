@@ -68,6 +68,7 @@ int main(int argc, char* argv[]){
     threads.push_back(std::thread(&TesManager::processRQT, manager));
     threads.push_back(std::thread(&TesManager::processRQS, manager));
     threads.push_back(std::thread(&TesManager::processAWI, manager));
+    threads.push_back(std::thread(&TesManager::processQID, manager));
     for(int i = 0; i < ANSWER_NO; i++)
       threads.push_back(std::thread(&TesManager::answerTCP, manager));
     for(std::thread &a : threads) a.join();

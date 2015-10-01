@@ -8,6 +8,7 @@
 #include <ostream>
 
 TesManager::TesManager(int port, int ecpPort, std::string ecpName) :
+_questionariesSem(new sem_t()),
 _requestsSem(new sem_t()), _rqtRequestsSem(new sem_t()),
 _rqsRequestsSem(new sem_t()), _awiRequestsSem(new sem_t()),
 _answerSem(new sem_t()), _qid(1), _port(port),
@@ -17,6 +18,7 @@ _ecpport(ecpPort), _ecpname(ecpName), _exit(false) {
   sem_init(_rqtRequestsSem, 0, 0);
   sem_init(_rqsRequestsSem, 0, 0);
   sem_init(_awiRequestsSem, 0, 0);
+  sem_init(_questionariesSem, 0, 0);
 
 }
 
@@ -26,13 +28,14 @@ TesManager::~TesManager(){
   sem_destroy(_rqtRequestsSem);
   sem_destroy(_rqsRequestsSem);
   sem_destroy(_awiRequestsSem);
+  sem_destroy(_questionariesSem);
 }
 
 int TesManager::time(){ std::time_t t = std::time(0); return t; }
 
 int TesManager::deadline(int s){ return time() + s; }
 
-int TesManager::qid(){ return _qid++; }
+int TesManager::qid(){ return _qid++; } //TODO
 
 void TesManager::acceptRequestsTCP(){
 
@@ -474,6 +477,56 @@ void TesManager::processRQS(){
     _answerMutex.unlock();
 
 
+  }
+}
+
+void TesManager::processQID(){
+  #if DEBUG
+  //Bgin string
+  UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] BEGIN");
+  #endif
+  while(!_exit){
+
+    #if DEBUG
+    UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] I'm waiting for requests to process");
+    #endif
+
+    sem_wait(_questionariesSem);
+    if(_exit) return;
+
+    #if DEBUG
+    UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] Client is waiting for answer");
+    UI::Dialog::IO->println(
+      std::string("[ [WHITE]TesManager::processQID[REGULAR]      ] Requests size: ") + \
+      std::to_string(_awiRequests.size()));
+    #endif
+
+    _questionariesMutex.lock();
+
+    #if DEBUG
+    UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] Removing request from the AWI queue");
+    #endif
+
+    //Get the next one to check  //TODO
+    RequestTES r = _awiRequests.front();
+
+    //update last time stamp
+    #if DEBUG
+    UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] IQR message resent to ECP server");
+    UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] Message:" + r.message());
+    #endif
+
+    _questionariesMutex.unlock();
+
+    _answerMutex.lock();
+    _answers.push(r);
+    sem_post(_answerSem);
+
+    #if DEBUG
+    UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Request inserted in Answer queue");
+    #endif
+
+    _answerMutex.unlock();
   }
 }
 

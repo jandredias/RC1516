@@ -139,16 +139,16 @@ void ECPManager::processTQR(){
 
     sem_wait(_tqrSemaphore);
 
-	#if DEBUG
-	UI::Dialog::IO->println(
+		#if DEBUG
+		UI::Dialog::IO->println(
 	  std::string("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Requests size: ") + \
 	  std::to_string(_tqrRequests.size()));
-	#endif
+		#endif
     _tqrMutex.lock();           //Lock the queue to remove a request
                                //MultiThreading requires this mutex
     #if DEBUG
-UI::Dialog::IO->println("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Getting TQR Request from the queue");
-#endif
+		UI::Dialog::IO->println("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Getting TQR Request from the queue");
+		#endif
     RequestECP r = _tqrRequests.front();
     _tqrRequests.pop();
 
