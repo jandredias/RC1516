@@ -287,7 +287,7 @@ void ECPManager::processTER(){
       tID = atoi(tIDstr.data());
       std::pair <std::string, int> data = topicData(tID);
       answer = std::string("AWTES ") + data.first + std::string(" ") + \
-       std::to_string(data.second);
+       std::to_string(data.second) + "\n";
     }
 	// End of Handle
 
@@ -376,21 +376,23 @@ void ECPManager::processIQR(){
 	stream >> trash;
 	bool correctMessageFormat = true;
 
-	if (message != "IQR")  correctMessageFormat = false;
-	/* Checking SID is a number */
-	for(int index = 0; index < (int) SIDstr.size(); index++)
-    if(SIDstr[index] < '0' || SIDstr[index] > '9') correctMessageFormat = false;
-	if (SIDstr.size() != 5) correctMessageFormat = false;
+	int sid = atoi(SIDstr.data());
+	std::cout << correctMessageFormat << std::endl;
+	if (message != "IQR" || QIDstr == "" || sid < 10000 || sid > 99999 || topic_name == "")
+		correctMessageFormat = false;
 
-	if (QIDstr == "")  correctMessageFormat = false;
-	if (topic_name == "") correctMessageFormat = false;
-
+		std::cout << correctMessageFormat << std::endl;
 	/* Checking score is a number */
 	for(int index = 0; index < (int) score.size(); index++)
     if(score[index] < '0' || score[index] > '9') correctMessageFormat = false;
+
+	std::cout << correctMessageFormat << std::endl;
 	int scoreNR = std::stoi(score);
+
+	std::cout << correctMessageFormat << std::endl;
 	if (scoreNR < 0 || scoreNR > 100) correctMessageFormat = false;
 
+	std::cout << correctMessageFormat << std::endl;
 	if 	(correctMessageFormat && trash == std::string("")){
 		#if DEBUG
 		UI::Dialog::IO->println(            "[ [CYAN]ECPManager::processIQR[REGULAR]      ] Received Message in the correctMessageFormat");
@@ -413,8 +415,7 @@ void ECPManager::processIQR(){
 
 
 
-	}
-	else{
+	}else{
 		UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
 		UI::Dialog::IO->println("[RED][ERR][REGULAR] Error related to the IQR's arguments format.");
 	}

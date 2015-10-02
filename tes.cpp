@@ -64,6 +64,7 @@ int main(int argc, char* argv[]){
     std::vector<std::thread> threads;
     threads.push_back(std::thread(&TesManager::acceptRequestsTCP, manager));
     threads.push_back(std::thread(&TesManager::acceptRequestsUDP, manager));
+    threads.push_back(std::thread(&TesManager::answerUDP, manager));
     threads.push_back(std::thread(&TesManager::processTCP, manager));
     threads.push_back(std::thread(&TesManager::processRQT, manager));
     threads.push_back(std::thread(&TesManager::processRQS, manager));

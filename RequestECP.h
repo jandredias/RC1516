@@ -28,6 +28,12 @@ public:
   RequestECP(std::string, struct sockaddr_in);
 
   /**
+   * @param std::string message that will contain the message received and that
+   * that will be processed by one thread
+   */
+  RequestECP(std::string);
+
+  /**
    * @return std::string message
    */
   std::string message();

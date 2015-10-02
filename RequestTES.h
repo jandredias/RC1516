@@ -12,7 +12,7 @@ class RequestTES{
   SocketTCP _client;
   std::string _message;
   std::string _answer;
-  int       _qid;
+  std::string _qid;
   int       _sid;
   int       _deadline;
   int       _fileSize;
@@ -25,11 +25,12 @@ public:
    * @param int             quiz' id
    * @param int             deadline timestamp
    */
-  RequestTES(SocketTCP, int = 0, int = 0, int = 0);
+  RequestTES(SocketTCP, int = 0, std::string = std::string("T0Q0"), int = 0);
+  RequestTES(std::string);
   SocketTCP client(){ return _client; }
   void sid(int);
-  int qid();
-  void qid(int);
+  std::string qid();
+  void qid(std::string);
   void deadline(int);
   void fileSize(int);
   void message(std::string);

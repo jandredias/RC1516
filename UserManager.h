@@ -42,5 +42,5 @@ public:
   /**
    * @description          submits answers
    */
-  void submit(int, char*);
+  void submit(std::string, std::string);
 };

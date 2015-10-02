@@ -1,8 +1,9 @@
 #include "RequestTES.h"
 
-RequestTES::RequestTES(SocketTCP client, int sid, int qid, int deadline) :
+RequestTES::RequestTES(SocketTCP client, int sid, std::string qid, int deadline) :
 _client(client), _qid(qid), _sid(sid), _deadline(deadline), _fileSize(-1){}
 
+RequestTES::RequestTES(std::string message) : _message(message) {}
 
 std::string RequestTES::message(){ return _message; }
 void RequestTES::answer(std::string answer){ _answer = answer; }
@@ -14,7 +15,7 @@ void RequestTES::write(){
   #if DEBUG
   UI::Dialog::IO->println(std::string("Writing to socket"));
   #endif
-  
+
   _client.write(_answer);
 
   #if DEBUG
@@ -31,14 +32,15 @@ void RequestTES::write(){
   UI::Dialog::IO->println(std::string("File written"));
   #endif
 
-  delete[] _file;
+
+  if(_file != NULL) delete[] _file;
 }
 std::string RequestTES::read(){ return _client.read(); }
 void RequestTES::disconnect(){ _client.disconnect(); }
 bool RequestTES::finished(){ return !_client.connected(); }
 
 void RequestTES::sid(int x){ _sid = x;}
-void RequestTES::qid(int x){ _qid = x;}
-int RequestTES::qid(){ return _qid; }
+void RequestTES::qid(std::string x){ _qid = x;}
+std::string RequestTES::qid(){ return _qid; }
 void RequestTES::deadline(int x){ _deadline = x;}
 void RequestTES::fileSize(int x){ _fileSize = x;}

@@ -9,6 +9,7 @@ namespace RC_User{
        Command<UserManager>("Request", manager){}
     void Request::execute(){
       try{
+        UI::Dialog::IO->print("Which topic do you want to get? ");
         _receiver->request(UI::Dialog::IO->readInteger());
       }catch(ErrorOnMessage s){
         UI::Dialog::IO->println("There was an error in the communication with the server.");

@@ -8,18 +8,18 @@ namespace RC_User{
   Submit::Submit(UserManager *manager) :
        Command<UserManager>("Submit", manager){}
     void Submit::execute(){
-      int qid;
-      char r[5];
+      std::string qid;
       UI::Dialog::IO->print("QID: ");
-      qid = UI::Dialog::IO->readInteger();
-
+      qid = UI::Dialog::IO->readString();
+      std::string answers = "";
       for(int i = 0; i < 5; i++){
           UI::Dialog::IO->print("Answer to question ");
           UI::Dialog::IO->print(std::to_string(i + 1));
           UI::Dialog::IO->print("? ");
 
-          r[i] = (UI::Dialog::IO->readString()).data()[0];
+      answers += UI::Dialog::IO->readString();
+      if(i < 4) answers += " ";
       }
-      _receiver->submit(qid, r);
+      _receiver->submit(qid, answers);
     }
 }

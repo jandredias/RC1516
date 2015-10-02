@@ -1,5 +1,6 @@
 #include "TesManager.h"
 #include "Dialog.h"
+#include "Exception.h"
 #include <sstream>
 #include <fstream>      // std::ifstream
 #include <utility>
@@ -11,13 +12,14 @@ TesManager::TesManager(int port, int ecpPort, std::string ecpName) :
 _questionariesSem(new sem_t()),
 _requestsSem(new sem_t()), _rqtRequestsSem(new sem_t()),
 _rqsRequestsSem(new sem_t()), _awiRequestsSem(new sem_t()),
-_answerSem(new sem_t()), _qid(1), _port(port),
-_ecpport(ecpPort), _ecpname(ecpName), _exit(false) {
+_answerSem(new sem_t()), _answerUDPSem(new sem_t()), _qid(1), _port(port),
+_ecpport(ecpPort), _ecpname(ecpName), _exit(false), _topicName("Hosts"), _senderSocketUDP(new SocketUDP(_ecpname.data(), _ecpport)) {
 
   sem_init(_requestsSem, 0, 0);
   sem_init(_rqtRequestsSem, 0, 0);
   sem_init(_rqsRequestsSem, 0, 0);
   sem_init(_awiRequestsSem, 0, 0);
+  sem_init(_answerUDPSem, 0, 0);
   sem_init(_questionariesSem, 0, 0);
 
 }
@@ -29,13 +31,14 @@ TesManager::~TesManager(){
   sem_destroy(_rqsRequestsSem);
   sem_destroy(_awiRequestsSem);
   sem_destroy(_questionariesSem);
+  sem_destroy(_answerUDPSem);
 }
 
 int TesManager::time(){ std::time_t t = std::time(0); return t; }
 
 int TesManager::deadline(int s){ return time() + s; }
 
-int TesManager::qid(){ return _qid++; } //TODO
+std::string TesManager::qid(){ return "YYYY:MM:DD|HH:MM" + std::to_string(_qid++); }
 
 void TesManager::acceptRequestsTCP(){
 
@@ -95,61 +98,67 @@ void TesManager::acceptRequestsTCP(){
 }
 
 void TesManager::acceptRequestsUDP(){
-  //TODO
-  /*
-	 #if DEBUG
+  #if DEBUG
   UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Creating socket");
   #endif
 
   try{
     SocketUDP _socketUDP(_port);
-
     #if DEBUG
     UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Socket created ");
     UI::Dialog::IO->println(
-      std::string("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Listening on port ")\
+      std::string("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Waiting for message on port ")\
       + std::to_string(_port));
     #endif
-
-    _socketUDP.listen(10);
-
     while(!_exit){
       #if DEBUG
-      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Waiting for clients");
       UI::Dialog::IO->println(
-        std::string("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]]  Requests size ")\
+        std::string("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Waiting for message on port ")\
+        + std::to_string(_port));
+      #endif
+
+      _receiverSocketUDPMutex.lock();
+      std::string message = _socketUDP.receive();
+      _receiverSocketUDPMutex.unlock();
+
+      #if DEBUG
+      UI::Dialog::IO->println(
+        std::string("[ [CYAN]TesManager::acceptRequestsTC[REGULAR]]  Queue size ")\
         + std::to_string(_rqtRequests.size()));
       #endif
 
-      SocketTCP s = _socketTCP.accept();
-
       #if DEBUG
-      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Reading from client");
-      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Client request read");
+      UI::Dialog::IO->println(
+        std::string("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Size of Message: ") +\
+        std::to_string(message.size()));
       #endif
 
-      RequestTES r = RequestTES(s);
-
-      _reqMutex.lock();
-      _requests.push(r);
-      _reqMutex.unlock();
+      RequestTES r(message);
 
       #if DEBUG
-      UI::Dialog::IO->println("[ [BLUE]TesManager::acceptRequestsTC[REGULAR]] Client connected");
+      UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] "
+                              "Waiting for mutex to be unlocked and inserting request on queue");
+      #endif
+      _awiMutex.lock();
+      _awiRequests.push(r);
+      _awiMutex.unlock();
+      #if DEBUG
+      UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] "
+                              "Request inserted on queue and mutex unlocked");
       #endif
 
-      sem_post(_requestsSem);
+      sem_post(_awiRequestsSem);
+      #if DEBUG
+      UI::Dialog::IO->println("[ [CYAN]TesManager::acceptRequestsUD[REGULAR]] Semaphore posted");
+      #endif
     }
   }catch(std::string s){
     UI::Dialog::IO->println(s);
-    _exit = 1;
-    sem_post(_requestsSem);
-    sem_post(_answerSem);
-    sem_post(_rqtRequestsSem);
-    sem_post(_rqsRequestsSem);
-    sem_post(_awiRequestsSem);
-    return;
-  }*/
+  }catch(UnknownFormatProtocol s){
+    UI::Dialog::IO->println("Message received using an unknown protocol");
+  }catch(MessageTooLongUDP s){
+    UI::Dialog::IO->println("Message too long to be processed");
+  }
 }
 
 void TesManager::processTCP(){
@@ -327,11 +336,17 @@ void TesManager::processRQT(){
       r.deadline(deadline());
       std::string answer;
       answer  = std::string("AQT ");
-      answer += std::to_string(r.qid());
+      answer += r.qid();
       answer += std::string(" ");
       answer += std::to_string(deadline());
       answer += std::string(" ");
+
       std::string filename = std::to_string(rand() % 5 + 1) + std::string(".pdf");
+
+
+      _questionariesMutex.lock();
+      _questionaries[r.qid()] = filename;
+      _questionariesMutex.unlock();
 
       #if DEBUG
       UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Reading file: ");
@@ -400,87 +415,91 @@ void TesManager::processRQS(){
       std::to_string(_rqsRequests.size()));
     #endif
 
-    _rqsMutex.lock();
 
     #if DEBUG
     UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Removing request from the RQS queue");
     #endif
+
+    _rqsMutex.lock();
     RequestTES r = _rqsRequests.front();
     _rqsRequests.pop();
+    _rqsMutex.unlock();
 
     #if DEBUG
     UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Removed request from the RQS queue");
     UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Message:" + r.message());
     #endif
-    _rqsMutex.unlock();
 
-	char answers[5];
-	std::string req;
-	std::string uid;
-	std::string qid;
-	std::string tmp;
+  	std::string req;
+  	std::string sid;
+  	std::string qid;
+  	std::string tmp;
+  	char answers[5];
 
-	std::stringstream stream(r.message());
+  	std::stringstream stream(r.message());
 
-	stream >> req;
-	stream >> uid;
-  // Acho que nao tens de fazer isto, é feito pelo metodo score FIXME
-	stream >> tmp; answers[0] = atoi(tmp.data());
-	stream >> tmp; answers[1] = atoi(tmp.data());
-	stream >> tmp; answers[2] = atoi(tmp.data());
-	stream >> tmp; answers[3] = atoi(tmp.data());
-	stream >> tmp; answers[4] = atoi(tmp.data());
-  //
+  	stream >> req;
+  	stream >> sid;
+    stream >> qid;
 
-  // if(everyThingRightFormat)  //Miguel you must check every argument
-	for(int i=0;i<5;i++){
-		UI::Dialog::IO->print(std::string("[[MAGENT]TesManager::processRQS[REGULAR]] answers:") + answers[i]+ '\n') ;
-	}
-
-	char file[] =  "1.pdf";
-	int scr = score(answers,file);
-	r.answer("AQS 2 "+ std::to_string(scr));
-
-  _questionariesMutex.lock();
-
-  #if DEBUG
-  UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Inserting request on questionnaire queue");
-  #endif
-
-  _pendingQID.push(qid); // Must also have topic_name;sid,scores so he IQR can be resent
-
-  #if DEBUG
-  UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Request inserted in questionnaire queue");
-  #endif
-
-  _questionariesMutex.unlock();
-
-  //REQUEST IQR to ECP
-  //sendIQR(SID,QUID,topic_name,scr)
+  	stream >> tmp; answers[0] = tmp.data()[0];
+  	stream >> tmp; answers[1] = tmp.data()[0];
+  	stream >> tmp; answers[2] = tmp.data()[0];
+  	stream >> tmp; answers[3] = tmp.data()[0];
+  	stream >> tmp; answers[4] = tmp.data()[0];
 
 
-    //FIXME
+    #if DEBUG
+  	for(int i=0;i<5;i++){
+  		UI::Dialog::IO->print(std::string("[[MAGENT]TesManager::processRQS[REGULAR]] answers:") + answers[i]+ '\n') ;
+  	}
+    #endif
 
-    _answerMutex.lock();
+    try{
+      if(sid == std::string("") || qid == std::string("")) throw UnknownFormatProtocol();
+      for(int i = 0; i < 5; i++)
+        if(answers[i] < 'A' && answers[i] > 'D' && answers[i] != 'N') throw UnknownFormatProtocol();
+
+      _questionariesMutex.lock();
+      std::string file = _questionaries.find(qid)->second;
+      _questionariesMutex.unlock();
+
+    	int scr = score(answers,file.c_str());
+    	r.answer("AQS " + file + " " + std::to_string(scr) + "\n");
+
+      RequestTES iqrRequest = RequestTES("");
+      iqrRequest.answer(
+        "IQR " + std::string(sid) + std::string(" ") +
+       std::string(qid) + std::string(" ") + std::string(_topicName) +
+       std::string(" ") + std::to_string(scr) + std::string("\n"));
+
+      _answerUDPMutex.lock();
+      _answersUDP.push(iqrRequest);
+      _answerUDPMutex.unlock();
+      sem_post(_answerUDPSem);
+    }catch(UnknownFormatProtocol s){
+      r.answer("ERR\n");
+    }
 
     #if DEBUG
     UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Inserting request on Answer queue");
     #endif
 
+    _answerMutex.lock();
     _answers.push(r);
+    _answerMutex.unlock();
+
     sem_post(_answerSem);
 
     #if DEBUG
     UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Request inserted in Answer queue");
     #endif
-
-    _answerMutex.unlock();
-
-
   }
 }
 
 void TesManager::processQID(){
+  return;
+  /*
   #if DEBUG
   //Bgin string
   UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] BEGIN");
@@ -491,7 +510,7 @@ void TesManager::processQID(){
     UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] I'm waiting for requests to process");
     #endif
 
-    sem_wait(_questionariesSem);
+    //sem_wait(_questionariesSem);
     if(_exit) return;
 
     #if DEBUG
@@ -501,14 +520,15 @@ void TesManager::processQID(){
       std::to_string(_awiRequests.size()));
     #endif
 
-    _questionariesMutex.lock();
 
     #if DEBUG
     UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] Removing request from the AWI queue");
     #endif
 
-    //Get the next one to check  //TODO
+    _questionariesMutex.lock();
     RequestTES r = _awiRequests.front();
+    _questionariesMutex.unlock();
+    //TODO
 
     //update last time stamp
     #if DEBUG
@@ -516,7 +536,6 @@ void TesManager::processQID(){
     UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] Message:" + r.message());
     #endif
 
-    _questionariesMutex.unlock();
 
     _answerMutex.lock();
     _answers.push(r);
@@ -527,7 +546,7 @@ void TesManager::processQID(){
     #endif
 
     _answerMutex.unlock();
-  }
+  }*/
 }
 
 void TesManager::processAWI(){
@@ -599,6 +618,47 @@ void TesManager::processAWI(){
   }
 }
 
+void TesManager::answerUDP(){
+
+  #if DEBUG
+  UI::Dialog::IO->println("[ [BLUE]TesManager::answerUDP[REGULAR]       ] BEGIN");
+  #endif
+
+  while(!_exit){
+
+    #if DEBUG
+    UI::Dialog::IO->println("[ [BLUE]TesManager::answerUDP[REGULAR]       ] I'm waiting for requests to process");
+    #endif
+
+    sem_wait(_answerUDPSem);
+    if(_exit) return;
+
+    #if DEBUG
+    UI::Dialog::IO->println(
+      std::string("[ [BLUE]TesManager::answerUDP[REGULAR]       ] Requests size: ") + \
+      std::to_string(_answersUDP.size()));
+    UI::Dialog::IO->println("[ [BLUE]TesManager::answerUDP[REGULAR]       ] Removing request from the ANSWER queue");
+    #endif
+
+    _answerUDPMutex.lock();
+    RequestTES r = _answersUDP.front();
+    _answersUDP.pop();
+    _answerUDPMutex.unlock();
+
+    #if DEBUG
+    UI::Dialog::IO->println("[ [BLUE]TesManager::answerUDP[REGULAR]       ] Removed request from the ANSWER queue");
+    if(r.answer().size() < 100) UI::Dialog::IO->println(r.answer());
+    #endif
+
+    _senderSocketUDP->send(r.answer());
+
+
+    _answerUDPMutex.lock();
+    _answersUDP.push(r);
+    _answerUDPMutex.unlock();
+    usleep(500);
+  }
+}
 void TesManager::answerTCP(){
 
   #if DEBUG
@@ -623,32 +683,20 @@ void TesManager::answerTCP(){
     UI::Dialog::IO->println(
       std::string("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Requests size: ") + \
       std::to_string(_rqtRequests.size()));
-    #endif
-
-    _answerMutex.lock();
-
-    #if DEBUG
     UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removing request from the ANSWER queue");
     #endif
 
+    _answerMutex.lock();
     RequestTES r = _answers.front();
     _answers.pop();
-
-    #if DEBUG
-    UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removed request from the ANSWER queue");
-    #endif
-
     _answerMutex.unlock();
 
     #if DEBUG
+    UI::Dialog::IO->println("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removed request from the ANSWER queue");
     if(r.answer().size() < 100) UI::Dialog::IO->println(r.answer());
     #endif
-    char requestType[4];
-    snprintf(requestType, 4,"%s", r.message().data());
-    #if DEBUG
-    UI::Dialog::IO->println(std::string("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Request Type: ").append(requestType) );
-    #endif
-    if((strcmp(requestType,"RQT") == 0)) r.write();
+
+    r.write();
 
     r.disconnect();
   }
@@ -680,7 +728,7 @@ std::pair <char *, int> TesManager::pdf(std::string filename){
   return std::make_pair((char*)NULL, 0);
 }
 
-int TesManager::score(char answers[], char filename[]){
+int TesManager::score(char answers[], const char filename[]){
   std::ifstream in("answers.txt");
   int scoreValue = 0;
   if(in){

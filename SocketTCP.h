@@ -27,13 +27,15 @@ class SocketTCP{
   bool _server;
   bool _connected;
 
+
+public:
+
   /**
    * @description           constructor used to accept new clients while
                             listening on server side
    */
   SocketTCP() : _server(true), _connected(true){}
-
-public:
+  
   /**
    * @description           this constructor will be used by clients to connect
    *                        to a server socket

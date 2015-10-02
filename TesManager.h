@@ -1,12 +1,12 @@
 #pragma once
 
+#include <map>
 #include "RequestTES.h"
 #include "SocketUDP.h"
 #include "SocketTCP.h"
 #include <queue>
 #include <semaphore.h>
 #include <mutex>
-#include <map>
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -22,16 +22,18 @@ class TesManager{
   std::queue<RequestTES> _rqsRequests;
   std::queue<RequestTES> _awiRequests;
   std::queue<RequestTES> _answers;
+  std::queue<RequestTES> _answersUDP;
 
   std::queue<std::string> _pendingQID;
 
-  std::map<int, std::string> _questionaries;
+  std::map<std::string, std::string> _questionaries;
 
   sem_t * _requestsSem;
   sem_t * _rqtRequestsSem;
   sem_t * _rqsRequestsSem;
   sem_t * _awiRequestsSem;
   sem_t * _answerSem;
+  sem_t * _answerUDPSem;
   sem_t * _questionariesSem;
 
   std::mutex _questionariesMutex;
@@ -40,6 +42,7 @@ class TesManager{
   std::mutex _rqsMutex;
   std::mutex _awiMutex;
   std::mutex _answerMutex;
+  std::mutex _answerUDPMutex;
 
   std::mutex _receiverSocketUDPMutex;
   std::mutex _senderSocketUDPMutex;
@@ -47,11 +50,11 @@ class TesManager{
   SocketUDP *_receiverSocketUDP;
   SocketUDP *_senderSocketUDP;
 
+  int _qid;
+  int _port;
+  bool _exit;
 
-    int _qid;
-    int _port;
-    bool _exit;
-
+  std::string _topicName;
 public:
   /**
    * @description           TesManager will manage the TES server
@@ -92,7 +95,7 @@ public:
   /**
    * @return                always returns new quiz id
    */
-  int qid();
+  std::string qid();
 
   /**
    *@description            thread method that will accept new TCP clients
@@ -134,13 +137,18 @@ public:
    */
   void answerTCP();
 
+
+  /**
+   * @description           will send answers to ECP server using UDP protocol
+   */
+  void answerUDP();
   /**
    * @description will return the score for a questionnaire and a set of answers
    * @param char[] answers
-   * @param char file name
+   * @param const char file name
    * @return int score
    */
-  int score(char[], char[]);
+  int score(char[], const char[]);
 
   /**
    * @return  std::pair <char*, int> pdf content and size

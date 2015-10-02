@@ -207,7 +207,7 @@ std::string UserManager::request(int tnn){
   UI::Dialog::IO->println(std::string("Reading Server Answer"));
   UI::Dialog::IO->println(std::string("Reading AQT"));
   #endif
-std::string message;
+  std::string message;
   message = tes.readWord();
 
   #if DEBUG
@@ -245,7 +245,7 @@ std::string message;
 
   char b;
 
-  std::string filename = std::string("T01Q") + qid + std::string(".pdf");
+  std::string filename = qid + std::string(".pdf");
 
   #if DEBUG
   UI::Dialog::IO->println(std::string("Writting to file") + filename);
@@ -274,7 +274,7 @@ std::string message;
   return message;
 }
 
-void UserManager::submit(int qid, char r[]){
+void UserManager::submit(std::string qid, std::string answers){
   if(_tesname == std::string("") || _tesport == 0){
     UI::Dialog::IO->println(std::string("You should first request a questionnaire."));
     return;
@@ -299,12 +299,7 @@ void UserManager::submit(int qid, char r[]){
   UI::Dialog::IO->println(std::string("Writing..."));
   #endif
 
-  tes.write(std::string("RQS ") + std::to_string(_sid) + UI::Dialog::IO->readString());
-  for(int i = 0; i < 5; i++){
-    tes.write(" ");
-    tes.write(std::to_string(r[i]));
-  }
-  tes.write("\n");
+  tes.write(std::string("RQS ") + std::to_string(_sid) + " " + qid + " " + answers + "\n");
   std::string code = tes.readWord();
   std::string qidstr = tes.readWord();
   std::string score = tes.readWord();
