@@ -519,13 +519,25 @@ void TesManager::processRQS(){
       for(int i = 0; i < 5; i++)
         if(answers[i] < 'A' && answers[i] > 'D' && answers[i] != 'N') throw UnknownFormatProtocol();
 
+      std::map<std::string,Quiz>::iterator it;
+
+
       _questionariesMutex.lock();
-      Quiz quiz = _questionaries.find(qid)->second;
+      it = _questionaries.find(qid);
+      if (it == _questionaries.end())
+        throw UnknownFormatProtocol();
+      else
+        _questionaries.erase (it);
       _questionariesMutex.unlock();
 
+      Quiz quiz =  it->second;
       std::string file = quiz.filename();
-
-    	int scr = score(answers,file.c_str());
+      int deadline = quiz.deadline();
+      int scr;
+      if(time() < deadline)
+    	   scr = score(answers,file.c_str());
+      else
+         scr = -1;
     	r.answer("AQS " + qid + " " + std::to_string(scr) + "\n");
 
       RequestTES iqrRequest = RequestTES("");
