@@ -31,7 +31,8 @@ SocketTCP::SocketTCP(int port) : _server(true), _connected(false){
   _serverAddr.sin_family = AF_INET;
   _serverAddr.sin_port = htons((u_short) port);
   _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-
+  int optval = 1;	
+  setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval); //THis line ensures that there is no SOCKETTCP connection refused after Server Crash.
   if(bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0){
     if(errno == EADDRINUSE) throw SocketAlreadyInUse("TCP");
     else throw std::string("SocketTCP::SocketTCP ").append(strerror(errno));
