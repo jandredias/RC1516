@@ -574,17 +574,18 @@ void TesManager::processRQS(){
       else
          scr = -1;
     	r.answer("AQS " + qid + " " + std::to_string(scr) + "\n");
+      if (scr >= 0){
+        RequestTES iqrRequest = RequestTES("");
+        iqrRequest.answer(
+          "IQR " + std::string(sid) + std::string(" ") +
+         std::string(qid) + std::string(" ") + std::string(_topicName) +
+         std::string(" ") + std::to_string(scr) + std::string("\n"));
 
-      RequestTES iqrRequest = RequestTES("");
-      iqrRequest.answer(
-        "IQR " + std::string(sid) + std::string(" ") +
-       std::string(qid) + std::string(" ") + std::string(_topicName) +
-       std::string(" ") + std::to_string(scr) + std::string("\n"));
-
-      _answerUDPMutex.lock();
-      _answersUDP.insert(std::pair<std::string, RequestTES>(iqrRequest.qid(), iqrRequest));
-      _answerUDPMutex.unlock();
-      sem_post(_answerUDPSem);
+        _answerUDPMutex.lock();
+        _answersUDP.insert(std::pair<std::string, RequestTES>(iqrRequest.qid(), iqrRequest));
+        _answerUDPMutex.unlock();
+        sem_post(_answerUDPSem);
+      }
     }catch(UnknownFormatProtocol s){
       #if DEBUG
       UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Unknown format protocol");
