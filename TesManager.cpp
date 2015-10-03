@@ -513,31 +513,56 @@ void TesManager::processRQS(){
   	stream >> tmp; answers[3] = tmp.data()[0];
   	stream >> tmp; answers[4] = tmp.data()[0];
 
-
     #if DEBUG
-  	for(int i=0;i<5;i++){
-  		UI::Dialog::IO->print(std::string("[[MAGENT]TesManager::processRQS[REGULAR]] answers:") + answers[i]+ '\n') ;
-  	}
+    UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Message received and is going to be parsed");
     #endif
-
     try{
+      #if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Parsing message");
+      #endif
       if(sid == std::string("") || qid == std::string("")) throw UnknownFormatProtocol();
       for(int i = 0; i < 5; i++)
         if(answers[i] < 'A' && answers[i] > 'D' && answers[i] != 'N') throw UnknownFormatProtocol();
 
+      #if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Message parsed");
+      #endif
+
       std::map<std::string,Quiz>::iterator it;
 
-
+      #if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Searching for questionnaire on queue");
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Locking mutex");
+      #endif
       _questionariesMutex.lock();
+      #if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Mutex locked");
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Finding qid");
+      #endif
       it = _questionaries.find(qid);
+
+      #if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Search finished");
+      #endif
       Quiz quiz;
+
       if (it == _questionaries.end())
         throw UnknownFormatProtocol();
-      else{
-        quiz = it->second;
-        _questionaries.erase (it);
-      }
+
+      #if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] QID found");
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Search finished");
+      #endif
+
+      quiz = it->second;
+      _questionaries.erase(it);
+      #if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Unlocking Mutex");
+      #endif
       _questionariesMutex.unlock();
+      #if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Mutex unlocked");
+      #endif
       std::string file = quiz.filename();
       int deadline = quiz.deadline();
       int scr;
@@ -565,6 +590,13 @@ void TesManager::processRQS(){
       UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Unknown format protocol");
       #endif
       r.answer("ERR\n");
+      #if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Unlocking Mutex");
+      #endif
+      _questionariesMutex.unlock();
+      #if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Mutex unlocked");
+      #endif
     }
 
     #if DEBUG

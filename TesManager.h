@@ -132,7 +132,7 @@ public:
    * @description           will process AWI requests
    */
   void processAWI();
-
+  
   /**
    * @description           will send answers to TCP clients
    */
