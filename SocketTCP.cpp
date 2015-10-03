@@ -32,8 +32,10 @@ SocketTCP::SocketTCP(int port) : _server(true), _connected(false){
   _serverAddr.sin_port = htons((u_short) port);
   _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-  if(bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0)
-    throw std::string("SocketTCP::SocketTCP123 ").append(strerror(errno));
+  if(bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0){
+    if(errno == EADDRINUSE) throw SocketAlreadyInUse("TCP");
+    else throw std::string("SocketTCP::SocketTCP ").append(strerror(errno));
+  }
 }
 
 void SocketTCP::fd(int fd){ _fd = fd; }

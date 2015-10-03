@@ -32,6 +32,7 @@ public:
   std::string qid();
   void qid(std::string);
   void deadline(int);
+  int deadline();
   void fileSize(int);
   void message(std::string);
   std::string message();

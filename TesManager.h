@@ -1,32 +1,38 @@
 #pragma once
 
-#include <map>
 #include "RequestTES.h"
 #include "SocketUDP.h"
 #include "SocketTCP.h"
 #include <queue>
 #include <semaphore.h>
 #include <mutex>
-
+#include <map>
+#include <unordered_map>
+#include "Quiz.h"
 #ifndef DEBUG
 #define DEBUG 0
 #endif
 #define __MS_BETWEEN_TRIES__ 2000
 #define __TRIES__ 10
 
+#define ANSWER_NO 5
+
+
+
 class TesManager{
   std::string _ecpname;
   int         _ecpport;
-  std::queue<RequestTES> _requests;
-  std::queue<RequestTES> _rqtRequests;
-  std::queue<RequestTES> _rqsRequests;
-  std::queue<RequestTES> _awiRequests;
-  std::queue<RequestTES> _answers;
-  std::queue<RequestTES> _answersUDP;
+  std::queue<RequestTES> _requests;    ///Queue that contains the requests received to be processed
+  std::queue<RequestTES> _rqtRequests; ///RQT requests to be processed by processRQT
+  std::queue<RequestTES> _rqsRequests; ///RQS requests to be processed by processRQS
+  std::queue<RequestTES> _awiRequests; ///AQI requests to be processed by processAWI
+  std::queue<RequestTES> _answers;     ///Answers TCP to be sent to clients
 
-  std::queue<std::string> _pendingQID;
+  std::unordered_map<std::string, RequestTES> _answersUDP;  ///Answers UDP to be sent to ECP server
 
-  std::map<std::string, std::string> _questionaries;
+  std::queue<std::string> _pendingQID; ///No fucking idea
+
+  std::map<std::string, Quiz> _questionaries; ///questionnaire map to save data from students
 
   sem_t * _requestsSem;
   sem_t * _rqtRequestsSem;

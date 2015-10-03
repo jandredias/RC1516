@@ -8,7 +8,7 @@
 #define __PORT_TES__ 59000
 #define __PORT_ECP__ 58023
 #define __HOST__ "localhost"
-#define ANSWER_NO 5
+#define ANSWER_NO 5 //CHANGE ALSO TesManager.h!!!!!!!!!!!!!!!!!!!!!
 #ifndef DEBUG
 #define DEBUG 0
 #endif
@@ -57,6 +57,7 @@ int main(int argc, char* argv[]){
 
     if(flag_good){
       std::cout << "wrong format of parameters" << std::endl;
+      return -1;
     }
   }
   try{
@@ -72,6 +73,8 @@ int main(int argc, char* argv[]){
     threads.push_back(std::thread(&TesManager::processQID, manager));
     for(int i = 0; i < ANSWER_NO; i++)
       threads.push_back(std::thread(&TesManager::answerTCP, manager));
+
+
     for(std::thread &a : threads) a.join();
 
   }catch(std::string s){

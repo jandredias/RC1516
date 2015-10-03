@@ -377,22 +377,17 @@ void ECPManager::processIQR(){
 	bool correctMessageFormat = true;
 
 	int sid = atoi(SIDstr.data());
-	std::cout << correctMessageFormat << std::endl;
 	if (message != "IQR" || QIDstr == "" || sid < 10000 || sid > 99999 || topic_name == "")
 		correctMessageFormat = false;
 
-		std::cout << correctMessageFormat << std::endl;
 	/* Checking score is a number */
 	for(int index = 0; index < (int) score.size(); index++)
     if(score[index] < '0' || score[index] > '9') correctMessageFormat = false;
 
-	std::cout << correctMessageFormat << std::endl;
 	int scoreNR = std::stoi(score);
 
-	std::cout << correctMessageFormat << std::endl;
 	if (scoreNR < 0 || scoreNR > 100) correctMessageFormat = false;
 
-	std::cout << correctMessageFormat << std::endl;
 	if 	(correctMessageFormat && trash == std::string("")){
 		#if DEBUG
 		UI::Dialog::IO->println(            "[ [CYAN]ECPManager::processIQR[REGULAR]      ] Received Message in the correctMessageFormat");

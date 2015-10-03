@@ -32,8 +32,8 @@ ECPManager.o: ECPManager.cpp ECPManager.h RequestECP.h SocketUDP.h \
 #=============         TOPIC EVALUATION SERVER        ==============
 #===================================================================
 
-tes:	tes.o SocketTCP.o SocketUDP.o Dialog.o RequestTES.o TesManager.o 1.pdf
-	$(CC) $(FLAGS) tes.o SocketTCP.o SocketUDP.o Dialog.o RequestTES.o TesManager.o -pthread -o tes
+tes:	tes.o SocketTCP.o SocketUDP.o Dialog.o RequestTES.o TesManager.o 1.pdf Quiz.o
+	$(CC) $(FLAGS) tes.o SocketTCP.o SocketUDP.o Dialog.o RequestTES.o Quiz.o TesManager.o -pthread -o tes
 
 tes.o: tes.cpp SocketTCP.h SocketUDP.h TesManager.h RequestTES.h Dialog.h
 	$(COMP) tes.cpp -o tes.o
@@ -46,7 +46,10 @@ TesManager.o: TesManager.cpp TesManager.h RequestTES.h SocketTCP.h \
 	 SocketUDP.h Dialog.h
 	$(COMP) TesManager.cpp -o TesManager.o
 
-1.pdf:	
+Quiz.o:	Quiz.cpp Quiz.h
+	$(COMP) Quiz.cpp -o Quiz.o
+
+1.pdf:
 	tar xvf quiz.tar.xz
 
 #===================================================================

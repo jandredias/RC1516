@@ -1,6 +1,15 @@
 #pragma once
 #include <string>
 
+class SocketAlreadyInUse{
+  bool _tcp;  //True if Socket is TCP, false if it is UDP
+
+public:
+  SocketAlreadyInUse(std::string s){ _tcp = (s == "TCP") ? true : false; }
+  std::string message(){
+    return "Socket " + std::string(((_tcp) ? "TCP" : "UDP")) + " already in use";
+  }
+};
 class UnknownFormatProtocol{};
 class MessageTooLongUDP{};
 class NoQuestionnaire{};

@@ -251,6 +251,8 @@ std::string UserManager::request(int tnn){
   UI::Dialog::IO->println(std::string("Writting to file") + filename);
   #endif
 
+  UI::Dialog::IO->println("Questionnaire has an unique id: " + qid);
+  UI::Dialog::IO->println("It will be saved in " + qid + ".pdf file");
   std::ofstream pdfFile(filename, std::ofstream::out);
   int fd = tes.rawRead();
   for(int i = 0; i < atoi(size.data()); i++){
@@ -303,7 +305,9 @@ void UserManager::submit(std::string qid, std::string answers){
   std::string code = tes.readWord();
   std::string qidstr = tes.readWord();
   std::string score = tes.readWord();
-
+  UI::Dialog::IO->println(code);
+  UI::Dialog::IO->println(qidstr);
+  UI::Dialog::IO->println(score);
   if(code.size() == 0 || qidstr.size() == 0 || score.size() == 0){
     UI::Dialog::IO->println(std::string("Error during communication with the Server"));
     return;

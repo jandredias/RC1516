@@ -8,20 +8,26 @@
 #endif
 
 #include "ECPManager.h"
+#include "Exception.h"
+#include "Dialog.h"
 int main(int argc, char* argv[]){
   int port = __PORT__;
-  if(argc != 1 && argc != 3){ std::cout <<"wrong number of parameteres" << std::endl; return 1; }
-  if(argc == 3){	
-	if(std::string(argv[1]) != std::string("-p")){
-	  std::cout << "wrong format of parameters" << std::endl;
-	  return 1;
-	}
-	else{
-	  //should redefine ecp port
-	  port = atoi(argv[2]);
-	}
+  if(argc != 1 && argc != 3){
+    UI::Dialog::IO->println("wrong number of parameteres");
+    return 1;
   }
-  std::cout << "port:    " << port << std::endl;
+  if(argc == 3){
+  	if(std::string(argv[1]) != std::string("-p")){
+  	  UI::Dialog::IO->println("wrong format of parameters");
+  	  return 1;
+  	}
+  	else{
+  	  //should redefine ecp port
+  	  port = atoi(argv[2]);
+  	}
+  }
+  UI::Dialog::IO->print(  "port:    ");
+  UI::Dialog::IO->println(std::to_string(port));
 
   try{
     ECPManager *manager = new ECPManager(port);
@@ -38,8 +44,10 @@ int main(int argc, char* argv[]){
     processIQR.join();
     sendAnswer.join();
 
+  }catch(SocketAlreadyInUse s){
+    UI::Dialog::IO->println(s.message());
   }catch(std::string s){
-    std::cout << s << std::endl;
+    UI::Dialog::IO->println(s);
   }
   return 0;
 }

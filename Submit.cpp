@@ -20,6 +20,7 @@ namespace RC_User{
       answers += UI::Dialog::IO->readString();
       if(i < 4) answers += " ";
       }
+      UI::Dialog::IO->println(qid);
       _receiver->submit(qid, answers);
     }
 }

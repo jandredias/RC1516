@@ -42,5 +42,6 @@ bool RequestTES::finished(){ return !_client.connected(); }
 void RequestTES::sid(int x){ _sid = x;}
 void RequestTES::qid(std::string x){ _qid = x;}
 std::string RequestTES::qid(){ return _qid; }
+int RequestTES::deadline(){ return _deadline; }
 void RequestTES::deadline(int x){ _deadline = x;}
 void RequestTES::fileSize(int x){ _fileSize = x;}

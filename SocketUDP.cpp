@@ -34,8 +34,10 @@ SocketUDP::SocketUDP(int port) : _port(port),  _server(true){
   _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
   _serverAddr.sin_port        = htons((u_short) port);
 
-  if(bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0)
-    throw std::string("SocketUDP::SocketUDP ").append(strerror(errno));
+  if(bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0){
+    if(errno == EADDRINUSE) throw SocketAlreadyInUse("UDP");
+    else throw std::string("SocketUDP::SocketUDP ").append(strerror(errno));
+  }
 }
 
 void SocketUDP::send(std::string text){
