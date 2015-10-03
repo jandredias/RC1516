@@ -312,7 +312,11 @@ void UserManager::submit(std::string qid, std::string answers){
     UI::Dialog::IO->println(std::string("Error during communication with the Server"));
     return;
   }
-  UI::Dialog::IO->print("Score: ");
-  UI::Dialog::IO->println(score);
-
+  
+  if (score != "-1"){
+    UI::Dialog::IO->print("Score: ");
+    UI::Dialog::IO->println(score);
+  }
+  else
+    UI::Dialog::IO->print("Questionaire submitted after deadline, therefore no score.");
 }
