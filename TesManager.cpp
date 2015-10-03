@@ -43,10 +43,16 @@ std::string TesManager::qid(){
   time_t t = time();   // get time now
  struct tm * now = localtime( & t );
   std::string qid = std::to_string(now->tm_year + 1900) + ":";
-  qid += (now->tm_mon + 1 < 9) ? "0" + std::to_string(now->tm_mon + 1) : std::to_string(now->tm_mon + 1);
-  qid += ":";
-  qid += (now->tm_mday < 9) ? "0" + std::to_string(now->tm_mday) : std::to_string(now->tm_mday);
-  qid += "|HH:MM" + std::to_string(_qid++);
+  if(now->tm_mon < 8) qid += "0";
+  qid += std::to_string(now->tm_mon + 1) + "-";
+  if(now->tm_mday < 9) qid += "0";
+  qid += std::to_string(now->tm_mday + 1) + "_";
+  if(now->tm_hour < 9) qid += "0";
+  qid += std::to_string(now->tm_hour + 1) + ":";
+  if(now->tm_min < 9) qid += "0";
+  qid += std::to_string(now->tm_min + 1) + ":";
+  if(now->tm_sec < 9) qid += "0";
+  qid += std::to_string(now->tm_sec + 1) + "_" + std::to_string(_qid++);
   return qid;
 }
 
@@ -396,7 +402,7 @@ void TesManager::processRQT(){
       UI::Dialog::IO->println("Sending file " + filename);
 
       _questionariesMutex.lock();
-      _questionaries[r.qid()] = Quiz(r.deadline(), filename);
+      _questionaries[r.qid()] = Quiz(r.sid(), r.deadline(), filename);
       _questionariesMutex.unlock();
 
       #if DEBUG
@@ -524,17 +530,21 @@ void TesManager::processRQS(){
 
       _questionariesMutex.lock();
       it = _questionaries.find(qid);
+      Quiz quiz;
       if (it == _questionaries.end())
         throw UnknownFormatProtocol();
-      else
+      else{
+        quiz = it->second;
         _questionaries.erase (it);
+      }
       _questionariesMutex.unlock();
-
-      Quiz quiz =  it->second;
       std::string file = quiz.filename();
       int deadline = quiz.deadline();
       int scr;
-      if(time() < deadline)
+      if(atoi(sid.data()) != quiz.sid()){
+        scr = -2;
+      }
+      else if(time() < deadline)
     	   scr = score(answers,file.c_str());
       else
          scr = -1;
@@ -551,6 +561,9 @@ void TesManager::processRQS(){
       _answerUDPMutex.unlock();
       sem_post(_answerUDPSem);
     }catch(UnknownFormatProtocol s){
+      #if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Unknown format protocol");
+      #endif
       r.answer("ERR\n");
     }
 
@@ -572,59 +585,6 @@ void TesManager::processRQS(){
   UI::Dialog::IO->println("Leaving thread processRQS. Bye!");
   #endif
 }
-
-void TesManager::processQID(){
-  return;
-  /*
-  #if DEBUG
-  //Bgin string
-  UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] BEGIN");
-  #endif
-  while(!_exit){
-
-    #if DEBUG
-    UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] I'm waiting for requests to process");
-    #endif
-
-    //sem_wait(_questionariesSem);
-    if(_exit) return;
-
-    #if DEBUG
-    UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] Client is waiting for answer");
-    UI::Dialog::IO->println(
-      std::string("[ [WHITE]TesManager::processQID[REGULAR]      ] Requests size: ") + \
-      std::to_string(_awiRequests.size()));
-    #endif
-
-
-    #if DEBUG
-    UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] Removing request from the AWI queue");
-    #endif
-
-    _questionariesMutex.lock();
-    RequestTES r = _awiRequests.front();
-    _questionariesMutex.unlock();
-    //TODO
-
-    //update last time stamp
-    #if DEBUG
-    UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] IQR message resent to ECP server");
-    UI::Dialog::IO->println("[ [WHITE]TesManager::processQID[REGULAR]      ] Message:" + r.message());
-    #endif
-
-
-    _answerMutex.lock();
-    _answers.push(r);
-    sem_post(_answerSem);
-
-    #if DEBUG
-    UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Request inserted in Answer queue");
-    #endif
-
-    _answerMutex.unlock();
-  }*/
-}
-
 void TesManager::processAWI(){
   //sendIQR("78865","Q0156","The_topic_is_Real",45);
   //sendIQR("78865","Q0156","The_topic_is_Real",95);

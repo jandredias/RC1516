@@ -303,6 +303,10 @@ void UserManager::submit(std::string qid, std::string answers){
 
   tes.write(std::string("RQS ") + std::to_string(_sid) + " " + qid + " " + answers + "\n");
   std::string code = tes.readWord();
+  if(code == "ERR"){
+    UI::Dialog::IO->println("Invalid request");
+    return;
+  }
   std::string qidstr = tes.readWord();
   std::string score = tes.readWord();
   UI::Dialog::IO->println(code);
@@ -312,7 +316,7 @@ void UserManager::submit(std::string qid, std::string answers){
     UI::Dialog::IO->println(std::string("Error during communication with the Server"));
     return;
   }
-  
+
   if (score != "-1"){
     UI::Dialog::IO->print("Score: ");
     UI::Dialog::IO->println(score);

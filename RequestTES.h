@@ -29,6 +29,7 @@ public:
   RequestTES(std::string);
   SocketTCP client(){ return _client; }
   void sid(int);
+  int sid();
   std::string qid();
   void qid(std::string);
   void deadline(int);

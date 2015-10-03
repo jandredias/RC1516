@@ -38,7 +38,7 @@ void RequestTES::write(){
 std::string RequestTES::read(){ return _client.read(); }
 void RequestTES::disconnect(){ _client.disconnect(); }
 bool RequestTES::finished(){ return !_client.connected(); }
-
+int RequestTES::sid(){ return _sid; }
 void RequestTES::sid(int x){ _sid = x;}
 void RequestTES::qid(std::string x){ _qid = x;}
 std::string RequestTES::qid(){ return _qid; }

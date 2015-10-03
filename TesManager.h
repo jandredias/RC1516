@@ -134,11 +134,6 @@ public:
   void processAWI();
 
   /**
-    * @description          will ensure the IQR requests are received
-    */
-  void processQID();
-
-  /**
    * @description           will send answers to TCP clients
    */
   void answerTCP();
