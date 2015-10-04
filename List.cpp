@@ -2,13 +2,20 @@
 #include "Exception.h"
 #include <iostream>
 #include "Dialog.h"
-
+#include <vector>
 namespace RC_User{
   List::List(UserManager *manager) :
        Command<UserManager>("List", manager){}
     void List::execute(){
       try{
-        UI::Dialog::IO->println(_receiver->list());
+        std::vector<std::string> topics = _receiver->list();
+        int i = 1;
+        UI::Dialog::IO->println("Topics: \n--------");
+        for(auto e : topics){
+          UI::Dialog::IO->print(std::to_string(i++) + " - ");
+          UI::Dialog::IO->println(e);
+        }
+
       }catch(std::string s){
         UI::Dialog::IO->println(s);
       }catch(UnknownFormatProtocol s){

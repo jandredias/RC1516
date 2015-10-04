@@ -1,6 +1,10 @@
 #include "SocketTCP.h"
 #include "Dialog.h"
 #include "Exception.h"
+
+SocketTCP::SocketTCP(){}
+SocketTCP::SocketTCP(int fd, struct sockaddr_in client) : _fd(fd), _clientAddr(client),
+  _server(true), _connected(true){}
 SocketTCP::SocketTCP(const char addr[], int port) : _server(false), _connected(false){
   _fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -31,7 +35,7 @@ SocketTCP::SocketTCP(int port) : _server(true), _connected(false){
   _serverAddr.sin_family = AF_INET;
   _serverAddr.sin_port = htons((u_short) port);
   _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  int optval = 1;	
+  int optval = 1;
   setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval); //THis line ensures that there is no SOCKETTCP connection refused after Server Crash.
   if(bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0){
     if(errno == EADDRINUSE) throw SocketAlreadyInUse("TCP");
@@ -166,15 +170,14 @@ SocketTCP SocketTCP::accept(){
   newSocket = ::accept(_fd, (struct sockaddr*) &_clientAddr, &sizeofClient);
   if(newSocket < 0) throw std::string("SOCKETTCP::accept ") + strerror(errno);
 
-  SocketTCP s;
-  s.fd(newSocket);
+  SocketTCP s(newSocket, _clientAddr);
   return s;
 }
 
 bool SocketTCP::connected(){ return _connected; }
 
 std::string SocketTCP::ip(){
-  struct sockaddr_in *addr_in = (struct sockaddr_in *) &_serverAddr;
+  struct sockaddr_in *addr_in = (struct sockaddr_in *) &_clientAddr;
   char *s = inet_ntoa(addr_in->sin_addr);
   return std::string(s);
 }

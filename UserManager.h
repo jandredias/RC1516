@@ -1,5 +1,7 @@
 #pragma once
 #include <string>
+#include <vector>
+#include <utility>      // std::pair, std::make_pair
 
 #ifndef DEBUG
 #define DEBUG 0
@@ -27,17 +29,17 @@ public:
 
   /**
    * @description           lists available topics
-   * @return std::string will return the string containg the topics received
-   * from the ecp server
+   * @return std::vector<std::string> will return the vector containing
+   * strings with topics received from the ecp server
    */
-  std::string list();
+  std::vector<std::string> list();
 
   /**
    * @description          requests
-   * @return std::string will return the questionnaire id, that is also the pdf
-   * file name
+   * @return std::pair<std::string, int> will return the questionnaire id, that is also the pdf
+   * file name and the deadline for submiting an answer.
    */
-  std::string request(int);
+  std::pair<std::string, int> request(int);
 
   /**
    * @description          submits answers

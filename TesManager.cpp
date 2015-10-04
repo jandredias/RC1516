@@ -39,12 +39,13 @@ int TesManager::time(){ std::time_t t = std::time(0); return t; }
 
 int TesManager::deadline(int s){ return time() + s; }
 
-std::string TesManager::qid(){
+std::string TesManager::qid(int sid){
   time_t t = time();   // get time now
- struct tm * now = localtime( & t );
-  std::string qid = std::to_string(now->tm_year + 1900) + ":";
+  struct tm * now = localtime( & t );
+  std::string qid = std::to_string(sid) + "_";
+  qid += std::to_string(now->tm_year + 1900);
   if(now->tm_mon < 8) qid += "0";
-  qid += std::to_string(now->tm_mon + 1) + "-";
+  qid += std::to_string(now->tm_mon + 1);
   if(now->tm_mday < 9) qid += "0";
   qid += std::to_string(now->tm_mday + 1) + "_";
   if(now->tm_hour < 9) qid += "0";
@@ -52,7 +53,7 @@ std::string TesManager::qid(){
   if(now->tm_min < 9) qid += "0";
   qid += std::to_string(now->tm_min + 1) + ":";
   if(now->tm_sec < 9) qid += "0";
-  qid += std::to_string(now->tm_sec + 1) + "_" + std::to_string(_qid++);
+  qid += std::to_string(now->tm_sec + 1);
   return qid;
 }
 
@@ -389,7 +390,7 @@ void TesManager::processRQT(){
     }else{
       SID = atoi(SIDstr.data());
       r.sid(SID);
-      r.qid(qid());
+      r.qid(qid(SID));
       r.deadline(deadline());
       std::string answer;
       answer  = std::string("AQT ");

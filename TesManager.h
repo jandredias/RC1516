@@ -96,12 +96,12 @@ public:
    * @param                 seconds untill the deadline
    * @return                a deadline
    */
-  int deadline(int = 600);
+  int deadline(int = 30);
 
   /**
    * @return                always returns new quiz id
    */
-  std::string qid();
+  std::string qid(int = 99999);
 
   /**
    *@description            thread method that will accept new TCP clients
@@ -132,7 +132,7 @@ public:
    * @description           will process AWI requests
    */
   void processAWI();
-  
+
   /**
    * @description           will send answers to TCP clients
    */

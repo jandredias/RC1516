@@ -11,7 +11,7 @@
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
 _ecpname(ecpname){}
 
-std::string UserManager::list(){
+std::vector<std::string> UserManager::list(){
   #if DEBUG
   UI::Dialog::IO->println("[ UserManager::list            ] Creating socket");
   #endif
@@ -85,16 +85,13 @@ std::string UserManager::list(){
     UI::Dialog::IO->println(code  + std::string(" ") + std::to_string(nt));
   #endif
 
+  std::vector<std::string> topics;
   std::string topic;
 
-  std::string text = "Topics:\n";
   for(int i = 1; i < nt + 1; i++){
     stream >> topic;
     if(i != nt && stream.eof()) throw WrongNumberofTopics();
-    text += std::to_string(i);
-    text += std::string(" - ");
-    text += topic;
-    text += std::string("\n");
+    topics.push_back(topic);
   }
   if(!stream.eof()){
       throw UnknownFormatProtocol();
@@ -103,10 +100,10 @@ std::string UserManager::list(){
   UI::Dialog::IO->println("[ UserManager::list            ] Message processed");
   #endif
 
-  return text;
+  return topics;
 }
 
-std::string UserManager::request(int tnn){
+std::pair<std::string, int> UserManager::request(int tnn){
 
   #if DEBUG
   UI::Dialog::IO->println("[ UserManager::request            ] Creating socket");
@@ -214,10 +211,7 @@ std::string UserManager::request(int tnn){
   UI::Dialog::IO->println(std::string("CODE: ") + message);
   #endif
 
-  if(message != std::string("AQT")){
-     UI::Dialog::IO->println(std::string("Unknown format of information"));
-     return message;
-  }
+  if(message != std::string("AQT")) throw UnknownFormatProtocol();
 
   #if DEBUG
   UI::Dialog::IO->println(std::string("Reading Server QID"));
@@ -251,8 +245,6 @@ std::string UserManager::request(int tnn){
   UI::Dialog::IO->println(std::string("Writting to file") + filename);
   #endif
 
-  UI::Dialog::IO->println("Questionnaire has an unique id: " + qid);
-  UI::Dialog::IO->println("It will be saved in " + qid + ".pdf file");
   std::ofstream pdfFile(filename, std::ofstream::out);
   int fd = tes.rawRead();
   for(int i = 0; i < atoi(size.data()); i++){
@@ -273,7 +265,8 @@ std::string UserManager::request(int tnn){
   #if DEBUG
   UI::Dialog::IO->println(std::string("Disconnected"));
   #endif
-  return message;
+
+  return std::make_pair(qid,atoi(time.data()));
 }
 
 void UserManager::submit(std::string qid, std::string answers){

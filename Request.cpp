@@ -9,8 +9,12 @@ namespace RC_User{
        Command<UserManager>("Request", manager){}
     void Request::execute(){
       try{
+
         UI::Dialog::IO->print("Which topic do you want to get? ");
-        _receiver->request(UI::Dialog::IO->readInteger());
+      std::pair<std::string, int> pair = _receiver->request(UI::Dialog::IO->readInteger());
+
+      UI::Dialog::IO->println("Questionnaire has an unique id: " + pair.first);
+      UI::Dialog::IO->println("It is stored in " + pair.first + ".pdf file");
       }catch(ErrorOnMessage s){
         UI::Dialog::IO->println("There was an error in the communication with the server.");
       }catch(NoQuestionnaire s){
