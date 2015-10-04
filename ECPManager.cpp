@@ -5,6 +5,8 @@
 #include <iostream>
 #include "Dialog.h"
 
+
+
 ECPManager::ECPManager(int port) : _tqrSemaphore(new sem_t()),
 	_terSemaphore(new sem_t()), _iqrSemaphore(new sem_t()),
 	_answerSemaphore(new sem_t()), _port(port),
@@ -276,7 +278,7 @@ void ECPManager::processTER(){
 
       answer = "ERR";
     }else {
-
+		try{
 			#if DEBUG
 			UI::Dialog::IO->print("[ [YELLOW]ECPManager::processTER[REGULAR]      ] It's a topic number. Size of input: ");
 			UI::Dialog::IO->print(std::to_string(tIDstr.size()));
@@ -288,7 +290,14 @@ void ECPManager::processTER(){
       std::pair <std::string, int> data = topicData(tID);
       answer = std::string("AWTES ") + data.first + std::string(" ") + \
        std::to_string(data.second) + "\n";
-    }
+   }
+	   catch(std::string s){
+			#if DEBUG
+			UI::Dialog::IO->println(s);
+			#endif
+			answer = "ERR";
+		}
+	}
 	// End of Handle
 
     r.answer(answer);
