@@ -35,6 +35,12 @@ public:
   std::vector<std::string> list();
 
   /**
+   * @description it will get the TES data from ECP server
+   * @param int topic number
+   * @return std::pair<std::string, int> it contains the hostname as a string and the port as an int
+   */
+  std::pair<std::string, int> tesLocation(int);
+  /**
    * @description          requests
    * @return std::pair<std::string, int> will return the questionnaire id, that is also the pdf
    * file name and the deadline for submiting an answer.
