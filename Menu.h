@@ -37,6 +37,7 @@ namespace UI{
     void open(){
       auto option = -1;
       while(true){
+        option = -1;
         UI::Dialog::IO->println();  //Just to be cute :P
         UI::Dialog::IO->println(_title);
         for(auto i = 0; i < _commands.size(); i++){
@@ -55,7 +56,7 @@ namespace UI{
         for(int index = 0; index < option_str.size(); index++)
           if(option_str[index] < '0' || option_str[index] > '9') is_number = false;
         if(is_number) option = atoi(option_str.data());
-        if(!is_number){
+        else{
          boost::to_upper(option_str);
          if(option_str == boost::to_upper_copy<std::string>(std::string("Exit"))){
            option = 0;
