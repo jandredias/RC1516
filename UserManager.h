@@ -44,5 +44,5 @@ public:
   /**
    * @description          submits answers
    */
-  void submit(std::string, std::string);
+  std::pair<std::string, int> submit(std::string, std::string);
 };

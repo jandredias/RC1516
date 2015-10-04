@@ -74,7 +74,6 @@ namespace UI{
            //!_commands[option - 1]->isValid()
           ){
           UI::Dialog::IO->println(INVALID_OPTION);
-
         }
         else{
           _commands[option - 1]->execute();

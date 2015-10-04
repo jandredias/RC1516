@@ -9,12 +9,35 @@ namespace RC_User{
        Command<UserManager>("Request", manager){}
     void Request::execute(){
       try{
-
         UI::Dialog::IO->print("Which topic do you want to get? ");
-      std::pair<std::string, int> pair = _receiver->request(UI::Dialog::IO->readInteger());
+        std::pair<std::string, int> pair = _receiver->request(UI::Dialog::IO->readInteger());
 
-      UI::Dialog::IO->println("Questionnaire has an unique id: " + pair.first);
-      UI::Dialog::IO->println("It is stored in " + pair.first + ".pdf file");
+        UI::Dialog::IO->println("Questionnaire has an unique id: " + pair.first);
+        UI::Dialog::IO->println("It is stored in " + pair.first + ".pdf file");
+        UI::Dialog::IO->print("The questionnaire should be submitted before ");
+
+        time_t t = pair.second;   // get time now
+        struct tm * now = localtime( & t );
+
+        std::string deadline;
+        if(now->tm_hour < 9) deadline += "0";
+        deadline += std::to_string(now->tm_hour + 1) + ":";
+        if(now->tm_min < 9) deadline += "0";
+        deadline += std::to_string(now->tm_min + 1) + ":";
+        if(now->tm_sec < 9) deadline += "0";
+        deadline += std::to_string(now->tm_sec + 1);
+
+        UI::Dialog::IO->print(deadline + " on ");
+
+        deadline = "";
+        if(now->tm_mday < 9) deadline += "0";
+        deadline += std::to_string(now->tm_mday + 1) + "-";
+        if(now->tm_mon < 8) deadline += "0";
+        deadline += std::to_string(now->tm_mon + 1) + "-";
+        deadline += std::to_string(now->tm_year + 1900);
+
+        UI::Dialog::IO->println(deadline);
+
       }catch(ErrorOnMessage s){
         UI::Dialog::IO->println("There was an error in the communication with the server.");
       }catch(NoQuestionnaire s){

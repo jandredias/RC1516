@@ -548,7 +548,7 @@ void TesManager::processRQS(){
       Quiz quiz;
 
       if (it == _questionaries.end())
-        throw UnknownFormatProtocol();
+        throw InvalidQIDvsSID();
 
       #if DEBUG
       UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] QID found");
@@ -599,6 +599,8 @@ void TesManager::processRQS(){
       #if DEBUG
       UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Mutex unlocked");
       #endif
+    }catch(InvalidQIDvsSID s){
+      r.answer("AQS " + qid + " -2\n");
     }
 
     #if DEBUG

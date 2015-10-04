@@ -8,7 +8,7 @@
 #define __PORT_TES__ 59000
 #define __PORT_ECP__ 58023
 #define __HOST__ "localhost"
-#define ANSWER_NO 5 //CHANGE ALSO TesManager.h!!!!!!!!!!!!!!!!!!!!!
+#define ANSWER_NO 1 //CHANGE ALSO TesManager.h!!!!!!!!!!!!!!!!!!!!!
 #ifndef DEBUG
 #define DEBUG 0
 #endif

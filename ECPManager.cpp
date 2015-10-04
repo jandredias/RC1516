@@ -359,73 +359,75 @@ void ECPManager::processIQR(){
 		#endif
 
 
-	std::string answer;
-	std::stringstream stream (r.read());
-  std::string message;
-  std::string SIDstr;
-	std::string QIDstr;
-  std::string topic_name;
-  std::string score;
-  std::string trash;
+		std::string answer;
+		std::stringstream stream (r.read());
+	  std::string message;
+	  std::string SIDstr;
+		std::string QIDstr;
+	  std::string topic_name;
+	  std::string score;
+	  std::string trash;
 
-	stream >> message;
-	stream >> SIDstr;
-	stream >> QIDstr;
-	stream >> topic_name;
-	stream >> score;
-	stream >> trash;
-	bool correctMessageFormat = true;
+		stream >> message;
+		stream >> SIDstr;
+		stream >> QIDstr;
+		stream >> topic_name;
+		stream >> score;
+		stream >> trash;
+		bool correctMessageFormat = true;
 
-	int sid = atoi(SIDstr.data());
-	if (message != "IQR" || QIDstr == "" || sid < 10000 || sid > 99999 || topic_name == "")
-		correctMessageFormat = false;
+		int sid = atoi(SIDstr.data());
+		if (message != "IQR" || QIDstr == "" || sid < 10000 || sid > 99999 || topic_name == "")
+			correctMessageFormat = false;
 
-	/* Checking score is a number */
-	for(int index = 0; index < (int) score.size(); index++)
-    if(score[index] < '0' || score[index] > '9') correctMessageFormat = false;
+		/* Checking score is a number */
+		for(int index = 0; index < (int) score.size(); index++)
+	    if(score[index] < '0' || score[index] > '9') correctMessageFormat = false;
 
-	int scoreNR = std::stoi(score);
+		int scoreNR = std::stoi(score);
 
-	if (scoreNR < 0 || scoreNR > 100) correctMessageFormat = false;
+		if (scoreNR < 0 || scoreNR > 100) correctMessageFormat = false;
 
-	if 	(correctMessageFormat && trash == std::string("")){
-		#if DEBUG
-		UI::Dialog::IO->println(            "[ [CYAN]ECPManager::processIQR[REGULAR]      ] Received Message in the correctMessageFormat");
-		UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("Message: ")).append(message));
-		UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("SIDstr: ")).append(SIDstr));
-		UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("QIDstr: ")).append(QIDstr));
-		UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("topic_name: ")).append(topic_name));
-		UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("score: ")).append(score));
-		#endif
+		if 	(correctMessageFormat && trash == std::string("")){
+			#if DEBUG
+			UI::Dialog::IO->println(            "[ [CYAN]ECPManager::processIQR[REGULAR]      ] Received Message in the correctMessageFormat");
+			UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("Message: ")).append(message));
+			UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("SIDstr: ")).append(SIDstr));
+			UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("QIDstr: ")).append(QIDstr));
+			UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("topic_name: ")).append(topic_name));
+			UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("score: ")).append(score));
+			#endif
 
-		std::string stats_message = SIDstr + std::string(" ") + topic_name + std::string(" ") + score + std::string("%");
-		UI::Dialog::IO->println(stats_message);
-		std::ofstream iFile;
-		iFile.open(_statsFile,std::fstream::app);
-		/*
-		iFile.open (_statsFile, std::fstream::app);*/
-		iFile << stats_message.append(std::string("\n"));
-		iFile.close();
-		answer = std::string("AWI " + QIDstr);
+			std::string stats_message = SIDstr + std::string(" ") + topic_name + std::string(" ") + score + std::string("%");
 
+			UI::Dialog::IO->println(stats_message);
 
-
-	}else{
-		UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
-		UI::Dialog::IO->println("[RED][ERR][REGULAR] Error related to the IQR's arguments format.");
-	}
+			std::ofstream iFile;
+			iFile.open(_statsFile,std::fstream::app);
+			/*
+			iFile.open (_statsFile, std::fstream::app);*/
+			iFile << stats_message.append(std::string("\n"));
+			iFile.close();
+			answer = std::string("AWI " + QIDstr);
 
 
 
+		}else{
+			UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
+			UI::Dialog::IO->println("[RED][ERR][REGULAR] Error related to the IQR's arguments format.");
+		}
 
-	// Request beeing handled
-	//TODO
-	// create score
-	// Add counter to the topic
-	// Update counter on stats.txt
 
-	//
-	// End of Handle
+
+
+		// Request beeing handled
+		//TODO
+		// create score
+		// Add counter to the topic
+		// Update counter on stats.txt
+
+		//
+		// End of Handle
 
     r.answer(answer);
     _answerMutex.lock();

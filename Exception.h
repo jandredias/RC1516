@@ -10,6 +10,9 @@ public:
     return "Socket " + std::string(((_tcp) ? "TCP" : "UDP")) + " already in use";
   }
 };
+class AfterDeadlineSubmit{};
+class InvalidQIDvsSID{};
+class NoRequestAsked{};
 class UnknownFormatProtocol{};
 class MessageTooLongUDP{};
 class NoQuestionnaire{};

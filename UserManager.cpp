@@ -1,5 +1,6 @@
 #include "UserManager.h"
 
+#include <boost/progress.hpp>
 #include "SocketUDP.h"
 #include "SocketTCP.h"
 #include <sstream>
@@ -246,12 +247,14 @@ std::pair<std::string, int> UserManager::request(int tnn){
   #endif
 
   std::ofstream pdfFile(filename, std::ofstream::out);
-  int fd = tes.rawRead();
-  for(int i = 0; i < atoi(size.data()); i++){
 
+  int fd = tes.rawRead();
+
+  boost::progress_display p(atoi(size.data()));
+  for(int i = 0; i < atoi(size.data()); i++){
     while(::read(fd, &b, 1) == 0);
     pdfFile << b;
-
+    ++p;
   }
   pdfFile.close();
 
@@ -269,11 +272,9 @@ std::pair<std::string, int> UserManager::request(int tnn){
   return std::make_pair(qid,atoi(time.data()));
 }
 
-void UserManager::submit(std::string qid, std::string answers){
-  if(_tesname == std::string("") || _tesport == 0){
-    UI::Dialog::IO->println(std::string("You should first request a questionnaire."));
-    return;
-  }
+std::pair<std::string, int> UserManager::submit(std::string qid, std::string answers){
+  if(_tesname == std::string("") || _tesport == 0) throw NoRequestAsked();
+
   SocketTCP tes(_tesname.data(), _tesport);
 
   #if DEBUG
@@ -281,12 +282,7 @@ void UserManager::submit(std::string qid, std::string answers){
   UI::Dialog::IO->println("Connecting...");
   #endif
 
-  try{
-    tes.connect();
-  }catch(std::string s){
-    UI::Dialog::IO->println(s);
-    return;
-  }
+  tes.connect();
 
 
   #if DEBUG
@@ -296,24 +292,17 @@ void UserManager::submit(std::string qid, std::string answers){
 
   tes.write(std::string("RQS ") + std::to_string(_sid) + " " + qid + " " + answers + "\n");
   std::string code = tes.readWord();
-  if(code == "ERR"){
-    UI::Dialog::IO->println("Invalid request");
-    return;
-  }
+
+  if(code == "ERR") throw ErrorOnMessage();
+
   std::string qidstr = tes.readWord();
   std::string score = tes.readWord();
-  UI::Dialog::IO->println(code);
-  UI::Dialog::IO->println(qidstr);
-  UI::Dialog::IO->println(score);
-  if(code.size() == 0 || qidstr.size() == 0 || score.size() == 0){
-    UI::Dialog::IO->println(std::string("Error during communication with the Server"));
-    return;
-  }
+  if(code.size() == 0 || qidstr.size() == 0 || score.size() == 0)
+    throw UnknownFormatProtocol();
 
-  if (score != "-1"){
-    UI::Dialog::IO->print("Score: ");
-    UI::Dialog::IO->println(score);
-  }
-  else
-    UI::Dialog::IO->print("Questionaire submitted after deadline, therefore no score.");
+
+  if (score == "-1") throw AfterDeadlineSubmit();
+  else if(score == "-2") throw InvalidQIDvsSID();
+
+  return std::make_pair(qid,atoi(score.data()));
 }
