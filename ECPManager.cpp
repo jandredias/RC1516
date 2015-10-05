@@ -58,6 +58,8 @@ void ECPManager::acceptRequests(){
 	#endif
 
   while(!_exit){
+	  std::string message;
+	  struct sockaddr_in client;
     try{
 
       #if DEBUG
@@ -65,10 +67,10 @@ void ECPManager::acceptRequests(){
 			#endif
 
       _UDPMutex.lock();
-      std::string message = _socketUDP.receive();
+      message = _socketUDP.receive();
 
 
-      struct sockaddr_in client = _socketUDP.client();
+      client = _socketUDP.client();
       _UDPMutex.unlock();
 
       UI::Dialog::IO->println(message + std::string(" from ") + _socketUDP.ip() +\
@@ -134,10 +136,32 @@ void ECPManager::acceptRequests(){
       }
     }catch(SocketAlreadyInUse s){
 			UI::Dialog::IO->println(s.message());
-		}catch(std::string s){
+	}catch(std::string s){
       UI::Dialog::IO->println(std::string("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] [RED][ERROR][REGULAR]") + s);
       _UDPMutex.unlock();
-    }
+    }catch(UnknownFormatProtocol s){
+	  client = _socketUDP.client();
+      _UDPMutex.unlock();
+      
+      
+
+      UI::Dialog::IO->println("ERR " + _socketUDP.ip() +\
+        std::string(" on port ") + _socketUDP.port());
+
+	  RequestECP request(message, client);
+		request.answer("ERR\n");
+		_answerMutex.lock();        //Lock the queue to insert a request
+		_answers.push(request);
+		_answerMutex.unlock();      //Unlock the queue so other threads can use it
+
+		#if DEBUG
+				UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in Answer queue");
+				#endif
+
+		sem_post(_answerSemaphore); //Post semaphore so a thread is called
+		
+		
+	}
   }
 }
 
