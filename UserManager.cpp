@@ -15,9 +15,13 @@
 #endif
 
 #if DEBUG
+#ifndef debug(S)
 #define debug(S) UI::Dialog::IO->println(S)
+#endif
 #else
+#ifndef debug(S)
 #define debug(S)
+#endif
 #endif
 
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
@@ -115,7 +119,7 @@ std::pair<std::string, int> UserManager::request(int tnn){
 
 
   debug("[ UserManager::request            ] Socket created\n"
-                          "[ UserManager::request            ] Sending message");
+        "[ UserManager::request            ] Sending message");
 
   std::stringstream stream;
   for(auto i = 0; i < TRIES; i++){
@@ -125,8 +129,8 @@ std::pair<std::string, int> UserManager::request(int tnn){
       stream << ecp.receive();
 
       debug("[ UserManager::request            ] Message sent to ECP\n"
-                              "[ UserManager::request            ] Receiving message from ECP\n"
-                              "[ UserManager::request            ] Message received from ECP");
+            "[ UserManager::request            ] Receiving message from ECP\n"
+            "[ UserManager::request            ] Message received from ECP");
 
       break;
     }catch(std::string s){
@@ -146,14 +150,8 @@ std::pair<std::string, int> UserManager::request(int tnn){
 
   std::string code;
   stream >> code;
-
   if(code == std::string("EOF")){
-    char c = '\0';
-    stream.get(&c,1);
-    if(c == '\n'){
-      throw NoQuestionnaire();
-    }
-    throw UnknownFormatProtocol();
+    throw NoQuestionnaire();
   }else if(code == std::string("ERR")){
     throw ErrorOnMessage();
   }else if(code != std::string("AWTES")){
@@ -193,7 +191,7 @@ std::pair<std::string, int> UserManager::request(int tnn){
   message = tes.readWord();
 
   debug(std::string("CODE: ") + message);
-
+  if(message == std::string("EOF")) throw InvalidTID();
   if(message != std::string("AQT")) throw UnknownFormatProtocol();
 
   debug(std::string("Reading Server QID"));
@@ -259,7 +257,7 @@ std::pair<std::string, int> UserManager::submit(std::string qid, std::string ans
 
   debug(std::string("Connected!"));
   debug(std::string("Writing..."));
-  
+
 
   tes.write(std::string("RQS ") + std::to_string(_sid) + " " + qid + " " + answers + "\n");
   std::string code = tes.readWord();

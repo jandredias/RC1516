@@ -3,9 +3,18 @@
 #include <sstream>
 #include <fstream>      // std::ifstream
 #include <iostream>
+#include "Exception.h"
 #include "Dialog.h"
 
-
+#if DEBUG
+#ifndef debug(S)
+#define debug(S) UI::Dialog::IO->println(S)
+#endif
+#else
+#ifndef debug(S)
+#define debug(S)
+#endif
+#endif
 
 ECPManager::ECPManager(int port) : _tqrSemaphore(new sem_t()),
 	_terSemaphore(new sem_t()), _iqrSemaphore(new sem_t()),
@@ -36,6 +45,9 @@ void ECPManager::acceptRequests(){
 	try{
   _socketUDP = SocketUDP(_port);
   //_senderSocketUDP = SocketUDP(_port);
+	}catch(SocketAlreadyInUse s){
+		UI::Dialog::IO->println(s.message());
+		exit(0);
 	}catch(std::string s){
 		UI::Dialog::IO->println(s);
 		return;
@@ -120,7 +132,9 @@ void ECPManager::acceptRequests(){
 
         sem_post(_answerSemaphore); //Post semaphore so a thread is called
       }
-    }catch(std::string s){
+    }catch(SocketAlreadyInUse s){
+			UI::Dialog::IO->println(s.message());
+		}catch(std::string s){
       UI::Dialog::IO->println(std::string("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] [RED][ERROR][REGULAR]") + s);
       _UDPMutex.unlock();
     }
@@ -254,7 +268,6 @@ void ECPManager::processTER(){
 
     std::string answer;
 
-	// Request beeing handled
     std::stringstream stream(r.read());
     std::string code;
     std::string tIDstr;
@@ -276,29 +289,32 @@ void ECPManager::processTER(){
 			UI::Dialog::IO->println(tIDstr);
 			#endif
 
-      answer = "ERR";
-    }else {
-		try{
-			#if DEBUG
-			UI::Dialog::IO->print("[ [YELLOW]ECPManager::processTER[REGULAR]      ] It's a topic number. Size of input: ");
-			UI::Dialog::IO->print(std::to_string(tIDstr.size()));
-			UI::Dialog::IO->print(" | input: ");
-			UI::Dialog::IO->println(tIDstr);
-			#endif
+      answer = "ERR\n";
+    }else{
+			try{
+				#if DEBUG
+				UI::Dialog::IO->print("[ [YELLOW]ECPManager::processTER[REGULAR]      ] It's a topic number. Size of input: ");
+				UI::Dialog::IO->print(std::to_string(tIDstr.size()));
+				UI::Dialog::IO->print(" | input: ");
+				UI::Dialog::IO->println(tIDstr);
+				#endif
 
-      tID = atoi(tIDstr.data());
-      std::pair <std::string, int> data = topicData(tID);
-      answer = std::string("AWTES ") + data.first + std::string(" ") + \
-       std::to_string(data.second) + "\n";
-   }
-	   catch(std::string s){
-			#if DEBUG
-			UI::Dialog::IO->println(s);
-			#endif
-			answer = "ERR";
+				tID = atoi(tIDstr.data());
+				std::pair <std::string, int> data = topicData(tID);
+				answer = std::string("AWTES ") + data.first + std::string(" ") + \
+				std::to_string(data.second) + "\n";
+			}catch(InvalidTID s){
+        debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Invalid topic id");
+        debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] answer: EOF");
+				answer = "EOF\n";
+			}catch(std::string s){
+				#if DEBUG
+				UI::Dialog::IO->println(s);
+				#endif
+				answer = "ERR\n";
+			}
 		}
-	}
-	// End of Handle
+		// End of Handle
 
     r.answer(answer);
     _answerMutex.lock();
@@ -549,7 +565,7 @@ std::pair <std::string, int> ECPManager::topicData(int index){
     iFile >> topic; //Read hostname
     iFile >> topic; //Read port
   }
-  if(port == 0) throw std::string("EOF");
+  if(port == 0) throw InvalidTID();
   return std::make_pair(hostname,port);;
 }
 std::pair <std::string,int> ECPManager::topics(){

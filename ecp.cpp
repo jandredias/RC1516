@@ -44,8 +44,6 @@ int main(int argc, char* argv[]){
     processIQR.join();
     sendAnswer.join();
 
-  }catch(SocketAlreadyInUse s){
-    UI::Dialog::IO->println(s.message());
   }catch(std::string s){
     UI::Dialog::IO->println(s);
   }

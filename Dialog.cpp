@@ -52,15 +52,21 @@ namespace UI{
   }
 
   int Dialog::readInteger(std::string prompt){
-    print(prompt);
-    while(true){
-      std::string a;
-      try{
-        std::cin >> a;
-        return std::stoi(a);
-      }catch(std::invalid_argument e){
-        println(std::string("Invalid input. Expecting a number."));
+    try{
+      print(prompt);
+      flush();
+      while(true){
+        std::string a;
+        try{
+          std::cin >> a;
+          return std::stoi(a);
+        }catch(std::invalid_argument e){
+          println(std::string("Invalid input. Expecting a number."));
+        }
       }
+    }catch(std::out_of_range s){
+      println("Invalid input. Number too large." + prompt);
+      return readInteger(prompt);
     }
   }
   std::string Dialog::filterString(std::string s){

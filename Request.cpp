@@ -38,6 +38,8 @@ namespace RC_User{
 
         UI::Dialog::IO->println(deadline);
 
+      }catch(InvalidTID s){
+        UI::Dialog::IO->println("Invalid topicID. Don't be an idiot and request a valid topicID.");
       }catch(ErrorOnMessage s){
         UI::Dialog::IO->println("There was an error in the communication with the server.");
       }catch(NoQuestionnaire s){
