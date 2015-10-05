@@ -601,6 +601,13 @@ void TesManager::processRQS(){
       #endif
     }catch(InvalidQIDvsSID s){
       r.answer("AQS " + qid + " -2\n");
+		#if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Unlocking Mutex");
+      #endif
+      _questionariesMutex.unlock();
+		#if DEBUG
+      UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Mutex unlocked");
+      #endif
     }
 
     #if DEBUG
