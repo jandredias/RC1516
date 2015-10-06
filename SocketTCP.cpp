@@ -44,7 +44,8 @@ SocketTCP::SocketTCP(int port) : _server(true), _connected(false){
   _serverAddr.sin_port = htons((u_short) port);
   _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
   int optval = 1;
-  setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval); //THis line ensures that there is no SOCKETTCP connection refused after Server Crash.
+  if(setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval) < 0) //THis line ensures that there is no SOCKETTCP connection refused after Server Crash.
+	throw std::string("SocketUDP::setTimeOut ").append(strerror(errno)); 
   if(bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0){
     if(errno == EADDRINUSE) throw SocketAlreadyInUse("TCP");
     else throw std::string("SocketTCP::SocketTCP ").append(strerror(errno));
@@ -75,7 +76,7 @@ void SocketTCP::write(const char* text, int size){
   if(!_connected) throw std::string("Socket is not connected");
 
   while(left > 0){
-    int written = ::write(_fd, ptr, left);
+    int written = ::send(_fd, ptr, left,MSG_NOSIGNAL);
     if(written < -1){
       if(errno == EPIPE)
         throw std::string("DISCONNETED");
@@ -103,7 +104,7 @@ void SocketTCP::write(char* text, int size){
     UI::Dialog::IO->println(std::string("Writing to socket"));
     #endif
 
-    int written = ::write(_fd, ptr, left);
+    int written = ::send(_fd, ptr, left,MSG_NOSIGNAL);
 
     if(written < -1){
       if(errno == EPIPE)
