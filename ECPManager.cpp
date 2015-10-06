@@ -142,8 +142,8 @@ void ECPManager::acceptRequests(){
     }catch(UnknownFormatProtocol s){
 	  client = _socketUDP.client();
       _UDPMutex.unlock();
-      
-      
+
+
 
       UI::Dialog::IO->println("ERR " + _socketUDP.ip() +\
         std::string(" on port ") + _socketUDP.port());
@@ -159,8 +159,8 @@ void ECPManager::acceptRequests(){
 				#endif
 
 		sem_post(_answerSemaphore); //Post semaphore so a thread is called
-		
-		
+
+
 	}
   }
 }
@@ -417,27 +417,33 @@ void ECPManager::processIQR(){
 	  std::string score;
 	  std::string trash;
 
-		stream >> message;
-		stream >> SIDstr;
-		stream >> QIDstr;
-		stream >> topic_name;
-		stream >> score;
-		stream >> trash;
-		bool correctMessageFormat = true;
+		try{
+			stream >> message;
+			stream >> SIDstr;
+			stream >> QIDstr;
+			stream >> topic_name;
+			stream >> score;
+			stream >> trash;
+			bool correctMessageFormat = true;
+			if( message == "" || SIDstr == "" || QIDstr == "" || topic_name == "" || score == "" || trash != "")
+				throw invalidArguments();
 
-		int sid = atoi(SIDstr.data());
-		if (message != "IQR" || QIDstr == "" || sid < 10000 || sid > 99999 || topic_name == "")
-			correctMessageFormat = false;
+			for(int index = 0; index < (int) SIDstr.size(); index++)
+		    if(SIDstr[index] < '0' || SIDstr[index] > '9') throw invalidArguments();
 
-		/* Checking score is a number */
-		for(int index = 0; index < (int) score.size(); index++)
-	    if(score[index] < '0' || score[index] > '9') correctMessageFormat = false;
 
-		int scoreNR = std::stoi(score);
+			/* Checking SIDstr is a number */
+			int sid = atoi(SIDstr.data());
+			if (message != "IQR" || sid < 10000 || sid > 99999) throw invalidArguments();
 
-		if (scoreNR < 0 || scoreNR > 100) correctMessageFormat = false;
+			/* Checking score is a number */
+			for(int index = 0; index < (int) score.size(); index++)
+		    if(score[index] < '0' || score[index] > '9') throw invalidArguments();
 
-		if 	(correctMessageFormat && trash == std::string("")){
+			int scoreNR = std::stoi(score);
+
+			if (scoreNR < 0 || scoreNR > 100) throw invalidArguments();
+
 			#if DEBUG
 			UI::Dialog::IO->println(            "[ [CYAN]ECPManager::processIQR[REGULAR]      ] Received Message in the correctMessageFormat");
 			UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("Message: ")).append(message));
@@ -459,23 +465,14 @@ void ECPManager::processIQR(){
 			iFile.close();
 			answer = std::string("AWI " + QIDstr + "\n");
 
-
-
-		}else{
+		}catch(invalidArguments s){
 			UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
 			UI::Dialog::IO->println("[RED][ERR][REGULAR] Error related to the IQR's arguments format.");
+			answer = "ERR\n";
 		}
 
 
 
-
-		// Request beeing handled
-		//TODO
-		// create score
-		// Add counter to the topic
-		// Update counter on stats.txt
-
-		//
 		// End of Handle
 
     r.answer(answer);

@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 
+class invalidArguments{};
 class connectOnServer{};
 class InvalidTID{};
 class AfterDeadlineSubmit{};
