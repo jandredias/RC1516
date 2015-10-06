@@ -25,6 +25,14 @@ SocketTCP::SocketTCP(const char addr[], int port) : _server(false), _connected(f
   _serverAddr.sin_family = AF_INET;
   _serverAddr.sin_port = htons((u_short) port);
   _serverAddr.sin_addr.s_addr = ((struct in_addr *) (_hostptr->h_addr_list[0]))->s_addr;
+
+  int ms = 5000;
+  struct timeval tv;
+  tv.tv_usec = ms % 1000;
+  tv.tv_sec = (ms - (ms % 1000)) / 1000;
+
+  if(setsockopt(_fd, SOL_SOCKET, SO_RCVTIMEO, &tv,sizeof(tv)) < 0)
+    throw std::string("SocketUDP::setTimeOut ").append(strerror(errno));
 }
 
 SocketTCP::SocketTCP(int port) : _server(true), _connected(false){
@@ -113,6 +121,9 @@ void SocketTCP::write(char* text, int size){
 }
 void SocketTCP::write(std::string text){
   write(text.data(),text.size());
+}
+void SocketTCP::write(const char c){
+  write(&c, 1);
 }
 char* SocketTCP::read(int x){
   if(!_connected) throw std::string("SocketTCP::read Socket is not connected");

@@ -410,23 +410,24 @@ void TesManager::processRQT(){
       UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Reading file: ");
       UI::Dialog::IO->println(filename);
       #endif
-
-      std::pair <char*, int> pair = pdf(std::to_string(rand() % 5 + 1) + std::string(".pdf"));
+      std::string fileName = std::to_string(rand() % 5 + 1) + std::string(".pdf");
+      int fileSize = pdfSize(fileName);
 
       #if DEBUG
       UI::Dialog::IO->println("[ [YELLOW]TesManager::processRQT[REGULAR]      ] File read");
       #endif
 
-      answer += std::to_string(pair.second);
+      answer += std::to_string(fileSize);
       answer += std::string(" ");
-      r.fileSize(pair.second);
+      r.fileSize(fileSize);
+      r.fileName(fileName);
 
       #if DEBUG
       UI::Dialog::IO->print("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Answer before data: ");
       UI::Dialog::IO->println(answer);
       #endif
 
-      r.file(pair.first);
+      //r.file(pair.first);
       r.answer(answer);
 
       #if DEBUG
@@ -798,30 +799,17 @@ void TesManager::answerTCP(){
   #endif
 }
 
-std::pair <char *, int> TesManager::pdf(std::string filename){
+int TesManager::pdfSize(std::string filename){
   std::ifstream file(filename, std::ifstream::binary);
   if(file){
     file.seekg(0, file.end);
     int length = file.tellg();
     file.seekg(0, file.beg);
 
-    char *buffer = new char[length];
-
-    file.read(buffer, length);
-    #if DEBUG
-      if (file)
-        UI::Dialog::IO->println("[ TesManager::pdf             ] All characters read from file");
-      else{
-        UI::Dialog::IO->print  ("[ TesManager::pdf             ] Only ");
-        UI::Dialog::IO->print  (std::to_string(file.gcount()));
-        UI::Dialog::IO->println(" could be read");
-      }
-    #endif
-
     file.close();
-    return std::make_pair(buffer,length);
+    return length;
   }
-  return std::make_pair((char*)NULL, 0);
+  throw ErrorOpeningFile();
 }
 
 int TesManager::score(char answers[], const char filename[]){

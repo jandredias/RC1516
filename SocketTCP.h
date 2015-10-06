@@ -89,13 +89,56 @@ public:
    * @param std::string
    */
   void write(std::string);
+
+  /**
+   * @description
+   * @param char*
+   * @param int
+   */
   void write(char*, int);
+
+  /**
+   * @description
+   * @param const char*
+   * @param int
+   */
   void write(const char*, int);
 
+  /**
+   * @description the function will write a single character to the socket
+   * @param const char the character to write
+   */
+  void write(const char);
+
+  /**
+   * @description
+   * @return
+   */
   std::string read();
+
+  /**
+   * @description
+   * @param int
+   * @return char*
+   */
   char * read(int);
+
+  /**
+   * @description
+   * @return std::string
+   */
   std::string readWord();
+
+  /**
+   * @description
+   * @return int
+   */
   int rawRead();
+
+  /**
+   * @description
+   * @param int = 5
+   */
   void listen(int = 5);
 
   /**
@@ -103,8 +146,15 @@ public:
    */
   SocketTCP accept();
 
-
+  /**
+   * @description
+   * @return std::string
+   */
   std::string ip();
 
+  /**
+   * @description
+   * @return std::string
+   */
   std::string hostname();
 };

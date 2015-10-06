@@ -9,14 +9,15 @@
 #define DEBUG 0
 #endif
 class RequestTES{
-  SocketTCP _client;
-  std::string _message;
-  std::string _answer;
-  std::string _qid;
-  int       _sid;
-  int       _deadline;
-  int       _fileSize;
-  char *    _file;
+  SocketTCP     _client;
+  std::string   _message;
+  std::string   _answer;
+  std::string   _qid;
+  int           _sid;
+  int           _deadline;
+  int           _fileSize;
+  std::string   _fileName;
+  char *        _file;
 
 public:
   /**
@@ -44,6 +45,10 @@ public:
   std::string read();
   void disconnect();
   bool finished();
+
+  std::string fileName(){ return _fileName; }
+  void fileName(std::string fileName){ _fileName = fileName; }
+
   char* file(){ return _file; }
   void file(char* file){ _file = file; }
 };

@@ -15,7 +15,7 @@
 #define __MS_BETWEEN_TRIES__ 2000
 #define __TRIES__ 10
 
-#define ANSWER_NO 1
+#define ANSWER_NO 5
 
 
 
@@ -152,9 +152,10 @@ public:
   int score(char[], const char[]);
 
   /**
-   * @return  std::pair <char*, int> pdf content and size
+   * @description
+   * @return int pdf size
    */
-  std::pair<char *, int> pdf(std::string);
+  int pdfSize(std::string);
 
   /**
     * @description will send a message to ECP server with the user score

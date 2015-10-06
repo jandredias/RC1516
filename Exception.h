@@ -15,7 +15,7 @@ class WritingOnSocket{};
 class ErrorOnMessage{};
 class InvalidHostname{};
 class InvalidPort{};
-
+class ErrorOpeningFile{};
 class SocketAlreadyInUse{
   bool _tcp;  //True if Socket is TCP, false if it is UDP
 

@@ -1,5 +1,6 @@
 #include "RequestTES.h"
 
+#include <fstream>      // std::ifstream
 RequestTES::RequestTES(SocketTCP client, int sid, std::string qid, int deadline) :
 _client(client), _qid(qid), _sid(sid), _deadline(deadline), _fileSize(-1){}
 
@@ -25,15 +26,21 @@ void RequestTES::write(){
   #if DEBUG
   UI::Dialog::IO->println(std::string("Writing file to socket"));
   #endif
-  if(_fileSize > 0)
-    _client.write(_file, _fileSize);
-
+  if(_fileSize > 0){
+    //It send 100KBytes packages
+    std::ifstream ifs(_fileName, std::ifstream::in);
+    char c = ifs.get();
+    while(ifs.good()){
+      _client.write(c);
+      c = ifs.get();
+    }
+    ifs.close();
+//    _client.write();
+//    _client.write(_file, _fileSize);
+  }
   #if DEBUG
   UI::Dialog::IO->println(std::string("File written"));
   #endif
-
-
-  if(_file != NULL) delete[] _file;
 }
 std::string RequestTES::read(){ return _client.read(); }
 void RequestTES::disconnect(){ _client.disconnect(); }
