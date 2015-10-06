@@ -457,7 +457,7 @@ void ECPManager::processIQR(){
 			iFile.open (_statsFile, std::fstream::app);*/
 			iFile << stats_message.append(std::string("\n"));
 			iFile.close();
-			answer = std::string("AWI " + QIDstr);
+			answer = std::string("AWI " + QIDstr + "\n");
 
 
 
