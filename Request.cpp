@@ -9,14 +9,19 @@ namespace RC_User{
   Request::Request(UserManager *manager) :
        Command<UserManager>("Request", manager){}
     void Request::execute(){
+      if(_receiver->qid() != std::string("")){
+        UI::Dialog::IO->readBoolean("There is a questionnaire that you didn't submit.\n"
+                                    "If you continue, you won't be able to answer this questionnaire.\n"
+                                    "You still want to request a new questionnaire?");
+      }
       try{
         UI::Dialog::IO->print("Which topic do you want to get? ");
-        std::pair<std::string, int> pair = _receiver->request(UI::Dialog::IO->readInteger());
+        std::pair<std::string, std::string> pair = _receiver->request(UI::Dialog::IO->readInteger());
 
         UI::Dialog::IO->println("Questionnaire has an unique id: " + pair.first);
         UI::Dialog::IO->println("It is stored in " + pair.first + ".pdf file");
-        UI::Dialog::IO->print("The questionnaire should be submitted before ");
-
+        UI::Dialog::IO->print("The questionnaire should be submitted before " + pair.second);
+/*
         time_t t = pair.second;   // get time now
         struct tm * now = localtime( & t );
 
@@ -37,7 +42,7 @@ namespace RC_User{
         deadline += std::to_string(now->tm_mon + 1) + "-";
         deadline += std::to_string(now->tm_year + 1900);
 
-        UI::Dialog::IO->println(deadline);
+        UI::Dialog::IO->println(deadline);*/
 
       }catch(InvalidTID s){
         UI::Dialog::IO->println("Invalid topicID. Don't be an idiot and request a valid topicID.");

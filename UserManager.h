@@ -7,12 +7,14 @@
 #define TRIES 10
 
 class UserManager {
-  int _sid;
-  int _port;
+  int         _sid;
+  int         _port;
   std::string _ecpname;
 
+  std::string _qid;
   std::string _tesname;
-  int _tesport;
+  int         _tesport;
+
 public:
 
   /**
@@ -30,20 +32,23 @@ public:
   std::vector<std::string> list();
 
   /**
-   * @description it will get the TES data from ECP server
-   * @param int topic number
-   * @return std::pair<std::string, int> it contains the hostname as a string and the port as an int
-   */
-  std::pair<std::string, int> tesLocation(int);
-  /**
    * @description          requests
-   * @return std::pair<std::string, int> will return the questionnaire id, that is also the pdf
+   * @param int
+   * @return std::pair<std::string, std::string> will return the questionnaire id, that is also the pdf
    * file name and the deadline for submiting an answer.
    */
-  std::pair<std::string, int> request(int);
+  std::pair<std::string, std::string> request(int);
 
   /**
    * @description          submits answers
+   * @param std::string answers
+   * @return std::string
    */
-  std::pair<std::string, int> submit(std::string, std::string);
+  std::pair<std::string, int> submit(std::string);
+
+  /**
+   * @description
+   * @return std::string
+   */
+  std::string qid();
 };

@@ -11,9 +11,6 @@ namespace RC_User{
        Command<UserManager>("Submit", manager){}
     void Submit::execute(){
       try{
-        std::string qid;
-        UI::Dialog::IO->print("QID: ");
-        qid = UI::Dialog::IO->readString();
         std::string answers = "";
         for(int i = 0; i < 5; i++){
           UI::Dialog::IO->print("Answer to question " +
@@ -22,7 +19,7 @@ namespace RC_User{
           if(i < 4) answers += " ";
         }
 
-        std::pair <std::string,int> score = _receiver->submit(qid, answers);
+        std::pair <std::string,int> score = _receiver->submit(answers);
         UI::Dialog::IO->println("You got " + std::to_string(score.second) +
                                 "% on questionnaire " + score.first);
 

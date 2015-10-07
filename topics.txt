@@ -1,6 +1,6 @@
-Camada_de_aplicação 192.168.129.3 59000
-Camada_de_transporte 192.168.129.3 59000
-Camada_de_rede 192.168.129.3 59000
-Camada_da_de_dados 192.168.129.3 59000
-Aplicações_multimedia 192.168.129.3 59000
-Segurança_em_redes 192.168.129.3 59000
+Camada_de_aplicação localhost 59000
+Camada_de_transporte localhost 59000
+Camada_de_rede localhost 59000
+Camada_da_de_dados localhost 59000
+Aplicações_multimedia localhost 59000
+Segurança_em_redes localhost 59000

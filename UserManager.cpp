@@ -13,12 +13,6 @@
 
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
 _ecpname(ecpname){}
-
-
-std::pair<std::string, int> UserManager::tesLocation(int topicNumber){
-
-}
-
 std::vector<std::string> UserManager::list(){
   debug("[ UserManager::list            ] Creating socket");
 
@@ -97,8 +91,8 @@ std::vector<std::string> UserManager::list(){
 
   return topics;
 }
-
-std::pair<std::string, int> UserManager::request(int tnn){
+std::string UserManager::qid(){ return _qid; }
+std::pair<std::string, std::string> UserManager::request(int tnn){
 
   debug("[ UserManager::request            ] Creating socket");
 
@@ -200,7 +194,7 @@ std::pair<std::string, int> UserManager::request(int tnn){
 
 
   char b;
-
+  _qid = qid;
   std::string filename = qid + std::string(".pdf");
 
   debug(std::string("Writting to file") + filename);
@@ -227,10 +221,10 @@ std::pair<std::string, int> UserManager::request(int tnn){
   debug(std::string("Disconnected"));
 
 
-  return std::make_pair(qid,atoi(time.data()));
+  return std::make_pair(qid,time);
 }
 
-std::pair<std::string, int> UserManager::submit(std::string qid, std::string answers){
+std::pair<std::string, int> UserManager::submit(std::string answers){
   if(_tesname == std::string("") || _tesport == 0) throw NoRequestAsked();
 
   SocketTCP tes(_tesname.data(), _tesport);
@@ -238,15 +232,12 @@ std::pair<std::string, int> UserManager::submit(std::string qid, std::string ans
   debug("Socket created");
   debug("Connecting...");
 
-
   tes.connect();
-
 
   debug(std::string("Connected!"));
   debug(std::string("Writing..."));
 
-
-  tes.write(std::string("RQS ") + std::to_string(_sid) + " " + qid + " " + answers + "\n");
+  tes.write(std::string("RQS ") + std::to_string(_sid) + " " + _qid + " " + answers + "\n");
   std::string code = tes.readWord();
 
   if(code == "ERR") throw ErrorOnMessage();
@@ -259,6 +250,7 @@ std::pair<std::string, int> UserManager::submit(std::string qid, std::string ans
 
   if (score == "-1") throw AfterDeadlineSubmit();
   else if(score == "-2") throw InvalidQIDvsSID();
-
-  return std::make_pair(qid,atoi(score.data()));
+  _qid = "";
+  int s = atoi(score.data());
+  return std::make_pair(qidstr,s);
 }
