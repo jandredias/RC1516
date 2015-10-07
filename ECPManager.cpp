@@ -1,20 +1,11 @@
 #include "ECPManager.h"
+#include "Debug.h"
 
 #include <sstream>
 #include <fstream>      // std::ifstream
 #include <iostream>
 #include "Exception.h"
 #include "Dialog.h"
-
-#if DEBUG
-#ifndef debug(S)
-#define debug(S) UI::Dialog::IO->println(S)
-#endif
-#else
-#ifndef debug(S)
-#define debug(S)
-#endif
-#endif
 
 ECPManager::ECPManager(int port) : _tqrSemaphore(new sem_t()),
 	_terSemaphore(new sem_t()), _iqrSemaphore(new sem_t()),

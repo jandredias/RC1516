@@ -3,11 +3,6 @@
 #include <vector>
 #include <utility>      // std::pair, std::make_pair
 
-#ifndef DEBUG
-#define DEBUG 0
-#endif
-
-
 #define MS_BETWEEN_TRIES 2000
 #define TRIES 10
 

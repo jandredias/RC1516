@@ -1,4 +1,5 @@
 #include "TesManager.h"
+#include "Debug.h"
 #include "Dialog.h"
 #include "Exception.h"
 #include "Quiz.h"
@@ -35,7 +36,7 @@ TesManager::~TesManager(){
   sem_destroy(_answerUDPSem);
 }
 
-int TesManager::time(){ std::time_t t = std::time(0); return t; }
+int TesManager::time(int a){ std::time_t t = std::time((time_t*)&a); return t; }
 
 int TesManager::deadline(int s){ return time() + s; }
 
@@ -55,6 +56,66 @@ std::string TesManager::qid(int sid){
   if(now->tm_sec < 9) qid += "0";
   qid += std::to_string(now->tm_sec + 1);
   return qid;
+}
+
+std::string TesManager::toStringDeadline(int s){
+  time_t t = time(s);   // get time now
+  struct tm * now = localtime( & t );
+  std::string qid;
+
+  if(now->tm_mday < 9) qid += "0";
+  qid += std::to_string(now->tm_mday + 1);
+  switch(now->tm_mon + 1){
+  case 1:
+    qid += "JAN";
+    break;
+  case 2:
+    qid += "FEB";
+    break;
+  case 3:
+    qid += "MAR";
+    break;
+  case 4:
+    qid += "APR";
+    break;
+  case 5:
+    qid += "MAY";
+    break;
+  case 6:
+    qid += "JUN";
+    break;
+  case 7:
+    qid += "JUL";
+    break;
+  case 8:
+    qid += "AUG";
+    break;
+  case 9:
+    qid += "SEP";
+    break;
+  case 10:
+    qid += "OCT";
+    break;
+  case 11:
+    qid += "NOV";
+    break;
+  case 12:
+    qid += "DEC";
+  }
+
+  qid += std::to_string(now->tm_year + 1900) + "_";
+  if(now->tm_hour < 9) qid += "0";
+  qid += std::to_string(now->tm_hour + 1) + ":";
+  if(now->tm_min < 9) qid += "0";
+  qid += std::to_string(now->tm_min + 1) + ":";
+  if(now->tm_sec < 9) qid += "0";
+  qid += std::to_string(now->tm_sec + 1);
+  return qid;
+}
+bool TesManager::deadline(std::string s){
+  
+  //TODO
+  return true;
 }
 
 void TesManager::acceptRequestsTCP(){
@@ -396,7 +457,7 @@ void TesManager::processRQT(){
       answer  = std::string("AQT ");
       answer += r.qid();
       answer += std::string(" ");
-      answer += std::to_string(deadline());
+      answer += toStringDeadline(deadline());
       answer += std::string(" ");
 
       std::string filename = std::to_string(rand() % 5 + 1) + std::string(".pdf");

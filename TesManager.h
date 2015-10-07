@@ -89,14 +89,23 @@ public:
 
   /**
    * @return                current unix timestamp
+   * @param int timestamp
    */
-  int time();
+  int time(int = 0);
 
   /**
    * @param                 seconds untill the deadline
    * @return                a deadline
    */
   int deadline(int = 30);
+
+  /**
+   * @description will parse a date and return True if the string
+   * is a correctly formated date
+   * @param std::string input date to process
+   * @return bool
+   */
+  bool deadline(std::string);
 
   /**
    * @return                always returns new quiz id
@@ -166,4 +175,10 @@ public:
     */
   void sendIQR(std::string SID,std::string QID,std::string topic_name,int scr);
 
+  /**
+   * @description will convert a deadline timestamp to a String
+   * @int timestamp
+   * @return std::string
+   */
+  std::string toStringDeadline(int s);
 };

@@ -1,4 +1,5 @@
 #include "MenuBuilder.h"
+#include "Debug.h"
 
 #include "Menu.h"
 #include "Command.h"

@@ -1,4 +1,5 @@
 #include "SocketTCP.h"
+#include "Debug.h"
 #include "SocketUDP.h"
 #include <iostream>
 #include <string>

@@ -1,4 +1,5 @@
 #include "SocketTCP.h"
+#include "Debug.h"
 #include "Dialog.h"
 #include "Exception.h"
 

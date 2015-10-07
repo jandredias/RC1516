@@ -1,4 +1,5 @@
 #include <iostream>
+#include "Debug.h"
 #include "MenuBuilder.h"
 #include "UserManager.h"
 #include "Dialog.h"

@@ -1,4 +1,5 @@
 #include "RequestTES.h"
+#include "Debug.h"
 
 #include <fstream>      // std::ifstream
 RequestTES::RequestTES(SocketTCP client, int sid, std::string qid, int deadline) :
@@ -13,21 +14,15 @@ std::string RequestTES::answer(){ return _answer; }
 void RequestTES::message(std::string text){ _message = text; }
 void RequestTES::write(std::string text){ _client.write(text); }
 void RequestTES::write(){
-  #if DEBUG
-  UI::Dialog::IO->println(std::string("Writing to socket"));
-  #endif
+  debug(std::string("Writing to socket"));
 
   _client.write(_answer);
 
-  #if DEBUG
-  UI::Dialog::IO->println(std::string("First part written"));
-  #endif
+  debug(std::string("First part written"));
+  debug(std::string("Writing file to socket"));
 
-  #if DEBUG
-  UI::Dialog::IO->println(std::string("Writing file to socket"));
-  #endif
   if(_fileSize > 0){
-    //It send 100KBytes packages
+    //It send byte by byte
     std::ifstream ifs(_fileName, std::ifstream::in);
     char c = ifs.get();
     while(ifs.good()){
@@ -35,12 +30,12 @@ void RequestTES::write(){
       c = ifs.get();
     }
     ifs.close();
-//    _client.write();
-//    _client.write(_file, _fileSize);
   }
-  #if DEBUG
-  UI::Dialog::IO->println(std::string("File written"));
-  #endif
+  
+  if(_answer.substr(0,3) == "AQT")
+    _client.write("\n");
+  
+  debug(std::string("File written"));
 }
 std::string RequestTES::read(){ return _client.read(); }
 void RequestTES::disconnect(){ _client.disconnect(); }

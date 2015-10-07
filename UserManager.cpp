@@ -1,4 +1,5 @@
 #include "UserManager.h"
+#include "Debug.h"
 
 #include <boost/progress.hpp>
 #include "SocketUDP.h"
@@ -9,20 +10,6 @@
 #include <math.h>       /* log */
 #include <fstream>      // std::ofstream
 #include "Exception.h"
-
-#ifndef DEBUG
-#define DEBUG 0
-#endif
-
-#if DEBUG
-#ifndef debug(S)
-#define debug(S) UI::Dialog::IO->println(S)
-#endif
-#else
-#ifndef debug(S)
-#define debug(S)
-#endif
-#endif
 
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
 _ecpname(ecpname){}

@@ -1,4 +1,5 @@
 #include "SocketUDP.h"
+#include "Debug.h"
 #include "Exception.h"
 SocketUDP::SocketUDP() : _server(true){}
 

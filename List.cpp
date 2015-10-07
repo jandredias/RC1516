@@ -1,4 +1,5 @@
 #include "List.h"
+#include "Debug.h"
 #include "Exception.h"
 #include <iostream>
 #include "Dialog.h"

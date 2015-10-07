@@ -1,4 +1,5 @@
 #include "Quiz.h"
+#include "Debug.h"
 
 Quiz::Quiz(int sid, int deadline, std::string filename) : _sid(sid), _deadline(deadline), _filename(filename){}
 int Quiz::deadline(){ return _deadline; }

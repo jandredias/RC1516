@@ -1,4 +1,5 @@
 #include "Dialog.h"
+#include "Debug.h"
 
 #include <boost/algorithm/string/replace.hpp>
 
