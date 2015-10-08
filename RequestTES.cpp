@@ -31,10 +31,10 @@ void RequestTES::write(){
     }
     ifs.close();
   }
-  
+
   if(_answer.substr(0,3) == "AQT")
     _client.write("\n");
-  
+
   debug(std::string("File written"));
 }
 std::string RequestTES::read(){ return _client.read(); }
