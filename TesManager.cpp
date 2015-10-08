@@ -375,11 +375,15 @@ void TesManager::processRQT(){
     bool is_number = true;
     for(int index = 0; index < (int) SIDstr.size(); index++)
       if(SIDstr[index] < '0' || SIDstr[index] > '9') is_number = false;
+    if(is_number) {
+      SID = atoi(SIDstr);
+      if(SID < 10000 || SID > 99999) is_number = false;
+    }
 
     if(SIDstr.size() == 0 || !is_number || trash != std::string("")){
       r.answer("ERR\n");
     }else{
-      SID = atoi(SIDstr.data());
+      
       r.sid(SID);
       r.qid(qid(SID));
       r.deadline(deadline());
