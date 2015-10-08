@@ -12,7 +12,7 @@
 #include "Exception.h"
 
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
-_ecpname(ecpname){}
+_ecpname(ecpname), _qid(""){}
 std::vector<std::string> UserManager::list(){
   debug("[ UserManager::list            ] Creating socket");
 
@@ -194,7 +194,7 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
 
 
   char b;
-  _qid = qid;
+
   std::string filename = qid + std::string(".pdf");
 
   debug(std::string("Writting to file") + filename);
@@ -211,12 +211,14 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
     ++p;
   }
   pdfFile.close();
-  
+
   debug(std::string("File written"));
   debug(std::string("Disconnecting"));
-  read(fd, &b, 1);
-  if(b != '\n') throw UnknownFormatProtocol();
 
+  debug(std::string("Checking for \\n"));
+  read(fd, &b, 1);
+  if(b != '\n') {throw UnknownFormatProtocol();}
+  _qid = qid;
   tes.disconnect();
 
   debug(std::string("Disconnected"));
@@ -226,7 +228,7 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
 }
 
 std::pair<std::string, int> UserManager::submit(std::string answers){
-  if(_tesname == std::string("") || _tesport == 0) throw NoRequestAsked();
+  if(_tesname == std::string("") || _tesport == 0 || _qid == "") throw NoRequestAsked();
 
   SocketTCP tes(_tesname.data(), _tesport);
 
