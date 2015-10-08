@@ -181,49 +181,42 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
   std::string qid = tes.readWord();
   debug("QID size:"+ std::to_string(qid.size()));
   debug(std::string("QID: ") + qid);
-  if (qid.size()>24) 
+  if (qid.size()>24)
     throw UnknownFormatProtocol();
-  
+
   debug(std::string("Reading Server deadline"));
 
   std::string time = tes.readWord();
-  if (time.size() != 18)
-  	throw UnknownFormatProtocol();
-  char month[4]; 
-  for (int i=0;i<3;i++)
-	month[i]=time.at(i+2);
-  std::cout << month<< std::endl;
-  
-  
+
   for (int i=0;i<18;i++){
-	  
+
 	  if ( i >=0 && i < 2){
 		  if (time.at(i) < '0' || time.at(i) > '9' )
-			throw UnknownFormatProtocol(); 
+			throw std::string("boi1");
 	  }
 	  else if ( i >=2 && i < 5){
 		  if ( !((time.at(i) >= 'A' && time.at(i) <='Z')||(time.at(i) >= 'a' && time.at(i) <= 'z')) )
-			throw UnknownFormatProtocol(); 
+			throw std::string("boi2 ");
 	  }
 	  else if ( i >=5 && i < 9){
 		  if (time.at(i) < '0' || time.at(i) > '9')
-			throw UnknownFormatProtocol(); 
+			throw std::string("boi3 ");
 	  }
 	  else if ( i==9){
 		  if (time.at(i) != '_')
-			throw UnknownFormatProtocol();
+			throw std::string("boi4");
 	  }
 	  else if ( i ==10 || i == 11 || i == 13 || i==14 || i==16 || i==17){
 		  if (time.at(i) < '0' || time.at(i) > '9')
-			throw UnknownFormatProtocol(); 
+			throw std::string("boi5 ");
 	  }
 	  else if ( i == 12 || i== 15){
 		  if (time.at(i) != ':')
-			throw UnknownFormatProtocol(); 
+			throw std::string("boi6");
 	  }
-	  
+
   }
-  
+
   debug(std::to_string(time.size()));
   debug(std::string("Deadline: ") + time);
   debug(std::string("Reading Server size"));
@@ -257,6 +250,9 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
   debug(std::string("Disconnecting"));
 
   debug(std::string("Checking for \\n"));
+
+  /*If nothing is read b could have the value \n  */
+  b = 's';
   read(fd, &b, 1);
   if(b != '\n') {throw UnknownFormatProtocol();}
   _qid = qid;
