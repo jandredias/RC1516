@@ -75,7 +75,7 @@ void SocketTCP::write(const char* text, int size){
   if(!_connected) throw std::string("Socket is not connected");
 
   while(left > 0){
-    int written = ::send(_fd, ptr, left,MSG_NOSIGNAL);
+    int written = ::write(_fd, ptr, left);
     if(written < -1){
       if(errno == EPIPE)
         throw std::string("DISCONNETED");
@@ -98,7 +98,7 @@ void SocketTCP::write(char* text, int size){
 
     debug("Writing to socket");
 
-    int written = ::send(_fd, ptr, left,MSG_NOSIGNAL);
+    int written = ::write(_fd, ptr, left);
 
     if(written < -1){
       if(errno == EPIPE)
