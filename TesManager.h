@@ -97,7 +97,7 @@ public:
    * @param                 seconds untill the deadline
    * @return                a deadline
    */
-  int deadline(int = 30);
+  int deadline(int = 300);
 
   /**
    * @description will parse a date and return True if the string
