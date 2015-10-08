@@ -127,12 +127,6 @@ public:
    * @description
    * @return std::string
    */
-  std::string plainTextRead();
-
-  /**
-   * @description
-   * @return std::string
-   */
   std::string readWord();
 
   /**

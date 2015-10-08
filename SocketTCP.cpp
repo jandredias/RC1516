@@ -129,23 +129,6 @@ char* SocketTCP::read(int x){
   return buffer;
 
 }
-
-std::string SocketTCP::plainTextRead(){
-  if(!_connected) throw std::string("Socket is not connected");
-  std::string text = "";
-
-  int n;
-  char b;
-  while(1){
-    debug("still reading");
-    n = ::read(_fd, &b, 1);
-    if(b == '\0') break;
-    else if(n == 1) text += b;
-    else if( n == -1) perror("error reading from socket server ");
-  }
-  return text;
-}
-
 std::string SocketTCP::read(){
   if(!_connected) throw std::string("Socket is not connected");
   std::string text = "";
