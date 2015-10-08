@@ -113,7 +113,7 @@ std::string TesManager::toStringDeadline(int s){
   return qid;
 }
 bool TesManager::deadline(std::string s){
-  
+
   //TODO
   return true;
 }
@@ -361,7 +361,7 @@ void TesManager::processTCP(){
       UI::Dialog::IO->println("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request unknown");
       #endif
 	    UI::Dialog::IO->println("[ [RED]DONT CARE -- ERROR[REGULAR]          ] Type of request unknown");
-      std::string answer = std::string("ERR");
+      std::string answer = std::string("ERR\n");
 
       UI::Dialog::IO->println("ERR from " + r.client().ip());
       r.answer(answer);
