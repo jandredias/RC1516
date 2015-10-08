@@ -376,7 +376,7 @@ void TesManager::processRQT(){
     for(int index = 0; index < (int) SIDstr.size(); index++)
       if(SIDstr[index] < '0' || SIDstr[index] > '9') is_number = false;
     if(is_number) {
-      SID = atoi(SIDstr);
+      SID = atoi(SIDstr.data());
       if(SID < 10000 || SID > 99999) is_number = false;
     }
 
