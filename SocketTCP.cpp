@@ -46,7 +46,7 @@ SocketTCP::SocketTCP(int port) : _server(true), _connected(false){
   _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
   int optval = 1;
   if(setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval) < 0) //THis line ensures that there is no SOCKETTCP connection refused after Server Crash.
-	throw std::string("SocketUDP::setTimeOut ").append(strerror(errno)); 
+	throw std::string("SocketUDP::setTimeOut ").append(strerror(errno));
   if(bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0){
     if(errno == EADDRINUSE) throw SocketAlreadyInUse("TCP");
     else throw std::string("SocketTCP::SocketTCP ").append(strerror(errno));
@@ -139,6 +139,23 @@ char* SocketTCP::read(int x){
   return buffer;
 
 }
+
+std::string SocketTCP::plainTextRead(){
+  if(!_connected) throw std::string("Socket is not connected");
+  std::string text = "";
+
+  int n;
+  char b;
+  while(1){
+    std::cout << "still reading\n";
+    n = ::read(_fd, &b, 1);
+    if(b == '\0') break;
+    else if(n == 1) text += b;
+    else if( n == -1) perror("error reading from socket server ");
+  }
+  return text;
+}
+
 std::string SocketTCP::read(){
   if(!_connected) throw std::string("Socket is not connected");
   std::string text = "";
