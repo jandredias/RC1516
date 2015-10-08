@@ -327,7 +327,7 @@ void TesManager::processTCP(){
 
 void TesManager::processRQT(){
   debug("[ [YELLOW]TesManager::processRQT[REGULAR]      ] BEGIN");
-  
+
   void (*old_handler)(int);//interrupt handler
   if((old_handler=signal(SIGPIPE,SIG_IGN))==SIG_ERR) UI::Dialog::IO->println("ERRO PIPE");
 
@@ -377,7 +377,7 @@ void TesManager::processRQT(){
       if(SIDstr[index] < '0' || SIDstr[index] > '9') is_number = false;
 
     if(SIDstr.size() == 0 || !is_number || trash != std::string("")){
-      r.answer("ERR");
+      r.answer("ERR\n");
     }else{
       SID = atoi(SIDstr.data());
       r.sid(SID);
