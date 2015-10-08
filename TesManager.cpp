@@ -383,7 +383,7 @@ void TesManager::processRQT(){
     if(SIDstr.size() == 0 || !is_number || trash != std::string("")){
       r.answer("ERR\n");
     }else{
-      
+
       r.sid(SID);
       r.qid(qid(SID));
       r.deadline(deadline());
@@ -563,9 +563,6 @@ void TesManager::processRQS(){
   debug("Leaving thread processRQS. Bye!");
 }
 void TesManager::processAWI(){
-  //sendIQR("78865","Q0156","The_topic_is_Real",45);
-  //sendIQR("78865","Q0156","The_topic_is_Real",95);
-  //TODO
 
 
   debug("[ [CYAN]TesManager::processAWI[REGULAR]      ] BEGIN");
