@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <ostream>
+#include <signal.h>
 
 TesManager::TesManager(int port, int ecpPort, std::string ecpName) :
 _questionariesSem(new sem_t()),
@@ -326,6 +327,9 @@ void TesManager::processTCP(){
 
 void TesManager::processRQT(){
   debug("[ [YELLOW]TesManager::processRQT[REGULAR]      ] BEGIN");
+  
+  void (*old_handler)(int);//interrupt handler
+  if((old_handler=signal(SIGPIPE,SIG_IGN))==SIG_ERR) UI::Dialog::IO->println("ERRO PIPE");
 
   while(!_exit){
 
@@ -597,7 +601,7 @@ void TesManager::processAWI(){
     stream >> trash;
 
     if(message == std::string("AWI") && qid != std::string("") &&
-       qid.size() < 24 && qid.size() > 0 && trash == std::string("")){
+       qid.size() <= 24 && qid.size() > 0 && trash == std::string("")){
       _answerUDPMutex.lock();
       if(_answersUDP.count(qid) != 0)
         _answersUDP.erase(_answersUDP.find(qid));

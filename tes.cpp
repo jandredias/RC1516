@@ -33,8 +33,8 @@ int main(int argc, char* argv[]){
   bool flag_e = false;
   bool flag_good;
   
-  void (*old_handler)(int);//interrupt handler
-  if((old_handler=signal(SIGPIPE,SIG_IGN))==SIG_ERR) debug("ERRO PIPE");
+  //void (*old_handler)(int);//interrupt handler
+ // if((old_handler=signal(SIGPIPE,SIG_IGN))==SIG_ERR) debug("ERRO PIPE");
 
   if(!(argc == 1 || argc == 3 || argc == 5 || argc == 7)){ std::cout <<"wrong number of parameteres" << std::endl; return 1; }
   for(int i = 1; i < argc; i += 2){

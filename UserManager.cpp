@@ -178,12 +178,20 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
   debug(std::string("Reading Server QID"));
 
   std::string qid = tes.readWord();
-
+  debug("QID size:"+ std::to_string(qid.size()));
   debug(std::string("QID: ") + qid);
+  if (qid.size()>24) 
+    throw UnknownFormatProtocol();
+  
   debug(std::string("Reading Server deadline"));
 
   std::string time = tes.readWord();
-
+  for (i<0;i<18;i++){
+	  if (time.at(i)){i=0; }
+	  
+  }
+  
+  debug(std::to_string(time.size()));
   debug(std::string("Deadline: ") + time);
   debug(std::string("Reading Server size"));
 
