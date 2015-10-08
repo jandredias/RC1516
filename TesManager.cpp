@@ -305,7 +305,6 @@ void TesManager::processTCP(){
 
       debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request unknown");
 
-	    UI::Dialog::IO->println("[ [RED]DONT CARE -- ERROR[REGULAR]          ] Type of request unknown");
       std::string answer = std::string("ERR\n");
 
       UI::Dialog::IO->println("ERR from " + r.client().ip());
