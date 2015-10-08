@@ -10,10 +10,10 @@ SocketUDP::SocketUDP(const char addr[], int port) : _port(port), _server(false){
 
   _hostptr = gethostbyname(addr);
 
-  debug("official name: " + _hostptr->h_name);
+  debug("official name: " + std::string(_hostptr->h_name));
   debug("internet address: " +
-        inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0]) + " " +
-        ntohl(((struct in_addr *) _hostptr->h_addr_list[0])->s_addr));
+        std::string(inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0])) + " " +
+        std::to_string(ntohl(((struct in_addr *) _hostptr->h_addr_list[0])->s_addr)));
 
   memset((void*) &_serverAddr,(int) '\0', sizeof(_serverAddr));
   _serverAddr.sin_family      = AF_INET;

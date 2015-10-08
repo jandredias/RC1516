@@ -14,10 +14,10 @@ SocketTCP::SocketTCP(const char addr[], int port) : _server(false), _connected(f
   _hostptr = gethostbyname(addr);
   if(_hostptr == NULL) throw TCPCreating("SocketTCP::SocketTCP error getting host by name");
 
-  debug("official name: " + _hostptr->h_name );
+  debug("official name: " + std::string(_hostptr->h_name));
   debug("internet address: " +
-        inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0]) + " " +
-        ntohl(((struct in_addr*) _hostptr->h_addr_list[0])->s_addr));
+        std::string(inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0])) + " " +
+        std::to_string(ntohl(((struct in_addr*) _hostptr->h_addr_list[0])->s_addr)));
 
   memset((void *) &_serverAddr, (int) '\0', sizeof(_serverAddr));
 

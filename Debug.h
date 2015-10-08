@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Dialog.h"
+
 #define DEBUG 0
 
 #if DEBUG
