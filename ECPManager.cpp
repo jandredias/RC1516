@@ -29,9 +29,7 @@ ECPManager::~ECPManager(){
 
 void ECPManager::acceptRequests(){
 
-  #if DEBUG
-	UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Creating socket");
-	#endif
+  debug("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Creating socket");
 
 	try{
   _socketUDP = SocketUDP(_port);
@@ -44,18 +42,15 @@ void ECPManager::acceptRequests(){
 		return;
 	}
 
-  #if DEBUG
-	UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Socket created");
-	#endif
+  debug("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Socket created");
+
 
   while(!_exit){
 	  std::string message;
 	  struct sockaddr_in client;
     try{
 
-      #if DEBUG
-			UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Waiting for messages");
-			#endif
+      debug("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Waiting for messages");
 
       _UDPMutex.lock();
       message = _socketUDP.receive();
@@ -67,11 +62,9 @@ void ECPManager::acceptRequests(){
       UI::Dialog::IO->println(message + std::string(" from ") + _socketUDP.ip() +\
         std::string(" on port ") + _socketUDP.port());
 
-      #if DEBUG
-			UI::Dialog::IO->println(
+      debug(
         std::string("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Size of Message: ") +\
         std::to_string(message.size()));
-			#endif
 
       if(message == std::string("TQR")){
         RequestECP request(message, client);
@@ -79,9 +72,7 @@ void ECPManager::acceptRequests(){
         _tqrRequests.push(request);
         _tqrMutex.unlock();         //Unlock the queue so other threads can use it
 
-        #if DEBUG
-				UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in TQR queue");
-				#endif
+        debug("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in TQR queue");
 
         sem_post(_tqrSemaphore);    //Post semaphore so a thread is called
       }
@@ -92,9 +83,7 @@ void ECPManager::acceptRequests(){
         _terRequests.push(request);
         _terMutex.unlock();         //Unlock the queue so other threads can use it
 
-        #if DEBUG
-				UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in TER queue");
-				#endif
+        debug("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in TER queue");
 
         sem_post(_terSemaphore);    //Post semaphore so a thread is called
       }
@@ -105,9 +94,7 @@ void ECPManager::acceptRequests(){
         _iqrRequests.push(request);
         _iqrMutex.unlock();         //Unlock the queue so other threads can use it
 
-        #if DEBUG
-				UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in IQR queue");
-				#endif
+        debug("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in IQR queue");
 
         sem_post(_iqrSemaphore);    //Post semaphore so a thread is called
       }
@@ -119,9 +106,7 @@ void ECPManager::acceptRequests(){
         _answers.push(request);
         _answerMutex.unlock();      //Unlock the queue so other threads can use it
 
-        #if DEBUG
-				UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in Answer queue");
-				#endif
+        debug("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in Answer queue");
 
         sem_post(_answerSemaphore); //Post semaphore so a thread is called
       }
@@ -145,9 +130,7 @@ void ECPManager::acceptRequests(){
 		_answers.push(request);
 		_answerMutex.unlock();      //Unlock the queue so other threads can use it
 
-		#if DEBUG
-				UI::Dialog::IO->println("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in Answer queue");
-				#endif
+		debug("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in Answer queue");
 
 		sem_post(_answerSemaphore); //Post semaphore so a thread is called
 
@@ -157,41 +140,26 @@ void ECPManager::acceptRequests(){
 }
 
 void ECPManager::processTQR(){
-
-  #if DEBUG
-	UI::Dialog::IO->println("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Begin");
-	#endif
-
+  debug("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Begin");
   while(!_exit){
-
-    #if DEBUG
-		UI::Dialog::IO->println("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] I'm waiting for requests to process");
-		#endif
-
+    debug("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] I'm waiting for requests to process");
     sem_wait(_tqrSemaphore);
 
-		#if DEBUG
-		UI::Dialog::IO->println(
+		debug(
 	  std::string("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Requests size: ") + \
 	  std::to_string(_tqrRequests.size()));
-		#endif
     _tqrMutex.lock();           //Lock the queue to remove a request
                                //MultiThreading requires this mutex
-    #if DEBUG
-		UI::Dialog::IO->println("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Getting TQR Request from the queue");
-		#endif
+    debug("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Getting TQR Request from the queue");
+
     RequestECP r = _tqrRequests.front();
     _tqrRequests.pop();
 
-		#if DEBUG
-		UI::Dialog::IO->println("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] TQR Deleted from the queue");
-		#endif
+		debug("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] TQR Deleted from the queue");
 
     _tqrMutex.unlock();         //Lock the queue to remove a request
 
-		#if DEBUG
-		UI::Dialog::IO->println(std::string("Request: ").append(r.read()));
-		#endif
+		debug(std::string("Request: ").append(r.read()));
 
     std::pair <std::string,int> topicsList;
     std::string answer;
@@ -215,27 +183,19 @@ void ECPManager::processTQR(){
     r.answer(answer);
     _answerMutex.lock();
 
-		#if DEBUG
-		UI::Dialog::IO->println("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Inserting Request on Answer Queue");
-		#endif
+		debug("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Inserting Request on Answer Queue");
 
     _answers.push(r);
 
-		#if DEBUG
-		UI::Dialog::IO->println("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Inserted Request on Answer Queue");
-		#endif
+		debug("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Inserted Request on Answer Queue");
 
     _answerMutex.unlock();
 
-		#if DEBUG
-		UI::Dialog::IO->println("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Posting Answer Semaphore");
-		#endif
+		debug("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Posting Answer Semaphore");
 
     sem_post(_answerSemaphore); //So answers thread can know that there is an
                                 //answer to send
-		#if DEBUG
-		UI::Dialog::IO->println("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Answer Semaphore Post");
-		#endif
+		debug("[ [MAGENT]ECPManager::processTQR[REGULAR]      ] Answer Semaphore Post");
 
   }
 }
@@ -243,43 +203,31 @@ void ECPManager::processTQR(){
 
 void ECPManager::processTER(){
 
-	#if DEBUG
-	UI::Dialog::IO->println("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Begin");
-	#endif
+	debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Begin");
 
   while(!_exit){
 
-	  #if DEBUG
-		UI::Dialog::IO->println("[ [YELLOW]ECPManager::processTER[REGULAR]      ] I'm waiting for requests to process");
-		#endif
+	  debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] I'm waiting for requests to process");
 
     sem_wait(_terSemaphore);
 
-		#if DEBUG
-		UI::Dialog::IO->println(
+		debug(
       std::string("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Requests size: ") + \
       std::to_string(_terRequests.size()));
-		#endif
 
     _terMutex.lock();           //Lock the queue to remove a request
                                //MultiThreading requires this mutex
 
-	  #if DEBUG
-		UI::Dialog::IO->println("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Getting TER Request from the queue");
-		#endif
+	  debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Getting TER Request from the queue");
 
     RequestECP r = _terRequests.front();
     _terRequests.pop();
 
-	  #if DEBUG
-		UI::Dialog::IO->println("[ [YELLOW]ECPManager::processTER[REGULAR]      ] TER Deleted from the queue");
-		#endif
+	  debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] TER Deleted from the queue");
 
     _terMutex.unlock();         //Lock the queue to remove a request
 
-	  #if DEBUG
-		UI::Dialog::IO->println(std::string("Request: ").append(r.read()));
-		#endif
+	  debug(std::string("Request: ").append(r.read()));
 
     std::string answer;
 
@@ -297,22 +245,14 @@ void ECPManager::processTER(){
 
     if(tIDstr.size() == 0 || !is_number || trash != std::string("")){
 
-			#if DEBUG
-			UI::Dialog::IO->print("[ [YELLOW]ECPManager::processTER[REGULAR]      ] It's not a number. Size of input: ");
-			UI::Dialog::IO->print(std::to_string(tIDstr.size()));
-			UI::Dialog::IO->print(" | input: ");
-			UI::Dialog::IO->println(tIDstr);
-			#endif
+			debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] It's not a number. Size of input: " +
+						std::to_string(tIDstr.size()) + " | input: " + tIDstr);
 
       answer = "ERR\n";
     }else{
 			try{
-				#if DEBUG
-				UI::Dialog::IO->print("[ [YELLOW]ECPManager::processTER[REGULAR]      ] It's a topic number. Size of input: ");
-				UI::Dialog::IO->print(std::to_string(tIDstr.size()));
-				UI::Dialog::IO->print(" | input: ");
-				UI::Dialog::IO->println(tIDstr);
-				#endif
+				debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] It's a topic number. Size of input: " +
+							std::to_string(tIDstr.size()) + " | input: " + tIDstr);
 
 				tID = atoi(tIDstr.data());
 				std::pair <std::string, int> data = topicData(tID);
@@ -323,9 +263,7 @@ void ECPManager::processTER(){
         debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] answer: EOF");
 				answer = "EOF\n";
 			}catch(std::string s){
-				#if DEBUG
-				UI::Dialog::IO->println(s);
-				#endif
+				debug(s);
 				answer = "ERR\n";
 			}
 		}
@@ -334,69 +272,42 @@ void ECPManager::processTER(){
     r.answer(answer);
     _answerMutex.lock();
 
-		#if DEBUG
-		UI::Dialog::IO->println("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Inserting Request on Answer Queue");
-		#endif
-
+		debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Inserting Request on Answer Queue");
     _answers.push(r);
-
-		#if DEBUG
-		UI::Dialog::IO->println("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Inserted Request on Answer Queue");
-		#endif
-
+		debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Inserted Request on Answer Queue");
     _answerMutex.unlock();
-
-		#if DEBUG
-		UI::Dialog::IO->println("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Posting Answer Semaphore");
-		#endif
-
+		debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Posting Answer Semaphore");
     sem_post(_answerSemaphore); //So answers thread can know that there is an
                                 //answer to send
 
-		#if DEBUG
-		UI::Dialog::IO->println("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Answer Semaphore Post");
-		#endif
-
+		debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] Answer Semaphore Post");
   }
 }
 
 void ECPManager::processIQR(){
 
-   #if DEBUG
-		UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Begin");
-		#endif
-
+  debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Begin");
   while(!_exit){
 
-    #if DEBUG
-		UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] I'm waiting for requests to process");
-		#endif
+    debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] I'm waiting for requests to process");
 
     sem_wait(_iqrSemaphore);
 
-    #if DEBUG
-		UI::Dialog::IO->println(
+    debug(
 	    std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Requests size: ") + \
 	    std::to_string(_iqrRequests.size()));
-		#endif
 
     _iqrMutex.lock();           //Lock the queue to remove a request
                                 //MultiThreading requires this mutex
-    #if DEBUG
-		UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Getting IQR Request from the queue");
-		#endif
+    debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Getting IQR Request from the queue");
 
     RequestECP r = _iqrRequests.front();
     _iqrRequests.pop();
 
-    #if DEBUG
-		UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] IQR Deleted from the queue");
-		#endif
+    debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] IQR Deleted from the queue");
     _iqrMutex.unlock();         //Lock the queue to remove a request
 
-    #if DEBUG
-		UI::Dialog::IO->println(std::string("Request: ").append(r.read()));
-		#endif
+    debug(std::string("Request: ").append(r.read()));
 
 
 		std::string answer;
@@ -435,14 +346,12 @@ void ECPManager::processIQR(){
 
 			if (scoreNR < 0 || scoreNR > 100) throw invalidArguments();
 
-			#if DEBUG
-			UI::Dialog::IO->println(            "[ [CYAN]ECPManager::processIQR[REGULAR]      ] Received Message in the correctMessageFormat");
-			UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("Message: ")).append(message));
-			UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("SIDstr: ")).append(SIDstr));
-			UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("QIDstr: ")).append(QIDstr));
-			UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("topic_name: ")).append(topic_name));
-			UI::Dialog::IO->println(std::string("[ [CYAN]ECPManager::processIQR[REGULAR]      ] ").append(std::string("score: ")).append(score));
-			#endif
+			debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Received Message in the correctMessageFormat");
+			debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Message:    " + message);
+			debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] SIDstr:     " + SIDstr);
+			debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] QIDstr:     " + QIDstr);
+			debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] topic_name: " + topic_name);
+			debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] score:      " + score);
 
 			std::string stats_message = SIDstr + std::string(" ") + topic_name + std::string(" ") + score + std::string("%");
 
@@ -469,52 +378,33 @@ void ECPManager::processIQR(){
     r.answer(answer);
     _answerMutex.lock();
 
-		#if DEBUG
-		UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Inserting Request on Answer Queue");
-		#endif
+		debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Inserting Request on Answer Queue");
 
     _answers.push(r);
 
-		#if DEBUG
-		UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Inserted Request on Answer Queue");
-		#endif
+		debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Inserted Request on Answer Queue");
 
     _answerMutex.unlock();
 
-		#if DEBUG
-		UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Posting Answer Semaphore");
-		#endif
+		debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Posting Answer Semaphore");
 
     sem_post(_answerSemaphore); //So answers thread can know that there is an
                                 //answer to send
 
-		#if DEBUG
-		UI::Dialog::IO->println("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Answer Semaphore Post");
-		#endif
+		debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Answer Semaphore Post");
 
 
   }
 }
 
 void ECPManager::sendAnswer(){
-
-  #if DEBUG
-	UI::Dialog::IO->println("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Begin");
-	#endif
-
+  debug("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Begin");
   while(!_exit){
-
-    #if DEBUG
-		UI::Dialog::IO->println("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] I'm waiting for requests to process");
-		#endif
-
+    debug("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] I'm waiting for requests to process");
     sem_wait(_answerSemaphore);
-
-    #if DEBUG
-		UI::Dialog::IO->println(
+    debug(
 		  std::string("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Requests size: ") + \
 		  std::to_string(_answers.size()));
-		#endif
 
     _answerMutex.lock();          //Lock the queue to remove a request
                                  //MultiThreading requires this mutex
@@ -523,39 +413,29 @@ void ECPManager::sendAnswer(){
     _answers.pop();
     _answerMutex.unlock();         //Lock the queue to remove a request
 
-    #if DEBUG
-		UI::Dialog::IO->println(
+    debug(
       std::string("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Sending message: ") + \
       r.answer());
-		#endif
 
-    #if DEBUG
-		UI::Dialog::IO->println("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Waiting for UDP Socket to be free");
-		#endif
+    debug("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Waiting for UDP Socket to be free");
 
     _UDPSenderMutex.lock();
 
-    #if DEBUG
-		UI::Dialog::IO->println("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] UDP socket is free, will use it now");
-		#endif
+    debug("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] UDP socket is free, will use it now");
 
     _socketUDP.client(r.client());
 
-    #if DEBUG
-		UI::Dialog::IO->println(
+    debug(
 	    std::string("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Sending message: ") + \
 	    r.answer());
-		#endif
     _socketUDP.send(r.answer());
 
 	//	_socketUDP.send(r.answer().substr(0, r.answer().size() - 3));
 
-    #if DEBUG
-		UI::Dialog::IO->println("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Message sent by UDP Socket");
-		UI::Dialog::IO->println(
+    debug("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Message sent by UDP Socket");
+		debug(
       std::string("[ [BLUE]ECPManager::sendAnswer[REGULAR]      ] Answers left: ") + \
       std::to_string(_answers.size()));
-		#endif
 
     _UDPSenderMutex.unlock();
 

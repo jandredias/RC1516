@@ -14,12 +14,10 @@ SocketTCP::SocketTCP(const char addr[], int port) : _server(false), _connected(f
   _hostptr = gethostbyname(addr);
   if(_hostptr == NULL) throw TCPCreating("SocketTCP::SocketTCP error getting host by name");
 
-  #if DEBUG
-    std::cout << "official name: " << _hostptr->h_name << std::endl;
-    std::cout << "internet address: "
-              << inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0]) << " "
-              << ntohl(((struct in_addr*) _hostptr->h_addr_list[0])->s_addr) << std::endl;
-  #endif
+  debug("official name: " + _hostptr->h_name );
+  debug("internet address: " +
+        inet_ntoa(* (struct in_addr*) _hostptr->h_addr_list[0]) + " " +
+        ntohl(((struct in_addr*) _hostptr->h_addr_list[0])->s_addr));
 
   memset((void *) &_serverAddr, (int) '\0', sizeof(_serverAddr));
 
@@ -94,16 +92,11 @@ void SocketTCP::write(char* text, int size){
 
   if(!_connected) throw std::string("SocketTCP::write: Socket is not connected");
 
-  #if DEBUG
-  UI::Dialog::IO->print(std::string("LEFT: "));
-  UI::Dialog::IO->println(std::to_string(left));
-  #endif
+  debug("LEFT: " + std::to_string(left));
 
   while(left > 0){
 
-    #if DEBUG
-    UI::Dialog::IO->println(std::string("Writing to socket"));
-    #endif
+    debug("Writing to socket");
 
     int written = ::send(_fd, ptr, left,MSG_NOSIGNAL);
 
@@ -112,10 +105,7 @@ void SocketTCP::write(char* text, int size){
         throw std::string("DISCONNETED");
       throw std::string("SocketTCP::write ").append(strerror(errno));
     }
-    #if DEBUG
-    UI::Dialog::IO->print(std::string("Chars written to socket: "));
-    UI::Dialog::IO->println(std::to_string(written));
-    #endif
+    debug("Chars written to socket: " + std::to_string(written));
 
     left -= written;
     ptr += written;
@@ -147,7 +137,7 @@ std::string SocketTCP::plainTextRead(){
   int n;
   char b;
   while(1){
-    std::cout << "still reading\n";
+    debug("still reading");
     n = ::read(_fd, &b, 1);
     if(b == '\0') break;
     else if(n == 1) text += b;
