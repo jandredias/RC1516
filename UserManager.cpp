@@ -211,10 +211,11 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
     ++p;
   }
   pdfFile.close();
-
+  
   debug(std::string("File written"));
   debug(std::string("Disconnecting"));
-
+  read(fd, &b, 1);
+  if(b != '\n') throw UnknownFormatProtocol();
 
   tes.disconnect();
 
@@ -246,7 +247,6 @@ std::pair<std::string, int> UserManager::submit(std::string answers){
   std::string score = tes.readWord();
   if(code.size() == 0 || qidstr.size() == 0 || score.size() == 0)
     throw UnknownFormatProtocol();
-
 
   if (score == "-1") throw AfterDeadlineSubmit();
   else if(score == "-2") throw InvalidQIDvsSID();

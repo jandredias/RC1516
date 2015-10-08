@@ -585,7 +585,7 @@ void TesManager::processRQS(){
       #endif
       if(sid == std::string("") || qid == std::string("")) throw UnknownFormatProtocol();
       for(int i = 0; i < 5; i++)
-        if(answers[i] < 'A' && answers[i] > 'D' && answers[i] != 'N') throw UnknownFormatProtocol();
+        if((answers[i] < 'A' || answers[i] > 'D') && answers[i] != 'N') throw UnknownFormatProtocol();
 
       #if DEBUG
       UI::Dialog::IO->println("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Message parsed");
