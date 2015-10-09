@@ -60,6 +60,8 @@ class TesManager{
   int _port;
   bool _exit;
 
+  int _requestID;
+
   std::string _topicName;
 public:
   /**

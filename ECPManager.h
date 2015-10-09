@@ -6,12 +6,9 @@
 #include <queue>
 #include <semaphore.h>
 #include <mutex>          // std::mutex
-
+#include "Debug.h"
 #include <utility>      // std::pair, std::make_pair
 
-#ifndef DEBUG
-#define DEBUG 0
-#endif
 
 class ECPManager{
 

@@ -267,7 +267,13 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
     /*If nothing is read b could have the value \n  */
     b = 's';
     read(fd, &b, 1);
-    if(b != '\n') {throw UnknownFormatProtocol();}
+    debug();debug();debug();
+    debug("CHARATER:: " + std::to_string(b));
+    debug();debug();debug();
+    if(b != '\n')
+      throw UnknownFormatProtocol();
+
+
     _qid = qid;
   }catch(ConnectionTCPTimedOut s){
     UI::Dialog::IO->println("Connection timed out. Try again later.");

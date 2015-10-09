@@ -44,7 +44,8 @@ SocketTCP::SocketTCP(int port) : _server(true), _connected(false){
   _serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
   int optval = 1;
   if(setsockopt(_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval) < 0) //THis line ensures that there is no SOCKETTCP connection refused after Server Crash.
-	throw std::string("SocketUDP::setTimeOut ").append(strerror(errno));
+    throw std::string("SocketTCP::reuse ").append(strerror(errno));
+
   if(bind(_fd, (struct sockaddr*) &_serverAddr, sizeof(_serverAddr)) < 0){
     if(errno == EADDRINUSE) throw SocketAlreadyInUse("TCP");
     else throw std::string("SocketTCP::SocketTCP ").append(strerror(errno));
@@ -73,30 +74,32 @@ void SocketTCP::disconnect(){
 
 
 void SocketTCP::write(const char* text, int size){
-  debug("I'm writing using const char");
   const char *ptr = text;
   int left = size;
 
   if(!_connected) throw std::string("Socket is not connected");
 
   while(left > 0){
-    timeout(100);
+    //timeout(100);
     int written = ::write(_fd, ptr, left);
-    if(written != 1){ debug(std::to_string(errno)); }
-    if(written == 0 || (written == -1 && errno == 104)){
-       throw SocketClosed();
+
+    if(written > 0){
+      left -= written;
+      ptr += written;
+      continue;
+    }else if(written == 0){
+      debug("Didn't write the text. Will try again");
     }
-    if(written < -1){
-      if(errno == EPIPE)
-        throw std::string("DISCONNETED");
-      throw std::string("SocketTCP::write ").append(strerror(errno));
+    else if(written == -1){
+        if(errno == 104)
+          throw SocketClosed();
+        if(errno == EPIPE)
+          throw std::string("DISCONNETED");
+        throw std::string("SocketTCP::write ").append(strerror(errno));
+      }
     }
-    left -= written;
-    ptr += written;
-  }
 }
 void SocketTCP::write(char* text, int size){
-  debug("I'm writing using char");
   char *ptr = text;
   int left = size;
 
@@ -104,7 +107,6 @@ void SocketTCP::write(char* text, int size){
 
 
   while(left > 0){
-
     timeout(500);
     int written = ::write(_fd, ptr, left);
     if(written < 0){
@@ -120,11 +122,9 @@ void SocketTCP::write(char* text, int size){
   }
 }
 void SocketTCP::write(std::string text){ //Calls void SocketTCP::write(const char*, int)
-  debug("I'm writing using std::string");
   write(text.data(),text.size());
 }
-void SocketTCP::write(const char c){
-  debug("I'm writing using single char");write(&c, 1); }
+void SocketTCP::write(const char c){ write(&c, 1); }
 
 
 

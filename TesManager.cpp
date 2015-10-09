@@ -16,7 +16,8 @@ _questionariesSem(new sem_t()),
 _requestsSem(new sem_t()), _rqtRequestsSem(new sem_t()),
 _rqsRequestsSem(new sem_t()), _awiRequestsSem(new sem_t()),
 _answerSem(new sem_t()), _answerUDPSem(new sem_t()), _qid(1), _port(port),
-_ecpport(ecpPort), _ecpname(ecpName), _exit(false), _topicName("Hosts"), _senderSocketUDP(new SocketUDP(_ecpname.data(), _ecpport)) {
+_ecpport(ecpPort), _ecpname(ecpName), _exit(false), _topicName("Hosts"),
+_senderSocketUDP(new SocketUDP(_ecpname.data(), _ecpport)), _requestID(0) {
 
   sem_init(_requestsSem, 0, 0);
   sem_init(_rqtRequestsSem, 0, 0);
@@ -294,7 +295,7 @@ void TesManager::processTCP(){
       debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Locked RQTMutex");
       debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Inserting request on RQT queue");
 
-      UI::Dialog::IO->println("RQT from " + r.client().ip());
+      UI::Dialog::IO->println(std::to_string(_requestID++) + " RQT from " + r.client().ip());
 
       _rqtRequests.push(r);
       sem_post(_rqtRequestsSem);
@@ -417,7 +418,7 @@ void TesManager::processRQT(){
       answer += std::string(" ");
 
       std::string filename = std::to_string(rand() % 5 + 1) + std::string(".pdf");
-      UI::Dialog::IO->println("Sending file " + filename);
+      debug("Sending file " + filename);
 
       _questionariesMutex.lock();
       _questionaries[r.qid()] = Quiz(r.sid(), r.deadline(), filename);
@@ -714,6 +715,8 @@ void TesManager::answerTCP(){
       r.write();
     }catch(SocketClosed e){
       UI::Dialog::IO->println("[RED]Socket closed by client!");
+    }catch(std::string s){
+      UI::Dialog::IO->println(s);
     }
     r.disconnect();
   }
