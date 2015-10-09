@@ -116,7 +116,7 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
     try{
       ecp.timeout(MS_BETWEEN_TRIES);
       message = ecp.receive();
-      stream << message
+      stream << message;
 
       debug("[ UserManager::request            ] Message sent to ECP\n"
             "[ UserManager::request            ] Receiving message from ECP\n"
