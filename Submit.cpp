@@ -35,6 +35,8 @@ namespace RC_User{
         UI::Dialog::IO->println("The submitted questionnaire id is not valid with your student id");
       }catch(std::string s){
         UI::Dialog::IO->println(s);
+      }catch(UDPCreating s){
+        UI::Dialog::IO->println("ECP server not found");
       }
     }
 }

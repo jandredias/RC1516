@@ -15,9 +15,7 @@
 #define __MS_BETWEEN_TRIES__ 2000
 #define __TRIES__ 10
 
-#define ANSWER_NO 1
-
-
+#define ANSWER_NO 10
 
 class TesManager{
   std::string _ecpname;

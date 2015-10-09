@@ -9,6 +9,8 @@ SocketUDP::SocketUDP(const char addr[], int port) : _port(port), _server(false){
   if(_fd < 0) throw std::string("SocketUDP::SocketUDP ").append(strerror(errno));
 
   _hostptr = gethostbyname(addr);
+  if(_hostptr == NULL) throw UDPCreating("SocketUDP::SocketUDP error getting host by name");
+
 
   debug("official name: " + std::string(_hostptr->h_name));
   debug("internet address: " +
@@ -54,7 +56,7 @@ std::string SocketUDP::receive(int flags){
   int n = recvfrom(_fd, buffer, BUFFER_SIZE, flags, (struct sockaddr*) &_serverAddr, &_serverLen);
   if(n >= BUFFER_SIZE) throw MessageTooLongUDP();
   else if(n == -1){
-    
+
     throw std::string("SocketUDP::receive ").append(strerror(errno));
   }
 

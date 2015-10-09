@@ -21,29 +21,6 @@ namespace RC_User{
         UI::Dialog::IO->println("Questionnaire has an unique id: " + pair.first);
         UI::Dialog::IO->println("It is stored in " + pair.first + ".pdf file");
         UI::Dialog::IO->print("The questionnaire should be submitted before " + pair.second);
-/*
-        time_t t = pair.second;   // get time now
-        struct tm * now = localtime( & t );
-
-        std::string deadline;
-        if(now->tm_hour < 9) deadline += "0";
-        deadline += std::to_string(now->tm_hour + 1) + ":";
-        if(now->tm_min < 9) deadline += "0";
-        deadline += std::to_string(now->tm_min + 1) + ":";
-        if(now->tm_sec < 9) deadline += "0";
-        deadline += std::to_string(now->tm_sec + 1);
-
-        UI::Dialog::IO->print(deadline + " on ");
-
-        deadline = "";
-        if(now->tm_mday < 9) deadline += "0";
-        deadline += std::to_string(now->tm_mday + 1) + "-";
-        if(now->tm_mon < 8) deadline += "0";
-        deadline += std::to_string(now->tm_mon + 1) + "-";
-        deadline += std::to_string(now->tm_year + 1900);
-
-        UI::Dialog::IO->println(deadline);*/
-
       }catch(InvalidTID s){
         UI::Dialog::IO->println("Invalid topicID. Don't be an idiot and request a valid topicID.");
       }catch(ErrorOnMessage s){
@@ -74,6 +51,8 @@ respect the protocol.\nThe process will be aborted.\nTry again later.");
         UI::Dialog::IO->println(s.message());
       }catch(std::string s){
         UI::Dialog::IO->println(s);
+      }catch(UDPCreating s){
+        UI::Dialog::IO->println("ECP server not found");
       }
     }
 }

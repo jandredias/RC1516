@@ -26,6 +26,7 @@ class SocketTCP{
   int clientLen;
   bool _server;
   bool _connected;
+  bool _end = false;
 
 
 public:
@@ -163,4 +164,10 @@ public:
    * @param int milisseconds to wait for message to receive
    */
   void timeout(int);
+
+  /**
+   * @description
+   * @return bool
+   */
+  bool end();
 };

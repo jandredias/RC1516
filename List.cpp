@@ -33,6 +33,8 @@ large to be processed. It will be discarted!");
         UI::Dialog::IO->println("The number of topics sent by server does not match with data received.");
       }catch(WritingOnSocket s){
         UI::Dialog::IO->println("Error sending message to ECP Server");
+      }catch(UDPCreating s){
+        UI::Dialog::IO->println("ECP server not found");
       }
     }
 }

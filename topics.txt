@@ -1,6 +1,6 @@
-Camada_de_aplicação localhost 59000
-Camada_de_transporte localhost 59000
-Camada_de_rede localhost 59000
-Camada_da_de_dados localhost 59000
-Aplicações_multimedia localhost 59000
-Segurança_em_redes localhost 59000
+Camada_de_aplicação 127.0.0.1 59000
+Camada_de_transporte 127.0.0.1 59001
+Camada_de_rede 127.0.0.1 59002
+Camada_da_de_dados 127.0.0.1 59003
+Aplicações_multimedia 127.0.0.1 59004
+Segurança_em_redes 127.0.0.1 59005

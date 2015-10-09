@@ -13,6 +13,7 @@
 #include <fstream>      // std::ofstream
 #include "Exception.h"
 
+#include <boost/range/algorithm/count.hpp>
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
 _ecpname(ecpname), _qid(""){}
 std::vector<std::string> UserManager::list(){
@@ -31,11 +32,13 @@ std::vector<std::string> UserManager::list(){
    * This for cycle tries to connect to ECP for X times and will "return" the
    * server message on std::stringstream stream
    */
+  int n = 0;
   for(auto i = 0; i < TRIES; i++){
    ecp.send(std::string("TQR\n"));
     try{
         ecp.timeout(MS_BETWEEN_TRIES);
-        stream << ecp.receive();
+        message = ecp.receive();
+        stream << message;
 
         debug("[ UserManager::list            ] Message sent to ECP\n"
               "[ UserManager::list            ] Receiving message from ECP\n"
@@ -57,6 +60,7 @@ std::vector<std::string> UserManager::list(){
 
   debug("[ UserManager::list            ] Processing message");
 
+  n = boost::count(message, ' ');
   std::string code;
   stream >> code;
   if(code == std::string("EOF")){
@@ -72,10 +76,8 @@ std::vector<std::string> UserManager::list(){
   int nt;
   stream >> nt;
 
-  if(nt <= 0){
-    throw UnknownFormatProtocol();
-  }
-
+  if(nt <= 0){ throw UnknownFormatProtocol(); }
+  if(n != 1 + nt) throw UnknownFormatProtocol();
   debug(code  + std::string(" ") + std::to_string(nt));
 
   std::vector<std::string> topics;
@@ -105,11 +107,16 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
         "[ UserManager::request            ] Sending message");
 
   std::stringstream stream;
+
+ int n = 0;
+ std::string message;
+
   for(auto i = 0; i < TRIES; i++){
     ecp.send("TER " + std::to_string(tnn) + "\n");
     try{
       ecp.timeout(MS_BETWEEN_TRIES);
-      stream << ecp.receive();
+      message = ecp.receive();
+      stream << message
 
       debug("[ UserManager::request            ] Message sent to ECP\n"
             "[ UserManager::request            ] Receiving message from ECP\n"
@@ -131,6 +138,7 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
     throw ECPOffline();
   }
 
+  n = boost::count(message, ' ');
   std::string code;
   stream >> code;
   if(code == std::string("EOF")){
@@ -138,6 +146,8 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
   }else if(code == std::string("ERR")){
     throw ErrorOnMessage();
   }else if(code != std::string("AWTES")){
+    throw UnknownFormatProtocol();
+  }else if(n != 2){
     throw UnknownFormatProtocol();
   }
 
@@ -304,6 +314,7 @@ std::pair<std::string, int> UserManager::submit(std::string answers){
   if(code == "ERR") throw ErrorOnMessage();
 
   std::string qidstr = tes.readWord();
+
   std::string score = tes.readWord();
   if(code.size() == 0 || qidstr.size() == 0 || score.size() == 0)
     throw UnknownFormatProtocol();
@@ -311,6 +322,8 @@ std::pair<std::string, int> UserManager::submit(std::string answers){
   if (score == "-1") throw AfterDeadlineSubmit();
   else if(score == "-2") throw InvalidQIDvsSID();
   _qid = "";
+
+  if(!tes.end()) throw ErrorOnMessage();
   int s = atoi(score.data());
   return std::make_pair(qidstr,s);
 }

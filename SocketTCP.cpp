@@ -70,9 +70,6 @@ void SocketTCP::disconnect(){
   _connected = false;
 }
 
-
-
-
 void SocketTCP::write(const char* text, int size){
   const char *ptr = text;
   int left = size;
@@ -126,13 +123,6 @@ void SocketTCP::write(std::string text){ //Calls void SocketTCP::write(const cha
 }
 void SocketTCP::write(const char c){ write(&c, 1); }
 
-
-
-
-
-
-
-
 char* SocketTCP::read(int x){
   if(!_connected) throw std::string("SocketTCP::read Socket is not connected");
   char *buffer = new char[x];
@@ -176,14 +166,18 @@ std::string SocketTCP::read(){
   return text;
 }
 
+bool SocketTCP::end(){
+  return _end;
+}
 std::string SocketTCP::readWord(){
   if(!_connected) throw std::string("Socket is not connected ");
   std::string text = "";
-
   int n;
   char b;
   while(1){
     n = ::read(_fd, &b, 1);
+    if(b == '\n') _end = true;
+    else _end = false;
     if(n == 1 && (b != ' ' && b!= '\n' && b!='\t')) text += b;
     else if( n == 1 && (b == ' ' || b== '\n' || b=='\t') ) break;
     else if( n == -1 ) throw std::string("SOCKETTCP::readWord ") + strerror(errno);

@@ -159,12 +159,16 @@ void TesManager::acceptRequestsTCP(){
     }
   }catch(SocketAlreadyInUse s){
     UI::Dialog::IO->println(s.message());
+    UI::Dialog::IO->println("The TES server will terminate");
+    exit(1);
+
+  /*
     _exit = true;
     sem_post(_requestsSem);
     for(int i = 0; i <= ANSWER_NO; i++) sem_post(_answerSem);
     sem_post(_rqtRequestsSem);
     sem_post(_rqsRequestsSem);
-    sem_post(_awiRequestsSem);
+    sem_post(_awiRequestsSem);*/
   }catch(std::string s){
     UI::Dialog::IO->println(s);
     _exit = 1;
@@ -513,8 +517,7 @@ void TesManager::processRQS(){
     debug("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Message received and is going to be parsed");
 
       int n = boost::count(r.message(), ' ');
-      if(n != 7)
-        throw UnknownFormatProtocol();
+      if(n != 7) throw UnknownFormatProtocol();
       debug("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Parsing message");
       if(sid == std::string("") || qid == std::string("")) throw UnknownFormatProtocol();
       for(int i = 0; i < 5; i++)

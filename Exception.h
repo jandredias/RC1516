@@ -34,6 +34,12 @@ class TCPCreating{
     TCPCreating(std::string message) : _message(message) {}
     std::string message(){ return _message; }
 };
+class UDPCreating{
+  std::string _message;
+  public:
+    UDPCreating(std::string message) : _message(message) {}
+    std::string message(){ return _message; }
+};
 class ErrorConnectingTCP{
   std::string _message;
   public:

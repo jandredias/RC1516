@@ -13,10 +13,8 @@ typedef void (*sighandler_t)(int);
 #define __PORT_TES__ 59000
 #define __PORT_ECP__ 58023
 #define __HOST__ "localhost"
-#define ANSWER_NO 1 //CHANGE ALSO TesManager.h!!!!!!!!!!!!!!!!!!!!!
-#ifndef DEBUG
-#define DEBUG 0
-#endif
+#define ANSWER_NO 10 //CHANGE ALSO TesManager.h!!!!!!!!!!!!!!!!!!!!!
+
 
 #include "TesManager.h"
 
@@ -68,8 +66,12 @@ int main(int argc, char* argv[]){
       return -1;
     }
   }
-  UI::Dialog::IO->print(  "port:    ");
+  UI::Dialog::IO->print(  "    port:    ");
   UI::Dialog::IO->println(std::to_string(tesPort));
+  UI::Dialog::IO->print(  "ECP port:    ");
+  UI::Dialog::IO->println(std::to_string(ecpPort));
+  UI::Dialog::IO->print(  "ECP name:    ");
+  UI::Dialog::IO->println(ecpName);
   try{
     TesManager *manager = new TesManager(tesPort,ecpPort,ecpName);
     std::vector<std::thread> threads;
