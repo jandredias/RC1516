@@ -18,8 +18,7 @@ namespace RC_User{
         UI::Dialog::IO->print("Which topic do you want to get? ");
         std::pair<std::string, std::string> pair = _receiver->request(UI::Dialog::IO->readInteger());
 
-        UI::Dialog::IO->println("Questionnaire has an unique id: " + pair.first);
-        UI::Dialog::IO->println("It is stored in " + pair.first + ".pdf file");
+        UI::Dialog::IO->println("It has the unique id: " + pair.first);
         UI::Dialog::IO->print("The questionnaire should be submitted before " + pair.second);
       }catch(InvalidTID s){
         UI::Dialog::IO->println("Invalid topicID. Don't be an idiot and request a valid topicID.");

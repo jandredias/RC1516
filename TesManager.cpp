@@ -20,12 +20,14 @@ _rqsRequestsSem(new sem_t()), _awiRequestsSem(new sem_t()),
 _answerSem(new sem_t()), _answerUDPSem(new sem_t()), _qid(1), _port(port),
 _ecpport(ecpPort), _ecpname(ecpName), _exit(false), _topicName("Hosts"),
 _socketUDP(SocketUDP(_ecpname.data(), _ecpport)), _requestID(0) {
+
   sem_init(_requestsSem, 0, 0);
   sem_init(_rqtRequestsSem, 0, 0);
   sem_init(_rqsRequestsSem, 0, 0);
   sem_init(_awiRequestsSem, 0, 0);
   sem_init(_answerUDPSem, 0, 0);
   sem_init(_questionariesSem, 0, 0);
+
 }
 
 TesManager::~TesManager(){
@@ -401,6 +403,7 @@ void TesManager::processRQT(){
     bool is_number = true;
     for(int index = 0; index < (int) SIDstr.size(); index++)
       if(SIDstr[index] < '0' || SIDstr[index] > '9') is_number = false;
+    if(SIDstr.size() != 5) is_number = false;
     if(is_number) {
       SID = atoi(SIDstr.data());
       if(SID < 10000 || SID > 99999) is_number = false;
@@ -500,26 +503,48 @@ void TesManager::processRQS(){
     	stream >> req;
     	stream >> sid;
       stream >> qid;
+
+      tmp = "X";
     	stream >> tmp; answers[0] = tmp.data()[0];
       if(tmp.size() != 1) throw UnknownFormatProtocol();
-    	stream >> tmp; answers[1] = tmp.data()[0];
+
+      tmp = "X";
+      stream >> tmp; answers[1] = tmp.data()[0];
       if(tmp.size() != 1) throw UnknownFormatProtocol();
-    	stream >> tmp; answers[2] = tmp.data()[0];
+
+      tmp = "X";
+      stream >> tmp; answers[2] = tmp.data()[0];
       if(tmp.size() != 1) throw UnknownFormatProtocol();
-    	stream >> tmp; answers[3] = tmp.data()[0];
+
+      tmp = "X";
+      stream >> tmp; answers[3] = tmp.data()[0];
       if(tmp.size() != 1) throw UnknownFormatProtocol();
-    	stream >> tmp; answers[4] = tmp.data()[0];
+
+      tmp = "X";
+      stream >> tmp; answers[4] = tmp.data()[0];
       if(tmp.size() != 1) throw UnknownFormatProtocol();
+
 
     debug("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Message received and is going to be parsed");
 
       int n = boost::count(r.message(), ' ');
       if(n != 7) throw UnknownFormatProtocol();
       debug("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Parsing message");
-      if(sid == std::string("") || qid == std::string("")) throw UnknownFormatProtocol();
-      for(int i = 0; i < 5; i++)
-        if((answers[i] < 'A' || answers[i] > 'D') && answers[i] != 'N') throw UnknownFormatProtocol();
 
+
+      if(qid.size() > 24) throw UnknownFormatProtocol();
+      if(sid.size() != 5) throw UnknownFormatProtocol();
+      for(int index = 0; index < (int) sid.size(); index++)
+        if(sid[index] < '0' || sid[index] > '9') throw UnknownFormatProtocol();
+      int SIDnr = atoi(sid.data());
+      if(SIDnr < 10000 || SIDnr > 99999) throw UnknownFormatProtocol();
+
+
+      if(sid == std::string("") || qid == std::string("")) throw UnknownFormatProtocol();
+
+      for(int i = 0; i < 5; i++){
+        if((answers[i] < 'A' || answers[i] > 'D') && answers[i] != 'N') throw UnknownFormatProtocol();
+      }
       debug("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Message parsed");
 
       std::map<std::string,Quiz>::iterator it;

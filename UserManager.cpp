@@ -16,6 +16,7 @@
 #define TIMEOUT 10000
 
 #include <boost/range/algorithm/count.hpp>
+int counter = 0;
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
 _ecpname(ecpname), _qid(""){}
 std::vector<std::string> UserManager::list(){
@@ -256,8 +257,21 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
 
 
     char b;
+    std::string str_tnn = std::to_string(tnn);
+    if (str_tnn.size() == 1){
+      str_tnn = "0" + str_tnn;
+    }
 
-    std::string filename = qid + std::string(".pdf");
+    if(counter == 999)
+      counter = 0;
+    std::string std_counter = std::to_string(++counter);
+    if (std_counter.size() == 1){
+      std_counter = "00" + std_counter;
+    }
+    else if (std_counter.size() == 2){
+      std_counter = "0" + std_counter;
+    }
+    std::string filename = std::string("T") + str_tnn + std::string("QF") + std_counter + std::string(".pdf");
 
     debug(std::string("Writting to file") + filename);
 
@@ -291,6 +305,7 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
 
 
     _qid = qid;
+    UI::Dialog::IO->println("Questionnaire is stored in " + filename + " file");
   }catch(ConnectionTCPTimedOut s){
     UI::Dialog::IO->println("Connection timed out. Try again later.");
   }
