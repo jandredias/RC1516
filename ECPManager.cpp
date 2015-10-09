@@ -355,7 +355,7 @@ void ECPManager::processIQR(){
 			}
 			int scoreNR = std::stoi(score);
 
-			if (scoreNR < -1 || scoreNR > 99) throw invalidArguments();
+			if (scoreNR < -1 || scoreNR > 100) throw invalidArguments();
 			if(QIDstr.size() > 24) throw invalidArguments();
 			if(topic_name.size() > 25) throw invalidArguments();
 
