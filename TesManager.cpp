@@ -193,7 +193,7 @@ void TesManager::acceptRequestsUDP(){
       _receiverSocketUDPMutex.lock();
       std::string message = _socketUDP.receive(); //Throws exception
       _receiverSocketUDPMutex.unlock();
-
+      UI::Dialog::IO->println(std::to_string(_requestID++) + " AWI from " + _socketUDP.ip());
       debug(
         std::string("[[CYAN]TesManager::acceptRequestsUDP[REGULAR]]  Queue size ")\
         + std::to_string(_rqtRequests.size()));
@@ -314,7 +314,7 @@ void TesManager::processTCP(){
       debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Locked RQSMutex");
       debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Inserting request on RQS queue");
 
-      UI::Dialog::IO->println("RQS from " + r.client().ip());
+      UI::Dialog::IO->println(std::to_string(_requestID++) + " RQS from " + r.client().ip());
 
       _rqsRequests.push(r);
       sem_post(_rqsRequestsSem);
@@ -331,7 +331,7 @@ void TesManager::processTCP(){
 
       std::string answer = std::string("ERR\n");
 
-      UI::Dialog::IO->println("ERR from " + r.client().ip());
+      UI::Dialog::IO->println(std::to_string(_requestID++) + " ERR from " + r.client().ip());
       r.answer(answer);
       _answerMutex.lock();
 
