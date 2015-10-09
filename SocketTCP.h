@@ -157,4 +157,10 @@ public:
    * @return std::string
    */
   std::string hostname();
+
+  /**
+   * @description set timeout while reading messages
+   * @param int milisseconds to wait for message to receive
+   */
+  void timeout(int);
 };

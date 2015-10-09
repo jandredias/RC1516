@@ -15,7 +15,7 @@
 #define __MS_BETWEEN_TRIES__ 2000
 #define __TRIES__ 10
 
-#define ANSWER_NO 5
+#define ANSWER_NO 1
 
 
 

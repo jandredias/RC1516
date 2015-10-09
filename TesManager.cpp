@@ -190,7 +190,7 @@ void TesManager::acceptRequestsUDP(){
         + std::to_string(_port));
 
       _receiverSocketUDPMutex.lock();
-      std::string message = _socketUDP.receive();
+      std::string message = _socketUDP.receive(); //Throws exception
       _receiverSocketUDPMutex.unlock();
 
       debug(
@@ -226,8 +226,10 @@ void TesManager::acceptRequestsUDP(){
     sem_post(_awiRequestsSem);
   }catch(UnknownFormatProtocol s){
     UI::Dialog::IO->println("Message received using an unknown protocol");
+    _receiverSocketUDPMutex.unlock();
   }catch(MessageTooLongUDP s){
     UI::Dialog::IO->println("Message too long to be processed");
+    _receiverSocketUDPMutex.unlock();
   }
   debug("Leaving thread acceptRequestsUDP. Bye!");
 }
@@ -247,62 +249,82 @@ void TesManager::processTCP(){
       std::string("[ [GREEN]TesManager::processTCP[REGULAR]      ] Requests size: ") + \
       std::to_string(_requests.size()));
 
+    debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Locking ReqMutex");
     _reqMutex.lock();
+    debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Locked ReqMutex");
 
     debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Getting first in the queue");
-
     RequestTES r = _requests.front();
-    _requests.pop();
+    debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Got first in the queue");
 
-    debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Removing first Request from the queue");
-    debug(
-      std::string("[ [GREEN]TesManager::processTCP[REGULAR]      ] Requests size: ") + \
+    debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Removing first from the queue");
+    _requests.pop();
+    debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Removed first from the queue");
+
+    debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Requests size: " +
       std::to_string(_requests.size()));
 
-
+    debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Unlocking ReqMutex");
     _reqMutex.unlock();
+    debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Unlocked ReqMutex");
 
-    debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Reading message from Request");
-
-    r.message(r.read());
-
-    debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Message read from Request");
-
-
-    std::stringstream stream(r.message());
     std::string typeOfRequest;
-    stream >> typeOfRequest;
+
+    try{
+      debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Reading message from Request");
+      r.message(r.read());
+      debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Message read from Request");
+
+      debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Converting R.Message() to stringstream");
+      std::stringstream stream(r.message());
+      debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] R.Message to Stream Complete");
+
+      stream >> typeOfRequest;
+
+    }catch(ConnectionTCPTimedOut s){
+      typeOfRequest = "ERR";
+    }
+
     if(typeOfRequest == std::string("RQT")){
       debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request is RQT");
+      debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Locking RQTMutex");
+
       _rqtMutex.lock();
 
+      debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Locked RQTMutex");
       debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Inserting request on RQT queue");
 
       UI::Dialog::IO->println("RQT from " + r.client().ip());
 
-
       _rqtRequests.push(r);
       sem_post(_rqtRequestsSem);
-      _rqtMutex.unlock();
 
       debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Request inserted in RQT queue");
+      debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Unlocking RQTMutex");
+      _rqtMutex.unlock();
+      debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Unlocked RQTMutex");
 
     }else if(typeOfRequest == std::string("RQS")){
-
       debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request is RQS");
+      debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Locking RQSMutex");
 
       _rqsMutex.lock();
 
+      debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Locked RQSMutex");
       debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Inserting request on RQS queue");
 
       UI::Dialog::IO->println("RQS from " + r.client().ip());
+
       _rqsRequests.push(r);
       sem_post(_rqsRequestsSem);
-      _rqsMutex.unlock();
 
       debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Request inserted in RQS queue");
+      debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Unlocking RQSMutex");
+      _rqsMutex.unlock();
 
-    }else {
+      debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Unlocked RQSMutex");
+
+    }else{
 
       debug("[ [GREEN]TesManager::processTCP[REGULAR]      ] Type of request unknown");
 
@@ -474,10 +496,15 @@ void TesManager::processRQS(){
     stream >> qid;
 
   	stream >> tmp; answers[0] = tmp.data()[0];
+    if(tmp.size() != 1) throw UnknownFormatProtocol();
   	stream >> tmp; answers[1] = tmp.data()[0];
+    if(tmp.size() != 1) throw UnknownFormatProtocol();
   	stream >> tmp; answers[2] = tmp.data()[0];
+    if(tmp.size() != 1) throw UnknownFormatProtocol();
   	stream >> tmp; answers[3] = tmp.data()[0];
+    if(tmp.size() != 1) throw UnknownFormatProtocol();
   	stream >> tmp; answers[4] = tmp.data()[0];
+    if(tmp.size() != 1) throw UnknownFormatProtocol();
 
     debug("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Message received and is going to be parsed");
     try{
@@ -516,6 +543,7 @@ void TesManager::processRQS(){
       debug("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Mutex unlocked");
       std::string file = quiz.filename();
       int deadline = quiz.deadline();
+
       int scr;
       if(atoi(sid.data()) != quiz.sid()){
         scr = -2;
@@ -682,9 +710,11 @@ void TesManager::answerTCP(){
 
     debug("[ [BLUE]TesManager::answerTCP[REGULAR]       ] Removed request from the ANSWER queue");
     if(r.answer().size() < 100) debug(r.answer());
-
-    r.write();
-
+    try{
+      r.write();
+    }catch(SocketClosed e){
+      UI::Dialog::IO->println("[RED]Socket closed by client!");
+    }
     r.disconnect();
   }
   debug("Leaving thread answerTCP. Bye!");

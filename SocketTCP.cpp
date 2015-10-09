@@ -68,14 +68,24 @@ void SocketTCP::disconnect(){
     throw DisconnectingTCP(strerror(errno));
   _connected = false;
 }
+
+
+
+
 void SocketTCP::write(const char* text, int size){
+  debug("I'm writing using const char");
   const char *ptr = text;
   int left = size;
 
   if(!_connected) throw std::string("Socket is not connected");
 
   while(left > 0){
+    timeout(100);
     int written = ::write(_fd, ptr, left);
+    if(written != 1){ debug(std::to_string(errno)); }
+    if(written == 0 || (written == -1 && errno == 104)){
+       throw SocketClosed();
+    }
     if(written < -1){
       if(errno == EPIPE)
         throw std::string("DISCONNETED");
@@ -85,38 +95,44 @@ void SocketTCP::write(const char* text, int size){
     ptr += written;
   }
 }
-
 void SocketTCP::write(char* text, int size){
+  debug("I'm writing using char");
   char *ptr = text;
   int left = size;
 
   if(!_connected) throw std::string("SocketTCP::write: Socket is not connected");
 
-  debug("LEFT: " + std::to_string(left));
 
   while(left > 0){
 
-    debug("Writing to socket");
-
+    timeout(500);
     int written = ::write(_fd, ptr, left);
-
-    if(written < -1){
+    if(written < 0){
+      debug("ERROR: " + std::to_string(errno) + "\n" + strerror(errno));
+      if(errno == 11) throw SocketClosed();
       if(errno == EPIPE)
         throw std::string("DISCONNETED");
       throw std::string("SocketTCP::write ").append(strerror(errno));
     }
-    debug("Chars written to socket: " + std::to_string(written));
 
     left -= written;
     ptr += written;
   }
 }
-void SocketTCP::write(std::string text){
+void SocketTCP::write(std::string text){ //Calls void SocketTCP::write(const char*, int)
+  debug("I'm writing using std::string");
   write(text.data(),text.size());
 }
 void SocketTCP::write(const char c){
-  write(&c, 1);
-}
+  debug("I'm writing using single char");write(&c, 1); }
+
+
+
+
+
+
+
+
 char* SocketTCP::read(int x){
   if(!_connected) throw std::string("SocketTCP::read Socket is not connected");
   char *buffer = new char[x];
@@ -135,11 +151,27 @@ std::string SocketTCP::read(){
 
   int n;
   char b;
+  timeout(5000);
+  bool timeOut = false;
   while(1){
     n = ::read(_fd, &b, 1);
     if(n == 1 && b != '\n') text += b;
     else if( n == 1 && b == '\n' ) break;
-    else if( n == -1) perror("error reading from socket server ");
+    else if( n == -1){
+      if(errno == 11){
+        throw ConnectionTCPTimedOut();
+      }
+      debug();
+      debug();
+      debug("\t\t\tSOCKETUDP::receive ERROR RECEIVING");
+      debug(std::to_string(errno));
+      debug(strerror(errno));
+      debug();
+      debug();
+      perror("error reading from socket server ");
+      sleep(10);
+    }
+    if(!timeOut){ timeout(500); timeOut = true; }
   }
   return text;
 }
@@ -187,4 +219,15 @@ std::string SocketTCP::ip(){
 
 std::string SocketTCP::hostname(){
   return std::string();
+}
+
+void SocketTCP::timeout(int ms){
+  struct timeval tv;
+  tv.tv_usec = ms % 1000;
+  tv.tv_sec = (ms - (ms % 1000)) / 1000;
+
+  if(setsockopt(_fd, SOL_SOCKET, SO_RCVTIMEO, &tv,sizeof(tv)) < 0)
+    throw std::string("SocketTCP::setTimeOut ").append(strerror(errno));
+  if(setsockopt(_fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) < 0)
+    throw std::string("SocketTCP::setTimeOut Sender").append(strerror(errno));
 }

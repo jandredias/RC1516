@@ -2,6 +2,8 @@
 #include <string>
 
 class invalidArguments{};
+class SocketClosed{};
+class ConnectionTCPTimedOut{};
 class connectOnServer{};
 class InvalidTID{};
 class AfterDeadlineSubmit{};

@@ -155,131 +155,125 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
   if(port <= 0) throw InvalidPort();
 
   SocketTCP tes(hostname.data(), port);
+  tes.timeout(2000);
+  std::string time;
+  std::string qid;
+  try{
+    debug("Socket created\nConnecting...");
 
-  debug("Socket created\nConnecting...");
+    tes.connect();
 
-  tes.connect();
+    _tesname = hostname;
+    _tesport = port;
 
-  _tesname = hostname;
-  _tesport = port;
+    debug(std::string("Connected!\nWriting..."));
 
-  debug(std::string("Connected!\nWriting..."));
+    tes.write(std::string("RQT ") + std::to_string(_sid) + std::string("\n"));
 
-  tes.write(std::string("RQT ") + std::to_string(_sid) + std::string("\n"));
+    debug("TER " + std::to_string(tnn) + "\n" "Written" "\n"
+          "Reading Server Answer" "\n" "Reading AQT");
 
-  debug("TER " + std::to_string(tnn) + "\n" "Written" "\n"
-        "Reading Server Answer" "\n" "Reading AQT");
+    std::string message;
+    message = tes.readWord();
 
-  std::string message;
-  message = tes.readWord();
+    debug(std::string("CODE: ") + message);
+    if(message == std::string("EOF")) throw InvalidTID();
+    if(message != std::string("AQT")) throw UnknownFormatProtocol();
 
-  debug(std::string("CODE: ") + message);
-  if(message == std::string("EOF")) throw InvalidTID();
-  if(message != std::string("AQT")) throw UnknownFormatProtocol();
+    debug(std::string("Reading Server QID"));
+    qid = tes.readWord();
+    debug("QID size:"+ std::to_string(qid.size()));
+    debug(std::string("QID: ") + qid);
+    if (qid.size()>24)
+      throw UnknownFormatProtocol();
 
-  debug(std::string("Reading Server QID"));
+    debug(std::string("Reading Server deadline"));
 
-  std::string qid = tes.readWord();
-  debug("QID size:"+ std::to_string(qid.size()));
-  debug(std::string("QID: ") + qid);
-  if (qid.size()>24) 
-    throw UnknownFormatProtocol();
-  
-  debug(std::string("Reading Server deadline"));
+    time = tes.readWord();
+    if (time.size() != 18)
+    	throw UnknownFormatProtocol();
+    char month[4];
+    for (int i=0;i<3;i++) month[i]=time.at(i+2);
+    debug(month);
+    if(!(boost::iequals(month,"jan") || boost::iequals(month,"feb") ||
+  		   boost::iequals(month,"mar") ||	boost::iequals(month,"apr") ||
+  		   boost::iequals(month,"may") ||	boost::iequals(month,"jun") ||
+  		   boost::iequals(month,"jul") ||	boost::iequals(month,"aug") ||
+  		   boost::iequals(month,"sep") ||	boost::iequals(month,"oct") ||
+  		   boost::iequals(month,"nov") ||	boost::iequals(month,"dec")))
+      throw UnknownFormatProtocol();
 
-  std::string time = tes.readWord();
-  if (time.size() != 18)
-  	throw UnknownFormatProtocol();
-  char month[4]; 
-  for (int i=0;i<3;i++)
-	month[i]=time.at(i+2);
-  std::cout << month<< std::endl;
-  if(! 
-	   (boost::iequals(month,"jan")||
-		boost::iequals(month,"feb")||
-		boost::iequals(month,"mar")||
-		boost::iequals(month,"apr")||
-		boost::iequals(month,"may")||
-		boost::iequals(month,"jun")||
-		boost::iequals(month,"jul")||
-		boost::iequals(month,"aug")||
-		boost::iequals(month,"sep")||
-		boost::iequals(month,"oct")||
-		boost::iequals(month,"nov")||
-		boost::iequals(month,"dec"))) throw UnknownFormatProtocol();
-  
-  for (int i=0;i<18;i++){
-	  
-	  if ( i >=0 && i < 2){
-		  if (time.at(i) < '0' || time.at(i) > '9' )
-			throw UnknownFormatProtocol(); 
-	  }
-	  else if ( i >=2 && i < 5){
-		  if ( !((time.at(i) >= 'A' && time.at(i) <='Z')||(time.at(i) >= 'a' && time.at(i) <= 'z')) )
-			throw UnknownFormatProtocol(); 
-	  }
-	  else if ( i >=5 && i < 9){
-		  if (time.at(i) < '0' || time.at(i) > '9')
-			throw UnknownFormatProtocol(); 
-	  }
-	  else if ( i==9){
-		  if (time.at(i) != '_')
-			throw UnknownFormatProtocol();
-	  }
-	  else if ( i ==10 || i == 11 || i == 13 || i==14 || i==16 || i==17){
-		  if (time.at(i) < '0' || time.at(i) > '9')
-			throw UnknownFormatProtocol(); 
-	  }
-	  else if ( i == 12 || i== 15){
-		  if (time.at(i) != ':')
-			throw UnknownFormatProtocol(); 
-	  }
-	  
+    for (int i=0;i<18;i++){
+  	  if ( i >=0 && i < 2){
+  		  if (time.at(i) < '0' || time.at(i) > '9' )
+  			throw UnknownFormatProtocol();
+  	  }
+  	  else if ( i >=2 && i < 5){
+  		  if ( !((time.at(i) >= 'A' && time.at(i) <='Z')||(time.at(i) >= 'a' && time.at(i) <= 'z')) )
+  			throw UnknownFormatProtocol();
+  	  }
+  	  else if ( i >=5 && i < 9){
+  		  if (time.at(i) < '0' || time.at(i) > '9')
+  			throw UnknownFormatProtocol();
+  	  }
+  	  else if ( i==9){
+  		  if (time.at(i) != '_')
+  			throw UnknownFormatProtocol();
+  	  }
+  	  else if ( i ==10 || i == 11 || i == 13 || i==14 || i==16 || i==17){
+  		  if (time.at(i) < '0' || time.at(i) > '9')
+  			throw UnknownFormatProtocol();
+  	  }
+  	  else if ( i == 12 || i== 15){
+  		  if (time.at(i) != ':')
+  			throw UnknownFormatProtocol();
+  	  }
+
+    }
+
+    debug(std::to_string(time.size()));
+    debug(std::string("Deadline: ") + time);
+    debug(std::string("Reading Server size"));
+
+
+    std::string size = tes.readWord();
+
+    debug(std::string("Size: ") + size);
+
+
+    char b;
+
+    std::string filename = qid + std::string(".pdf");
+
+    debug(std::string("Writting to file") + filename);
+
+
+    std::ofstream pdfFile(filename, std::ofstream::out);
+
+    int fd = tes.rawRead();
+
+    boost::progress_display p(atoi(size.data()));
+    for(int i = 0; i < atoi(size.data()); i++){
+      while(::read(fd, &b, 1) == 0);
+      pdfFile << b;
+      ++p;
+    }
+    pdfFile.close();
+
+    debug(std::string("File written"));
+    debug(std::string("Disconnecting"));
+
+    debug(std::string("Checking for \\n"));
+    /*If nothing is read b could have the value \n  */
+    b = 's';
+    read(fd, &b, 1);
+    if(b != '\n') {throw UnknownFormatProtocol();}
+    _qid = qid;
+  }catch(ConnectionTCPTimedOut s){
+    UI::Dialog::IO->println("Connection timed out. Try again later.");
   }
-  
-  debug(std::to_string(time.size()));
-  debug(std::string("Deadline: ") + time);
-  debug(std::string("Reading Server size"));
-
-
-  std::string size = tes.readWord();
-
-  debug(std::string("Size: ") + size);
-
-
-  char b;
-
-  std::string filename = qid + std::string(".pdf");
-
-  debug(std::string("Writting to file") + filename);
-
-
-  std::ofstream pdfFile(filename, std::ofstream::out);
-
-  int fd = tes.rawRead();
-
-  boost::progress_display p(atoi(size.data()));
-  for(int i = 0; i < atoi(size.data()); i++){
-    while(::read(fd, &b, 1) == 0);
-    pdfFile << b;
-    ++p;
-  }
-  pdfFile.close();
-
-  debug(std::string("File written"));
-  debug(std::string("Disconnecting"));
-
-  debug(std::string("Checking for \\n"));
-  /*If nothing is read b could have the value \n  */
-  b = 's';
-  read(fd, &b, 1);
-  if(b != '\n') {throw UnknownFormatProtocol();}
-  _qid = qid;
   tes.disconnect();
-
-  debug(std::string("Disconnected"));
-
-
+  debug("Disconnected");
   return std::make_pair(qid,time);
 }
 

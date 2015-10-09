@@ -53,7 +53,10 @@ std::string SocketUDP::receive(int flags){
 
   int n = recvfrom(_fd, buffer, BUFFER_SIZE, flags, (struct sockaddr*) &_serverAddr, &_serverLen);
   if(n >= BUFFER_SIZE) throw MessageTooLongUDP();
-  else if(n == -1) throw std::string("SocketUDP::receive ").append(strerror(errno));
+  else if(n == -1){
+    
+    throw std::string("SocketUDP::receive ").append(strerror(errno));
+  }
 
   std::string msg(buffer);
   int pos = msg.find('\n');

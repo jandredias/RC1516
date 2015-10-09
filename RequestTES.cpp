@@ -1,6 +1,6 @@
 #include "RequestTES.h"
 #include "Debug.h"
-
+#include "Exception.h"
 #include <fstream>      // std::ifstream
 RequestTES::RequestTES(SocketTCP client, int sid, std::string qid, int deadline) :
 _client(client), _qid(qid), _sid(sid), _deadline(deadline), _fileSize(-1){}
@@ -12,30 +12,40 @@ void RequestTES::answer(std::string answer){ _answer = answer; }
 std::string RequestTES::answer(){ return _answer; }
 
 void RequestTES::message(std::string text){ _message = text; }
-void RequestTES::write(std::string text){ _client.write(text); }
-void RequestTES::write(){
-  debug(std::string("Writing to socket"));
-
-  _client.write(_answer);
-
-  debug(std::string("First part written"));
-  debug(std::string("Writing file to socket"));
-
-  if(_fileSize > 0){
-    //It send byte by byte
-    std::ifstream ifs(_fileName, std::ifstream::in);
-    char c = ifs.get();
-    while(ifs.good()){
-      _client.write(c);
-      c = ifs.get();
-    }
-    ifs.close();
+void RequestTES::write(std::string text){
+  try{
+  _client.write(text);
+  }catch(SocketClosed s){
+    UI::Dialog::IO->println("Socket was closed by client");
   }
+}
+void RequestTES::write(){
+  try{
+    debug(std::string("Writing to socket"));
 
-  if(_answer.substr(0,3) == "AQT")
-    _client.write("\n");
+    _client.write(_answer);
 
-  debug(std::string("File written"));
+    debug(std::string("First part written"));
+    debug(std::string("Writing file to socket"));
+
+    if(_fileSize > 0){
+      //It send byte by byte
+      std::ifstream ifs(_fileName, std::ifstream::in);
+      char c = ifs.get();
+      while(ifs.good()){
+        _client.write(c);
+        c = ifs.get();
+      }
+      ifs.close();
+    }
+
+    if(_answer.substr(0,3) == "AQT")
+      _client.write("\n");
+
+    debug(std::string("File written"));
+  }catch(SocketClosed s){
+    UI::Dialog::IO->println("Socket was closed by client");
+  }
 }
 std::string RequestTES::read(){ return _client.read(); }
 void RequestTES::disconnect(){ _client.disconnect(); }
