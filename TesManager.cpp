@@ -10,6 +10,8 @@
 #include <ctime>
 #include <ostream>
 #include <signal.h>
+#include <boost/range/algorithm/count.hpp>
+#include <algorithm>    // std::count
 
 TesManager::TesManager(int port, int ecpPort, std::string ecpName) :
 _questionariesSem(new sem_t()),
@@ -401,8 +403,10 @@ void TesManager::processRQT(){
       SID = atoi(SIDstr.data());
       if(SID < 10000 || SID > 99999) is_number = false;
     }
-
-    if(SIDstr.size() == 0 || !is_number || trash != std::string("")){
+    int n = boost::count(r.message(), ' ');
+    if(n != 1){
+      r.answer("ERR\n");
+    }else if(SIDstr.size() == 0 || !is_number || trash != std::string("")){
       r.answer("ERR\n");
     }else{
 
@@ -490,24 +494,27 @@ void TesManager::processRQS(){
   	char answers[5];
 
   	std::stringstream stream(r.message());
+    try{
 
-  	stream >> req;
-  	stream >> sid;
-    stream >> qid;
-
-  	stream >> tmp; answers[0] = tmp.data()[0];
-    if(tmp.size() != 1) throw UnknownFormatProtocol();
-  	stream >> tmp; answers[1] = tmp.data()[0];
-    if(tmp.size() != 1) throw UnknownFormatProtocol();
-  	stream >> tmp; answers[2] = tmp.data()[0];
-    if(tmp.size() != 1) throw UnknownFormatProtocol();
-  	stream >> tmp; answers[3] = tmp.data()[0];
-    if(tmp.size() != 1) throw UnknownFormatProtocol();
-  	stream >> tmp; answers[4] = tmp.data()[0];
-    if(tmp.size() != 1) throw UnknownFormatProtocol();
+    	stream >> req;
+    	stream >> sid;
+      stream >> qid;
+    	stream >> tmp; answers[0] = tmp.data()[0];
+      if(tmp.size() != 1) throw UnknownFormatProtocol();
+    	stream >> tmp; answers[1] = tmp.data()[0];
+      if(tmp.size() != 1) throw UnknownFormatProtocol();
+    	stream >> tmp; answers[2] = tmp.data()[0];
+      if(tmp.size() != 1) throw UnknownFormatProtocol();
+    	stream >> tmp; answers[3] = tmp.data()[0];
+      if(tmp.size() != 1) throw UnknownFormatProtocol();
+    	stream >> tmp; answers[4] = tmp.data()[0];
+      if(tmp.size() != 1) throw UnknownFormatProtocol();
 
     debug("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Message received and is going to be parsed");
-    try{
+
+      int n = boost::count(r.message(), ' ');
+      if(n != 7)
+        throw UnknownFormatProtocol();
       debug("[ [MAGENT]TesManager::processRQS[REGULAR]      ] Parsing message");
       if(sid == std::string("") || qid == std::string("")) throw UnknownFormatProtocol();
       for(int i = 0; i < 5; i++)
@@ -628,8 +635,11 @@ void TesManager::processAWI(){
     stream >> message;
     stream >> qid;
     stream >> trash;
+    int n = boost::count(r.message(), ' ');
+    if(n != 1)
+      UI::Dialog::IO->println("Unknown message format");
 
-    if(message == std::string("AWI") && qid != std::string("") &&
+    else if(message == std::string("AWI") && qid != std::string("") &&
        qid.size() <= 24 && qid.size() > 0 && trash == std::string("")){
 
       _answerUDPMutex.lock();
@@ -770,49 +780,4 @@ int TesManager::score(char answers[], const char filename[]){
   }
   in.close();
   return scoreValue;
-}
-
-void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,int scr){
-/*
-  debug("[ TesManager::sendIQR             ] ECP server data:");
-  debug("[ TesManager::sendIQR             ] Server Name: " + _ecpname);
-  debug("[ TesManager::sendIQR             ] Server Port: " + std::to_string(_ecpport));
-
-  SocketUDP ecp = SocketUDP();
-  std::string message;
-  std::string QID_Received;
-
-  debug("[ TesManager::sendIQR             ] Socket created");
-  debug("[ TesManager::sendIQR             ] Sending message");
-
-  std::stringstream stream;
-  for(auto i = 0; i < __TRIES__; i++){
-    ecp.send(std::string("IQR ") + std::string(SID) + std::string(" ") + std::string(QID) + std::string(" ") + std::string(topic_name) + std::string(" ") + std::to_string(scr) + std::string("\n"));
-    try{
-      ecp.timeout(__MS_BETWEEN_TRIES__);
-      stream << ecp.receive();
-
-      debug("[ TesManager::sendIQR             ] Message sent to ECP");
-      debug("[ TesManager::sendIQR             ] Receiving message from ECP");
-      debug("[ TesManager::sendIQR             ] Message received from ECP");
-      break;
-    }catch(std::string s){
-      if(errno == 11){
-        UI::Dialog::IO->print(". ");
-        UI::Dialog::IO->flush();
-        if(i < __TRIES__ - 1)
-          continue;
-        UI::Dialog::IO->println();
-        UI::Dialog::IO->println();
-      }else{
-        UI::Dialog::IO->println("error sending message to ECP server");
-      }
-    }
-    UI::Dialog::IO->println();
-    UI::Dialog::IO->println("Could not connect to ECP Server!");
-    UI::Dialog::IO->println("Try again later.");
-    return;
-  }
-*/
-
 }

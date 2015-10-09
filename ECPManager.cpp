@@ -7,6 +7,9 @@
 #include "Exception.h"
 #include "Dialog.h"
 
+#include <boost/range/algorithm/count.hpp>
+#include <algorithm>    // std::count
+
 ECPManager::ECPManager(int port) : _tqrSemaphore(new sem_t()),
 	_terSemaphore(new sem_t()), _iqrSemaphore(new sem_t()),
 	_answerSemaphore(new sem_t()), _port(port),
@@ -66,7 +69,8 @@ void ECPManager::acceptRequests(){
         std::string("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Size of Message: ") +\
         std::to_string(message.size()));
 
-      if(message == std::string("TQR")){
+			int n = boost::count(message, ' ');
+      if(message == std::string("TQR") && n == 0){
         RequestECP request(message, client);
         _tqrMutex.lock();           //Lock the queue to insert a request
         _tqrRequests.push(request);
@@ -76,8 +80,7 @@ void ECPManager::acceptRequests(){
 
         sem_post(_tqrSemaphore);    //Post semaphore so a thread is called
       }
-
-	  else if(message.substr(0,3) == std::string("TER")){
+	    else if(message.substr(0,3) == std::string("TER") && n == 1){
         RequestECP request(message, client);
         _terMutex.lock();           //Lock the queue to insert a request
         _terRequests.push(request);
@@ -86,9 +89,7 @@ void ECPManager::acceptRequests(){
         debug("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in TER queue");
 
         sem_post(_terSemaphore);    //Post semaphore so a thread is called
-      }
-
-	  else if(message.substr(0,3) == std::string("IQR")){
+      }else if(message.substr(0,3) == std::string("IQR") && n == 4){
         RequestECP request(message, client);
         _iqrMutex.lock();           //Lock the queue to insert a request
         _iqrRequests.push(request);
@@ -97,9 +98,7 @@ void ECPManager::acceptRequests(){
         debug("[ [GREEN]ECPManager::acceptRequests[REGULAR]  ] Task inserted in IQR queue");
 
         sem_post(_iqrSemaphore);    //Post semaphore so a thread is called
-      }
-
-	  else{
+      }else{
         RequestECP request(message, client);
         request.answer("ERR\n");
         _answerMutex.lock();        //Lock the queue to insert a request
