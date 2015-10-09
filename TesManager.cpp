@@ -424,15 +424,14 @@ void TesManager::processRQT(){
       answer += toStringDeadline(deadline());
       answer += std::string(" ");
 
-      std::string filename = std::to_string(rand() % 5 + 1) + std::string(".pdf");
-      debug("Sending file " + filename);
+      std::string fileName = std::to_string(rand() % 5 + 1) + std::string(".pdf");
+      debug("Sending file " + fileName);
 
       _questionariesMutex.lock();
-      _questionaries[r.qid()] = Quiz(r.sid(), r.deadline(), filename);
+      _questionaries[r.qid()] = Quiz(r.sid(), r.deadline(), fileName);
       _questionariesMutex.unlock();
 
-      debug("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Reading file: " + filename);
-      std::string fileName = std::to_string(rand() % 5 + 1) + std::string(".pdf");
+      debug("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Reading file: " + fileName);
       int fileSize = pdfSize(fileName);
 
       debug("[ [YELLOW]TesManager::processRQT[REGULAR]      ] File read");
