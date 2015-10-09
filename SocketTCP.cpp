@@ -3,6 +3,7 @@
 #include "Dialog.h"
 #include "Exception.h"
 
+#define TIMEOUT 10000
 SocketTCP::SocketTCP(){}
 SocketTCP::SocketTCP(int fd, struct sockaddr_in client) : _fd(fd), _clientAddr(client),
   _server(true), _connected(true){}
@@ -77,7 +78,7 @@ void SocketTCP::write(const char* text, int size){
   if(!_connected) throw std::string("Socket is not connected");
 
   while(left > 0){
-    //timeout(100);
+    timeout(TIMEOUT);
     int written = ::write(_fd, ptr, left);
 
     if(written > 0){
@@ -104,7 +105,7 @@ void SocketTCP::write(char* text, int size){
 
 
   while(left > 0){
-    timeout(500);
+    timeout(TIMEOUT);
     int written = ::write(_fd, ptr, left);
     if(written < 0){
       debug("ERROR: " + std::to_string(errno) + "\n" + strerror(errno));
@@ -141,7 +142,7 @@ std::string SocketTCP::read(){
 
   int n;
   char b;
-  timeout(5000);
+  timeout(10000);
   bool timeOut = false;
   while(1){
     n = ::read(_fd, &b, 1);
@@ -161,7 +162,7 @@ std::string SocketTCP::read(){
       perror("error reading from socket server ");
       sleep(10);
     }
-    if(!timeOut){ timeout(500); timeOut = true; }
+    if(!timeOut){ timeout(10000); timeOut = true; }
   }
   return text;
 }

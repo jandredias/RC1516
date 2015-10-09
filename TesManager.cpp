@@ -20,14 +20,12 @@ _rqsRequestsSem(new sem_t()), _awiRequestsSem(new sem_t()),
 _answerSem(new sem_t()), _answerUDPSem(new sem_t()), _qid(1), _port(port),
 _ecpport(ecpPort), _ecpname(ecpName), _exit(false), _topicName("Hosts"),
 _socketUDP(SocketUDP(_ecpname.data(), _ecpport)), _requestID(0) {
-
   sem_init(_requestsSem, 0, 0);
   sem_init(_rqtRequestsSem, 0, 0);
   sem_init(_rqsRequestsSem, 0, 0);
   sem_init(_awiRequestsSem, 0, 0);
   sem_init(_answerUDPSem, 0, 0);
   sem_init(_questionariesSem, 0, 0);
-
 }
 
 TesManager::~TesManager(){

@@ -13,6 +13,8 @@
 #include <fstream>      // std::ofstream
 #include "Exception.h"
 
+#define TIMEOUT 10000
+
 #include <boost/range/algorithm/count.hpp>
 UserManager::UserManager(int sid, int port, std::string ecpname) : _sid(sid), _port(port),
 _ecpname(ecpname), _qid(""){}
@@ -165,7 +167,7 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
   if(port <= 0) throw InvalidPort();
 
   SocketTCP tes(hostname.data(), port);
-  tes.timeout(2000);
+  tes.timeout(TIMEOUT);
   std::string time;
   std::string qid;
   try{
@@ -263,10 +265,12 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
     std::ofstream pdfFile(filename, std::ofstream::out);
 
     int fd = tes.rawRead();
-
+    tes.timeout(5000);
     boost::progress_display p(atoi(size.data()));
+    int n = 0;
     for(int i = 0; i < atoi(size.data()); i++){
-      while(::read(fd, &b, 1) == 0);
+      while((n = ::read(fd, &b, 1)) == 0);
+      if(n == -1) throw ErrorOnMessage();
       pdfFile << b;
       ++p;
     }
