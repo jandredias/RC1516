@@ -282,8 +282,14 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
     tes.timeout(5000);
     boost::progress_display p(atoi(size.data()));
     int n = 0;
+    int c = 0;
     for(int i = 0; i < atoi(size.data()); i++){
-      while((n = ::read(fd, &b, 1)) == 0);
+      while((n = ::read(fd, &b, 1)) == 0) {
+        c++;
+        if (c > 100)
+          throw ErrorOnMessage();
+      }
+      c = 0;
       if(n == -1) throw ErrorOnMessage();
       pdfFile << b;
       ++p;
