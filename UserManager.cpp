@@ -190,10 +190,12 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
     debug(std::string("Reading Server deadline"));
 
     time = tes.readWord();
+    debug(std::string("Checking Server deadline FORMAT"));
     if (time.size() != 18)
     	throw UnknownFormatProtocol();
     char month[4];
     for (int i=0;i<3;i++) month[i]=time.at(i+2);
+    month[3]='\0';
     debug(month);
     if(!(boost::iequals(month,"jan") || boost::iequals(month,"feb") ||
   		   boost::iequals(month,"mar") ||	boost::iequals(month,"apr") ||
@@ -230,7 +232,7 @@ std::pair<std::string, std::string> UserManager::request(int tnn){
   	  }
 
     }
-
+    debug(std::string("Server deadline [GREEN]OK[REGULAR]"));
     debug(std::to_string(time.size()));
     debug(std::string("Deadline: ") + time);
     debug(std::string("Reading Server size"));
