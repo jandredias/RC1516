@@ -53,7 +53,7 @@ class TesManager{
   std::mutex _receiverSocketUDPMutex;
   std::mutex _senderSocketUDPMutex;
 
-  SocketUDP *_receiverSocketUDP;
+  SocketUDP _socketUDP;
   SocketUDP *_senderSocketUDP;
 
   int _qid;

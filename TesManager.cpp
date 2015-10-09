@@ -17,7 +17,7 @@ _requestsSem(new sem_t()), _rqtRequestsSem(new sem_t()),
 _rqsRequestsSem(new sem_t()), _awiRequestsSem(new sem_t()),
 _answerSem(new sem_t()), _answerUDPSem(new sem_t()), _qid(1), _port(port),
 _ecpport(ecpPort), _ecpname(ecpName), _exit(false), _topicName("Hosts"),
-_senderSocketUDP(new SocketUDP(_ecpname.data(), _ecpport)), _requestID(0) {
+_socketUDP(SocketUDP(_ecpname.data(), _ecpport)), _requestID(0) {
 
   sem_init(_requestsSem, 0, 0);
   sem_init(_rqtRequestsSem, 0, 0);
@@ -180,7 +180,6 @@ void TesManager::acceptRequestsUDP(){
   debug("[[CYAN]TesManager::acceptRequestsUDP[REGULAR]] Creating socket");
 
   try{
-    SocketUDP _socketUDP(_port);
     debug("[[CYAN]TesManager::acceptRequestsUDP[REGULAR]] Socket created ");
     debug(
       std::string("[[CYAN]TesManager::acceptRequestsUDP[REGULAR]] Waiting for message on port ")\
@@ -190,9 +189,9 @@ void TesManager::acceptRequestsUDP(){
         std::string("[[CYAN]TesManager::acceptRequestsUDP[REGULAR]] Waiting for message on port ")\
         + std::to_string(_port));
 
-      _receiverSocketUDPMutex.lock();
+      //_receiverSocketUDPMutex.lock();
       std::string message = _socketUDP.receive(); //Throws exception
-      _receiverSocketUDPMutex.unlock();
+    //  _receiverSocketUDPMutex.unlock();
       UI::Dialog::IO->println(std::to_string(_requestID++) + " AWI from " + _socketUDP.ip());
       debug(
         std::string("[[CYAN]TesManager::acceptRequestsUDP[REGULAR]]  Queue size ")\
@@ -562,7 +561,7 @@ void TesManager::processRQS(){
          std::string(" ") + std::to_string(scr) + std::string("\n"));
 
         _answerUDPMutex.lock();
-        _answersUDP.insert(std::pair<std::string, RequestTES>(iqrRequest.qid(), iqrRequest));
+        _answersUDP.insert(std::pair<std::string, RequestTES>(qid, iqrRequest));
         _answerUDPMutex.unlock();
         sem_post(_answerUDPSem);
       }
@@ -632,9 +631,15 @@ void TesManager::processAWI(){
 
     if(message == std::string("AWI") && qid != std::string("") &&
        qid.size() <= 24 && qid.size() > 0 && trash == std::string("")){
+
       _answerUDPMutex.lock();
-      if(_answersUDP.count(qid) != 0)
+      debug("[ [CYAN]TesManager::processAWI[REGULAR]      ] Searching for qid on queue from AWI received");
+      if(_answersUDP.find(qid) != _answersUDP.end()){
+        debug("[ [CYAN]TesManager::processAWI[REGULAR]      ] FOUND qid from the AWI received");
         _answersUDP.erase(_answersUDP.find(qid));
+      }else{
+        debug("[ [CYAN]TesManager::processAWI[REGULAR]      ] NOT FOUND qid from the AWI received");
+      }
       _answerUDPMutex.unlock();
     }else if(message == std::string("ERR") || message != std::string("AWI") || trash != std::string("")){
       UI::Dialog::IO->println("[RED][ERR][REGULAR] There was an error in the communication with the server.");
@@ -665,13 +670,14 @@ void TesManager::answerUDP(){
 
     _answerUDPMutex.lock();
     RequestTES r = _answersUDP.begin()->second;
+    debug(_answersUDP.begin()->first);
     _answersUDP.erase(_answersUDP.begin()); //Removing from the unordered_map
     _answerUDPMutex.unlock();
 
     debug("[ [BLUE]TesManager::answerUDP[REGULAR]       ] Removed request from the ANSWER queue");
     if(r.answer().size() < 100) debug(r.answer());
 
-    _senderSocketUDP->send(r.answer());
+    _socketUDP.send(r.answer());
 
 
     _answerUDPMutex.lock();
@@ -767,12 +773,12 @@ int TesManager::score(char answers[], const char filename[]){
 }
 
 void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,int scr){
-
+/*
   debug("[ TesManager::sendIQR             ] ECP server data:");
   debug("[ TesManager::sendIQR             ] Server Name: " + _ecpname);
   debug("[ TesManager::sendIQR             ] Server Port: " + std::to_string(_ecpport));
 
-  SocketUDP ecp = SocketUDP(_ecpname.data(), _ecpport );
+  SocketUDP ecp = SocketUDP();
   std::string message;
   std::string QID_Received;
 
@@ -807,6 +813,6 @@ void TesManager::sendIQR(std::string SID,std::string QID,std::string topic_name,
     UI::Dialog::IO->println("Try again later.");
     return;
   }
-
+*/
 
 }
