@@ -160,7 +160,6 @@ std::string SocketTCP::read(){
       debug();
       debug();
       perror("error reading from socket server ");
-      sleep(10);
     }
     if(!timeOut){ timeout(10000); timeOut = true; }
   }

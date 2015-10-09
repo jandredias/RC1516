@@ -718,7 +718,7 @@ void TesManager::answerUDP(){
     _answerUDPMutex.lock();
     _answersUDP.insert(std::pair<std::string, RequestTES>(r.qid(), r));
     _answerUDPMutex.unlock();
-    usleep(500);
+  
   }
   debug("Leaving thread answerUDP. Bye!");
 }
