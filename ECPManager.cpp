@@ -242,8 +242,12 @@ void ECPManager::processTER(){
     bool is_number = true;
     for(int index = 0; index < (int) tIDstr.size(); index++)
       if(tIDstr[index] < '0' || tIDstr[index] > '9') is_number = false;
-
-    if(tIDstr.size() == 0 || !is_number || trash != std::string("")){
+		if(is_number){
+			tID = atoi(tIDstr.data());
+		 	if (tID > 99 || tID < 1)
+				is_number = false;
+		}
+		if(tIDstr.data()[0] == '0' || tIDstr.size() < 1 || tIDstr.size() > 2 || !is_number || trash != std::string("")){
 
 			debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] It's not a number. Size of input: " +
 						std::to_string(tIDstr.size()) + " | input: " + tIDstr);
@@ -254,7 +258,6 @@ void ECPManager::processTER(){
 				debug("[ [YELLOW]ECPManager::processTER[REGULAR]      ] It's a topic number. Size of input: " +
 							std::to_string(tIDstr.size()) + " | input: " + tIDstr);
 
-				tID = atoi(tIDstr.data());
 				std::pair <std::string, int> data = topicData(tID);
 				answer = std::string("AWTES ") + data.first + std::string(" ") + \
 				std::to_string(data.second) + "\n";
@@ -330,8 +333,10 @@ void ECPManager::processIQR(){
 			if( message == "" || SIDstr == "" || QIDstr == "" || topic_name == "" || score == "" || trash != "")
 				throw invalidArguments();
 
+			if(SIDstr.size() != 5) throw invalidArguments();
 			for(int index = 0; index < (int) SIDstr.size(); index++)
 		    if(SIDstr[index] < '0' || SIDstr[index] > '9') throw invalidArguments();
+
 
 
 			/* Checking SIDstr is a number */
@@ -339,12 +344,20 @@ void ECPManager::processIQR(){
 			if (message != "IQR" || sid < 10000 || sid > 99999) throw invalidArguments();
 
 			/* Checking score is a number */
-			for(int index = 0; index < (int) score.size(); index++)
-		    if(score[index] < '0' || score[index] > '9') throw invalidArguments();
-
+			bool only_one = true;
+			for(int index = 0; index < (int) score.size(); index++){
+		    if((score[index] < '0' || score[index] > '9') && score[index] != '-')
+					throw invalidArguments();
+				if(score[index] == '-' && only_one)
+					only_one = false;
+				else if(score[index] == '-' && only_one == false)
+				 	throw invalidArguments();
+			}
 			int scoreNR = std::stoi(score);
 
-			if (scoreNR < 0 || scoreNR > 100) throw invalidArguments();
+			if (scoreNR < -1 || scoreNR > 99) throw invalidArguments();
+			if(QIDstr.size() > 24) throw invalidArguments();
+			if(topic_name.size() > 25) throw invalidArguments();
 
 			debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Received Message in the correctMessageFormat");
 			debug("[ [CYAN]ECPManager::processIQR[REGULAR]      ] Message:    " + message);
@@ -359,8 +372,6 @@ void ECPManager::processIQR(){
 
 			std::ofstream iFile;
 			iFile.open(_statsFile,std::fstream::app);
-			/*
-			iFile.open (_statsFile, std::fstream::app);*/
 			iFile << stats_message.append(std::string("\n"));
 			iFile.close();
 			answer = std::string("AWI " + QIDstr + "\n");
