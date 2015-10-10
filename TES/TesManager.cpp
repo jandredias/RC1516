@@ -426,7 +426,16 @@ void TesManager::processRQT(){
       answer += std::string(" ");
 
       int qnn = rand() % PDF_NUMBER + 1;
-      std::string newFile = "T01QF00" + std::to_string(qnn);
+      std::string std_qnn = std::to_string(qnn);
+      if (std_qnn.size() == 1){
+        std_qnn = "00" + std_qnn;
+      }
+      else if (std_counter.size() == 2){
+        std_qnn = "0" + std_qnn;
+      }
+      //if size == 3 no need to add zeros
+
+      std::string newFile = "T01QF" + std_qnn;
       std::string newFilename = newFile + ".pdf";
       debug("Sending file " + newFilename);
 
