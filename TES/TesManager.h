@@ -15,6 +15,11 @@
 #define __MS_BETWEEN_TRIES__ 2000
 #define __TRIES__ 10
 
+//Defines number of pdf files available to send to user
+//If this number is wrong, the TES will fail
+#define PDF_NUMBER 5
+
+//Defines the number of threads to send answers to clients
 #define ANSWER_NO 10
 
 class TesManager{

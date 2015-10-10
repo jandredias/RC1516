@@ -425,21 +425,24 @@ void TesManager::processRQT(){
       answer += toStringDeadline(deadline());
       answer += std::string(" ");
 
-      std::string fileName = std::to_string(rand() % 5 + 1) + std::string(".pdf");
-      debug("Sending file " + fileName);
+      int qnn = rand() % PDF_NUMBER + 1;
+      std::string newFile = "T01QF00" + std::to_string(qnn);
+      std::string newFilename = newFile + ".pdf";
+      debug("Sending file " + newFilename);
 
       _questionariesMutex.lock();
-      _questionaries[r.qid()] = Quiz(r.sid(), r.deadline(), fileName);
+      _questionaries[r.qid()] = Quiz(r.sid(), r.deadline(), newFile);
       _questionariesMutex.unlock();
 
-      debug("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Reading file: " + fileName);
-      int fileSize = pdfSize(fileName);
+      debug("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Reading file: " + newFilename);
+      int fileSize = pdfSize(newFilename);
 
       debug("[ [YELLOW]TesManager::processRQT[REGULAR]      ] File read");
       answer += std::to_string(fileSize);
       answer += std::string(" ");
       r.fileSize(fileSize);
-      r.fileName(fileName);
+
+      r.fileName(newFilename);
 
       debug("[ [YELLOW]TesManager::processRQT[REGULAR]      ] Answer before data: " + answer);
       r.answer(answer);
@@ -718,7 +721,7 @@ void TesManager::answerUDP(){
     _answerUDPMutex.lock();
     _answersUDP.insert(std::pair<std::string, RequestTES>(r.qid(), r));
     _answerUDPMutex.unlock();
-  
+
   }
   debug("Leaving thread answerUDP. Bye!");
 }
@@ -778,31 +781,21 @@ int TesManager::pdfSize(std::string filename){
 }
 
 int TesManager::score(char answers[], const char filename[]){
-  std::ifstream in("answers.txt");
+  std::ifstream in(std::string(filename) + ".txt");
+  std::string aux;
+  char ans[5];
   int scoreValue = 0;
-  if(in){
-    while(1){
-      std::string name;
-      std::string aux;
-      char ans[5];
-      in >> name;
-      for(int i = 0; i < 5; i++){
-        in >> aux;
-        ans[i] = aux.data()[0];
-      }
-      if(name == std::string(filename)){
-        for(int i = 0; i < 5; i++){
-          if(answers[i] != 'N' && answers[i] != 'n')
-            scoreValue += (answers[i] == ans[i]) ? 20 : -5;
-        }
-        scoreValue = (scoreValue < 0) ? 0 : scoreValue;
-        UI::Dialog::IO->print("Pontuacao: ");
-        UI::Dialog::IO->println(std::to_string(scoreValue));
-        break;
-      }
-      if(in.eof()) break;
-    }
+  for(int i = 0; i < 5; i++){
+    in >> aux;
+    ans[i] = aux.data()[0];
+  }
+  for(int i = 0; i < 5; i++){
+    if(answers[i] != 'N' && answers[i] != 'n')
+      scoreValue += (answers[i] == ans[i]) ? 20 : -5;
   }
   in.close();
+  scoreValue = (scoreValue < 0) ? 0 : scoreValue;
+  UI::Dialog::IO->print("Pontuacao: ");
+  UI::Dialog::IO->println(std::to_string(scoreValue));
   return scoreValue;
 }
