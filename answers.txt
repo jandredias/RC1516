@@ -1,5 +1,0 @@
-1.pdf A C B D C
-2.pdf C C B D B
-3.pdf A D B B A
-4.pdf C C C B C
-5.pdf B D B B B

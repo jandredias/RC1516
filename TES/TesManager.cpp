@@ -430,7 +430,7 @@ void TesManager::processRQT(){
       if (std_qnn.size() == 1){
         std_qnn = "00" + std_qnn;
       }
-      else if (std_counter.size() == 2){
+      else if (std_qnn.size() == 2){
         std_qnn = "0" + std_qnn;
       }
       //if size == 3 no need to add zeros
@@ -438,6 +438,7 @@ void TesManager::processRQT(){
       std::string newFile = "T01QF" + std_qnn;
       std::string newFilename = newFile + ".pdf";
       debug("Sending file " + newFilename);
+      std::cout << newFile << " " << newFilename << std::endl;
 
       _questionariesMutex.lock();
       _questionaries[r.qid()] = Quiz(r.sid(), r.deadline(), newFile);
@@ -786,6 +787,7 @@ int TesManager::pdfSize(std::string filename){
     file.close();
     return length;
   }
+
   throw ErrorOpeningFile();
 }
 

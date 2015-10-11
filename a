@@ -1,6 +1,0 @@
-TesManager: 486:      if(qid.size() > 24) throw UnknownFormatProtocol();
-                      for(int index = 0; index < (int) SIDstr.size(); index++)
-                      if(SIDstr.size() != 5) throw UnknownFormatProtocol();
-                      if(SIDstr[index] < '0' || SIDstr[index] > '9') throw UnknownFormatProtocol();
-                      SID = atoi(SIDstr.data());
-                      if(SID < 10000 || SID > 99999) throw UnknownFormatProtocol();
